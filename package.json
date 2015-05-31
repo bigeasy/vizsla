@@ -1,0 +1,30 @@
+{
+    "name":             "vizsla",
+    "version":          "0.0.0",
+    "author":           "Alan Gutierrez <alan@prettyrobots.com>",
+    "description":      "An error-first callback friendly user agent.",
+    "keywords":
+    [
+                        "http", "https", "rest", "json", "curl"
+    ],
+    "contributors":     [],
+    "homepage":         "https://github.com/bigeasy/vizsla",
+    "bugs":             "https://github.com/bigeasy/vizsla/issues",
+    "main":             "vizsla",
+    "repository":
+    {
+                        "type": "git",
+                        "url": "http://github.com/bigeasy/vizsla.git"
+    },
+    "dependencies":
+    {
+    },
+    "devDependencies":
+    {
+                        "proof":                "0.0.51"
+    },
+    "scripts":
+    {
+                        "test": "proof platform win32 && proof test */*/*.t.js || t/test"
+    }
+}
