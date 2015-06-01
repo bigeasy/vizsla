@@ -1,5 +1,6 @@
 ### Issue by Issue
 
+ * Update `README`. #62.
  * Rename `tls` to `options`. #56.
  * Implement TLS client authentication. #55.
  * Filter messages by level. #51.
