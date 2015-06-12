@@ -1,16 +1,19 @@
 require('../proof')(34, require('cadence/redux')(prove))
 
 function prove (async, assert) {
-    var Pseudo = require('../../http/pseudo'),
+    var Semblance = require('semblance'),
         UserAgent = require('../../http/ua'),
         Bouquet = require('../../net/bouquet'),
         Binder = require('../../net/binder'),
+        http = require('http'),
         pems = require('../../http/pems')
 
-    var pseudo = new Pseudo(new Binder('http://127.0.0.1:7779')),
+    var pseudo = new Semblance,
         bouquet = new Bouquet,
-        ua = new UserAgent
+        ua = new UserAgent,
+        binder
 
+    var server = http.createServer(pseudo.dispatch()), request
     async(function () {
         var ua = new UserAgent(false)
         async(function () {
@@ -21,7 +24,7 @@ function prove (async, assert) {
             assert(response.statusCode, 599, 'no logging refused status')
         })
     }, function () {
-        bouquet.start(pseudo, async())
+        server.listen(7779, '127.0.0.1', async())
     }, function () {
         ua.fetch({
             url: 'http://127.0.0.1:9999/here',
@@ -223,14 +226,16 @@ function prove (async, assert) {
             body: {}
         }, 'request with token')
     }, function () {
-        bouquet.stop(async())
+        server.close(async())
     }, function () {
 // SSL!
-        bouquet = new Bouquet
-        pseudo = new Pseudo(new Binder('https://127.0.0.1:7779', pems))
-        bouquet.start(pseudo, async())
+        binder = [
+            { url: 'https://127.0.0.1:7779' }, pems
+        ]
+        server = require('https').createServer(pems, pseudo.dispatch())
+        server.listen(7779, '127.0.0.1', async())
     }, function () {
-        ua.fetch(pseudo.binder, async())
+        ua.fetch(binder, async())
     }, function (body, response) {
         assert(response.statusCode, 200, 'https code')
         assert(body, { message: 'Hello, World!' }, 'https body')
@@ -238,31 +243,30 @@ function prove (async, assert) {
         ua.fetch({ url: 'https://www.google.com/' }, async())
     }, function (body, response) {
         assert(response.statusCode, 200, 'https fetch without pinned CA')
-        ua.fetch(pseudo.binder, { agent: false }, async())
+        ua.fetch(binder, { agent: false }, async())
     }, function () {
         assert(pseudo.shift().headers.connection, 'close', 'connection close')
     }, function () {
-        bouquet.stop(async())
+        server.close(async())
     }, function () {
-        bouquet = new Bouquet
-        pseudo = new Pseudo(new Binder('https://127.0.0.1:7779', {
+        server = require('https').createServer({
             ca:                 pems.ca,
             key:                pems.key,
             cert:               pems.cert,
             requestCert:        true,
             rejectUnauthorized: true
-        }))
-        bouquet.start(pseudo, async())
+        }, pseudo.dispatch())
+        server.listen(7779, '127.0.0.1', async())
     }, function () {
-        var binder = new Binder('https://127.0.0.1:7779', {
-            ca:                 pems.ca
-        })
-        ua.fetch(binder, { agent: false }, async())
+        ua.fetch({
+            url: 'https://127.0.0.1:7779',
+            ca: pems.ca
+        }, { agent: false }, async())
     }, function (body, response) {
         assert(response.statusCode, 599, 'TLS client authentication failed')
-        ua.fetch(pseudo.binder, { agent: false }, async())
+        ua.fetch(binder, pems, { agent: false }, async())
     }, function (body, response) {
         assert(response.statusCode, 200, 'TLS client authentication succeeded')
-        bouquet.stop(async())
+        server.close(async())
     })
 }
