@@ -3,13 +3,10 @@ require('../proof')(34, require('cadence/redux')(prove))
 function prove (async, assert) {
     var Semblance = require('semblance'),
         UserAgent = require('../..'),
-        Bouquet = require('../../net/bouquet'),
-        Binder = require('../../net/binder'),
         http = require('http'),
         pems = require('../../http/pems')
 
     var pseudo = new Semblance,
-        bouquet = new Bouquet,
         ua = new UserAgent,
         binder
 

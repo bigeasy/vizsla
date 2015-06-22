@@ -3,7 +3,6 @@ var url = require('url')
 var ok = require('assert').ok
 var assert = require('assert')
 //var logger = require('../monitor/logger')('http.ua')
-var Binder = require('./net/binder')
 var typer = require('media-typer')
 var accum = require('accum')
 var __slice = [].slice
@@ -24,14 +23,6 @@ UserAgent.prototype.fetch = cadence(function (async) {
         if (Array.isArray(object)) {
             object.forEach(override)
         } else {
-            if (object instanceof Binder) {
-                object = {
-                    url: object.location,
-                    ca: object.options.ca,
-                    cert: object.options.cert,
-                    key: object.options.key
-                }
-            }
             for (var key in object) {
                 if (key == 'url') {
                     if (request.options.url) {
