@@ -2,19 +2,20 @@ var cadence = require('cadence/redux')
 var url = require('url')
 var ok = require('assert').ok
 var assert = require('assert')
-//var logger = require('../monitor/logger')('http.ua')
 var typer = require('media-typer')
 var accum = require('accum')
 var __slice = [].slice
 
 require('cadence/ee')
 
-function UserAgent (log) {
-    this._log = arguments.length == 0 ? true : log
+function UserAgent (logger) {
+    this._logger = logger || function () {}
     this._tokens = {}
 }
 
 UserAgent.prototype.fetch = cadence(function (async) {
+    var logger = this._logger
+
     var request = {
         options: { headers: {} }
     }
@@ -41,12 +42,6 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     request.options[key] = object[key]
                 }
             }
-        }
-    }
-
-    function log (name, object) {
-        if (this._log) {
-            // logger.debug(name, object, request.context || {})
         }
     }
 
@@ -111,7 +106,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 options[key] = request.options[key]
             }
         }
-        log.call(this, 'request', {
+        logger('request', {
             url: request.url,
             options: options,
             sent: request.payload
@@ -154,7 +149,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     'content-type': 'application/json'
                 }
             }
-            log.call(this, 'response', {
+            logger('response', {
                 status: 'exceptional',
                 options: options,
                 sent: request.payload,
@@ -173,6 +168,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                      .end('end')
                      .error()
             }, function () {
+                var parsed = null
                 var body = Buffer.concat(chunks)
                 var parsed = body
                 var display = null
@@ -182,8 +178,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     try {
                         display = parsed = JSON.parse(body.toString())
                     } catch (e) {
-                        display = parsed = body.toString()
-                        log.call(this, 'unparsable', { toString: display })
+                        display = body.toString()
                     }
                     break
                 case 'text/html':
@@ -192,11 +187,12 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     break
                 }
                 response.okay = Math.floor(response.statusCode / 100) == 2
-                log.call(this, 'response', {
+                logger('response', {
                     status: 'responded',
                     options: options,
                     sent: request.payload,
                     received: display,
+                    parsed: parsed,
                     statusCode: response.statusCode,
                     headers: response.headers
                 })
