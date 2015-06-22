@@ -11,6 +11,7 @@
     "homepage":         "https://github.com/bigeasy/vizsla",
     "bugs":             "https://github.com/bigeasy/vizsla/issues",
     "main":             "vizsla",
+    "license":          "MIT",
     "repository":
     {
                         "type": "git",
