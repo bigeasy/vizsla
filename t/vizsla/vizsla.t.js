@@ -4,7 +4,13 @@ function prove (async, assert) {
     var Semblance = require('semblance'),
         UserAgent = require('../..'),
         http = require('http'),
-        pems = require('../../http/pems')
+        path = require('path'),
+        fs = require('fs'),
+        pems = {
+            cert: fs.readFileSync(path.join(__dirname, '../fixtures/certs/agent1-cert.pem')),
+            key: fs.readFileSync(path.join(__dirname, '../fixtures/certs/agent1-key.pem')),
+            ca: fs.readFileSync(path.join(__dirname, '../fixtures/certs/ca1-cert.pem'))
+        }
 
     var pseudo = new Semblance,
         ua = new UserAgent,
