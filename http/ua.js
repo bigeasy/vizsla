@@ -2,11 +2,10 @@ var cadence = require('cadence/redux')
 var url = require('url')
 var ok = require('assert').ok
 var assert = require('assert')
-var logger = require('../monitor/logger')('http.ua')
+//var logger = require('../monitor/logger')('http.ua')
 var Binder = require('../net/binder')
 var typer = require('media-typer')
 var accum = require('accum')
-var Window = require('../monitor/window')
 var __slice = [].slice
 
 require('cadence/ee')
@@ -14,18 +13,6 @@ require('cadence/ee')
 function UserAgent (log) {
     this._log = arguments.length == 0 ? true : log
     this._tokens = {}
-}
-
-UserAgent.durations = {
-    1: new Window(60000),
-    5: new Window(300000),
-    15: new Window(900000)
-}
-
-function collectAverages (time) {
-    for (var key in UserAgent.durations) {
-       UserAgent.durations[key].sample(time)
-    }
 }
 
 UserAgent.prototype.fetch = cadence(function (async) {
@@ -68,7 +55,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
 
     function log (name, object) {
         if (this._log) {
-            logger.debug(name, object, request.context || {})
+            // logger.debug(name, object, request.context || {})
         }
     }
 
@@ -166,7 +153,6 @@ UserAgent.prototype.fetch = cadence(function (async) {
             }
             client.end()
         }, function (error) {
-            collectAverages(Date.now() - stopwatch)
             var body = new Buffer(JSON.stringify({ message: error.message, errno: error.code }))
             var response = {
                 statusCode: 599,
@@ -197,7 +183,6 @@ UserAgent.prototype.fetch = cadence(function (async) {
                      .error()
             }, function () {
                 var body = Buffer.concat(chunks)
-                collectAverages(Date.now() - stopwatch)
                 var parsed = body
                 var display = null
                 var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')

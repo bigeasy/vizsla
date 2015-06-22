@@ -1,4 +1,4 @@
-require('../proof')(34, require('cadence/redux')(prove))
+require('proof')(34, require('cadence/redux')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),

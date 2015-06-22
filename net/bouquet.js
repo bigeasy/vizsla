@@ -1,6 +1,5 @@
 var cadence = require('cadence/redux')
 var http = require('http'), https = require('https')
-var logger = require('../monitor/logger')('net.bouquet')
 
 require('cadence/loops')
 

@@ -18,7 +18,7 @@
     },
     "dependencies":
     {
-                        "semblance":            "0.0.0",
+                        "semblance":            "0.0.1",
                         "media-typer":          "0.2.0",
                         "raw-body":             "1.2.2",
                         "underscore":           "1.6.0",
