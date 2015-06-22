@@ -2,7 +2,7 @@ require('proof')(34, require('cadence/redux')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
-        UserAgent = require('../../http/ua'),
+        UserAgent = require('../..'),
         Bouquet = require('../../net/bouquet'),
         Binder = require('../../net/binder'),
         http = require('http'),
