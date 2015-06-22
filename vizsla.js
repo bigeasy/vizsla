@@ -3,7 +3,6 @@ var url = require('url')
 var ok = require('assert').ok
 var assert = require('assert')
 var typer = require('media-typer')
-var accum = require('accum')
 var __slice = [].slice
 
 require('cadence/ee')
