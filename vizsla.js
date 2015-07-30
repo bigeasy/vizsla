@@ -202,4 +202,10 @@ UserAgent.prototype.fetch = cadence(function (async) {
     })
 })
 
+
+UserAgent.prototype.lookupToken = function (location) {
+    location = url.parse(location)
+    return this._tokens[location.hostname + ':' + location.port]
+}
+
 module.exports = UserAgent

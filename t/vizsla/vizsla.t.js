@@ -1,4 +1,4 @@
-require('../proof')(34, require('cadence')(prove))
+require('../proof')(35, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -204,6 +204,7 @@ function prove (async, assert) {
         }, async())
     }, function (body, response) {
         assert(response.statusCode, 200, 'good authentication')
+        assert(ua.lookupToken('http://a:z@127.0.0.1:7779/here'), 'x', 'lookup token')
         assert(pseudo.shift(), {
             method: 'POST',
             headers: {
