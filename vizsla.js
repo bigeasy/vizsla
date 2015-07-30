@@ -1,11 +1,9 @@
-var cadence = require('cadence/redux')
+var cadence = require('cadence')
 var url = require('url')
 var ok = require('assert').ok
 var assert = require('assert')
 var typer = require('media-typer')
 var __slice = [].slice
-
-require('cadence/ee')
 
 function UserAgent (logger) {
     this._logger = logger || function () {}
@@ -125,7 +123,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
         }
 
         var stopwatch = Date.now()
-        var fetch = async([function () {
+        async([function () {
             var client = http.request(request.options)
             async.ee(client).end('response').error()
             if (payload) {
@@ -156,7 +154,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 statusCode: response.statusCode,
                 headers: response.headers
             })
-            return [ fetch, JSON.parse(body.toString()), response, body ]
+            return [ async.break, JSON.parse(body.toString()), response, body ]
         }], function (response) {
             var chunks = []
             async(function () {
@@ -198,9 +196,9 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 if (request.grant == 'cc' && response.statusCode == 401) {
                     delete this._tokens[request.key]
                 }
-                return [ fetch, parsed, response, body ]
+                return [ parsed, response, body ]
             })
-        })()
+        })
     })
 })
 
