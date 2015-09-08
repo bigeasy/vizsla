@@ -20,7 +20,8 @@
     "dependencies":
     {
                         "media-typer":          "0.3.0",
-                        "cadence":              "0.2.4"
+                        "cadence":              "0.4.0",
+                        "delta":                "0.0.4"
     },
     "devDependencies":
     {

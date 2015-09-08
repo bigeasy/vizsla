@@ -4,6 +4,7 @@ var ok = require('assert').ok
 var assert = require('assert')
 var typer = require('media-typer')
 var __slice = [].slice
+var Delta = require('delta')
 
 function UserAgent (logger) {
     this._logger = logger || function () {}
@@ -134,7 +135,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
         var stopwatch = Date.now()
         async([function () {
             var client = http.request(request.options)
-            async.ee(client).end('response').error()
+            new Delta(async()).ee(client).on('response')
             if (payload) {
                 client.write(payload)
             }
@@ -167,12 +168,11 @@ UserAgent.prototype.fetch = cadence(function (async) {
         }], function (response) {
             var chunks = []
             async(function () {
-                async.ee(response)
+                new Delta(async()).ee(response)
                      .on('data', function (chunk) {
                         chunks.push(chunk)
                       })
-                     .end('end')
-                     .error()
+                     .on('end')
             }, function () {
                 var parsed = null
                 var body = Buffer.concat(chunks)
