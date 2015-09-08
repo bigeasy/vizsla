@@ -33,7 +33,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     for (var header in object.headers) {
                         request.options.headers[header.toLowerCase()] = object.headers[header]
                     }
-                } else if (/^(context|payload|grant|token|timeout)$/.test(key)) {
+                } else if (/^(?:context|body|payload|grant|token|timeout|post|put)$/.test(key)) {
                     request[key] = object[key]
                 } else {
                     request.options[key] = object[key]
@@ -43,10 +43,19 @@ UserAgent.prototype.fetch = cadence(function (async) {
     }
 
     __slice.call(arguments, 1).forEach(override)
+    if (request.put) {
+        request.payload = request.put
+        request.options.method = 'PUT'
+    } else if (request.post) {
+        request.payload = request.post
+        request.options.method = 'POST'
+    } else if (request.body) {
+        request.payload = request.body
+    }
     if (!request.options.method) {
         request.options.method = request.payload ? 'POST' : 'GET'
     }
-    if (request.options.method == 'POST' && !request.options.headers['content-type']) {
+    if (request.payload && !request.options.headers['content-type']) {
         request.options.headers['content-type'] = 'application/json'
     }
     request.options.headers['accept'] = 'application/json'

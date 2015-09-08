@@ -1,4 +1,4 @@
-require('../proof')(35, require('cadence')(prove))
+require('../proof')(38, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -134,7 +134,82 @@ function prove (async, assert) {
             },
             url: '/there',
             body: { a: 1 }
+        }, 'payload')
+        pseudo.clear()
+        ua.fetch({
+            url: 'http://127.0.0.1:7779/here'
+        }, {
+            url: '/there',
+            put: { a: 1 }
+        }, {
+            headers: {
+                greeting: 'Hello, World!'
+            }
+        }, async())
+    }, function () {
+        assert(pseudo.shift(), {
+            method: 'PUT',
+            headers: {
+                'content-type': 'application/json',
+                'content-length': '7',
+                accept: 'application/json',
+                host: '127.0.0.1:7779',
+                greeting: 'Hello, World!',
+                connection: 'keep-alive'
+            },
+            url: '/there',
+            body: { a: 1 }
+        }, 'put')
+        pseudo.clear()
+        ua.fetch({
+            url: 'http://127.0.0.1:7779/here'
+        }, {
+            url: '/there',
+            post: { a: 1 }
+        }, {
+            headers: {
+                greeting: 'Hello, World!'
+            }
+        }, async())
+    }, function () {
+        assert(pseudo.shift(), {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                'content-length': '7',
+                accept: 'application/json',
+                host: '127.0.0.1:7779',
+                greeting: 'Hello, World!',
+                connection: 'keep-alive'
+            },
+            url: '/there',
+            body: { a: 1 }
         }, 'post')
+        pseudo.clear()
+        ua.fetch({
+            url: 'http://127.0.0.1:7779/here'
+        }, {
+            url: '/there',
+            body: { a: 1 }
+        }, {
+            headers: {
+                greeting: 'Hello, World!'
+            }
+        }, async())
+    }, function () {
+        assert(pseudo.shift(), {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                'content-length': '7',
+                accept: 'application/json',
+                host: '127.0.0.1:7779',
+                greeting: 'Hello, World!',
+                connection: 'keep-alive'
+            },
+            url: '/there',
+            body: { a: 1 }
+        }, 'body')
         pseudo.push({
             headers: {},
             payload: 'Hello, World!'
