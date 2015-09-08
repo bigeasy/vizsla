@@ -1,4 +1,4 @@
-require('../proof')(38, require('cadence')(prove))
+require('../proof')(40, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -255,6 +255,16 @@ function prove (async, assert) {
     }, function (body, response) {
         assert(body.toString(), 'Hello, World!', 'unknown')
         assert(response.headers['content-type'], 'application/octet-stream', 'unknown content-type')
+        pseudo.push({
+            statusCode: 200,
+            headers: {
+                'content-type': 'application/json'
+            },
+            payload: new Buffer('{a')
+        })
+        ua.fetch({ url: 'http://127.0.0.1:7779' }, async())
+    }, function (body, response) {
+        assert(body.toString(), '{a', 'botched json')
         pseudo.push({ statusCode: 401 })
         ua.fetch({
             url: 'http://a:z@127.0.0.1:7779/here'
@@ -304,7 +314,16 @@ function prove (async, assert) {
             url: '/there',
             body: {}
         }, 'request with token')
-    }, function () {
+        pseudo.clear()
+        pseudo.push({ statusCode: 401 })
+        ua.fetch({
+            url: 'http://a:z@127.0.0.1:7779/here'
+        }, {
+            grant: 'cc',
+            url: '/there',
+        }, async())
+    }, function (body, response) {
+        assert(response.statusCode, 401, 'cleared authentication')
         server.close(async())
     }, function () {
 // SSL!

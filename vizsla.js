@@ -182,8 +182,11 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 switch (type.type + '/' + type.subtype) {
                 case 'application/json':
                     try {
+                        console.log(body.toString())
                         display = parsed = JSON.parse(body.toString())
+                        console.log('here', typeof parsed)
                     } catch (e) {
+                        console.log('here', body.toString())
                         display = body.toString()
                     }
                     break
