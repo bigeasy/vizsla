@@ -62,8 +62,12 @@ UserAgent.prototype.fetch = cadence(function (async) {
     request.options.headers['accept'] = 'application/json'
     request.url = url.parse(request.options.url)
 
-    request.options.hostname = request.url.hostname
-    request.options.port = request.url.port
+    if (request.socketPath) {
+        request.options.socketPath = request.socketPath
+    } else {
+        request.options.hostname = request.url.hostname
+        request.options.port = request.url.port
+    }
     request.options.path = url.format({
         pathname: request.url.pathname,
         search: request.url.search,
