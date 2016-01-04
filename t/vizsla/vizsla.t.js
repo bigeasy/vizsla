@@ -1,4 +1,4 @@
-require('../proof')(40, require('cadence')(prove))
+require('proof')(40, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -6,11 +6,8 @@ function prove (async, assert) {
         http = require('http'),
         path = require('path'),
         fs = require('fs'),
-        pems = {
-            cert: fs.readFileSync(path.join(__dirname, '../fixtures/certs/agent1-cert.pem')),
-            key: fs.readFileSync(path.join(__dirname, '../fixtures/certs/agent1-key.pem')),
-            ca: fs.readFileSync(path.join(__dirname, '../fixtures/certs/ca1-cert.pem'))
-        }
+        exec = require('child_process').exec,
+        pems
 
     var pseudo = new Semblance,
         ua = new UserAgent,
@@ -18,6 +15,13 @@ function prove (async, assert) {
 
     var server = http.createServer(pseudo.dispatch()), request
     async(function () {
+        exec('make -C t/fixtures/certs', async())
+    }, function () {
+        pems = {
+            cert: fs.readFileSync(path.join(__dirname, '../fixtures/certs/agent1-cert.pem')),
+            key: fs.readFileSync(path.join(__dirname, '../fixtures/certs/agent1-key.pem')),
+            ca: fs.readFileSync(path.join(__dirname, '../fixtures/certs/ca1-cert.pem'))
+        }
         var ua = new UserAgent(false)
         async(function () {
             ua.fetch({
