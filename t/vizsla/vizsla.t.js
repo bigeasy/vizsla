@@ -39,15 +39,14 @@ function prove (async, assert) {
     }, function (body, response) {
         assert(response.statusCode, 599, 'refused status')
         assert(response.errno, 'ECONNREFUSED', 'refused errno')
-        assert(body, { message: 'connect ECONNREFUSED', errno: 'ECONNREFUSED' }, 'refused body')
+        assert(/^connect ECONNREFUSED/.test(body.message), 'refused body')
         ua.fetch({
             url: 'http://127.0.0.1:9999/here',
         }, async())
     }, function (body, response, buffer) {
         assert(response.statusCode, 599, 'unparsed refused status')
         assert(response.errno, 'ECONNREFUSED', 'unparsed refused errno')
-        assert(buffer.toString(),
-            JSON.stringify({ message: 'connect ECONNREFUSED', errno: 'ECONNREFUSED' }), 'unparsed refused body')
+        assert(/^connect ECONNREFUSED/.test(JSON.parse(buffer.toString()).message), 'unparsed refused body')
         ua.fetch({
             grant: 'cc',
             url: 'http://a:z@127.0.0.1:9999/here',
@@ -55,10 +54,7 @@ function prove (async, assert) {
     }, function (body, response, buffer) {
         assert(response.statusCode, 599, 'unparsed refused cc status')
         assert(response.errno, 'ECONNREFUSED', 'unparsed refused cc errno')
-        assert(buffer.toString(), JSON.stringify({
-            message: 'connect ECONNREFUSED',
-            errno: 'ECONNREFUSED'
-        }), 'unparsed refused cc body')
+        assert(/^connect ECONNREFUSED/.test(JSON.parse(buffer.toString()).message), 'unparsed refused cc body')
         pseudo.push({ delay: 1000 })
         ua.fetch({
             url: 'http://127.0.0.1:7779/here',
