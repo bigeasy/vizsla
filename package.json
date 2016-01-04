@@ -26,7 +26,7 @@
     "devDependencies":
     {
                         "semblance":            "0.0.4",
-                        "proof":                "0.0.55"
+                        "proof":                "0.0.57"
     },
     "scripts":
     {
