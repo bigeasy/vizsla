@@ -128,7 +128,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
             http = require('http')
         }
         http.globalAgent.maxSockets = 5000
-        var payload = request.payload
+        var payload = request.payload || null
         if (payload && !Buffer.isBuffer(payload)) {
             payload = new Buffer(JSON.stringify(payload))
         }
@@ -136,7 +136,12 @@ UserAgent.prototype.fetch = cadence(function (async) {
             request.options.headers['content-length'] = payload.length
         }
 
-        var stopwatch = Date.now()
+        var sent = {
+            options: options,
+            payload: payload,
+            when: Date.now(),
+            duration: null
+        }
         async([function () {
             var client = http.request(request.options)
             new Delta(async()).ee(client).on('response')
@@ -150,11 +155,13 @@ UserAgent.prototype.fetch = cadence(function (async) {
             }
             client.end()
         }, function (error) {
+            sent.duration = Date.now() - sent.when
             var body = new Buffer(JSON.stringify({ message: error.message, errno: error.code }))
             var response = {
                 statusCode: 599,
                 errno: error.code,
                 okay: false,
+                sent: sent,
                 headers: {
                     'content-length': body.length,
                     'content-type': 'application/json'
@@ -173,11 +180,11 @@ UserAgent.prototype.fetch = cadence(function (async) {
             var chunks = []
             async(function () {
                 new Delta(async()).ee(response)
-                     .on('data', function (chunk) {
-                        chunks.push(chunk)
-                      })
+                     .on('data', function (chunk) { chunks.push(chunk) })
                      .on('end')
             }, function () {
+                sent.duration = Date.now() - sent.when
+                response.sent = sent
                 var parsed = null
                 var body = Buffer.concat(chunks)
                 var parsed = body
