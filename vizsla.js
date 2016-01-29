@@ -138,7 +138,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
 
         var sent = {
             options: options,
-            payload: payload,
+            body: payload,
             when: Date.now(),
             duration: null
         }
