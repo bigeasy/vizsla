@@ -25,8 +25,8 @@
     },
     "devDependencies":
     {
-                        "semblance":            "1.0.x",
-                        "proof":                "1.0.x"
+                        "semblance":            "1.x",
+                        "proof":                "1.x"
     },
     "scripts":
     {
