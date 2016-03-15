@@ -21,7 +21,8 @@
     {
                         "media-typer":          "0.3.0",
                         "cadence":              "1.x",
-                        "delta":                "1.x"
+                        "delta":                "1.x",
+                        "interrupt":            "1.x"
     },
     "devDependencies":
     {

@@ -5,6 +5,7 @@ var assert = require('assert')
 var typer = require('media-typer')
 var __slice = [].slice
 var Delta = require('delta')
+var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
 
 function UserAgent (logger) {
     this._logger = logger || function () {}
@@ -34,7 +35,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     for (var header in object.headers) {
                         request.options.headers[header.toLowerCase()] = object.headers[header]
                     }
-                } else if (/^(?:context|body|payload|grant|token|timeout|post|put)$/.test(key)) {
+                } else if (/^(?:context|body|payload|grant|token|timeout|post|put|raise)$/.test(key)) {
                     request[key] = object[key]
                 } else {
                     request.options[key] = object[key]
@@ -175,6 +176,9 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 statusCode: response.statusCode,
                 headers: response.headers
             })
+            if (request.raise) {
+                throw interrupt(new Error('fetch'), { response: response, parsed: JSON.parse(body.toString()), body: body })
+            }
             return [ async.break, JSON.parse(body.toString()), response, body ]
         }], function (response) {
             var chunks = []
@@ -215,6 +219,9 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 })
                 if (request.grant == 'cc' && response.statusCode == 401) {
                     delete this._tokens[request.key]
+                }
+                if (!response.okay && request.raise) {
+                    throw interrupt(new Error('fetch'), { response: response, parsed: parsed, body: body })
                 }
                 return [ parsed, response, body ]
             })

@@ -1,4 +1,4 @@
-require('proof')(40, require('cadence')(prove))
+require('proof')(43, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -34,12 +34,20 @@ function prove (async, assert) {
         server.listen(7779, '127.0.0.1', async())
     }, function () {
         ua.fetch({
-            url: 'http://127.0.0.1:9999/here',
+            url: 'http://127.0.0.1:9999/here'
         }, async())
     }, function (body, response) {
         assert(response.statusCode, 599, 'refused status')
         assert(response.errno, 'ECONNREFUSED', 'refused errno')
         assert(/^connect ECONNREFUSED/.test(body.message), 'refused body')
+    }, [function () {
+        ua.fetch({
+            url: 'http://127.0.0.1:9999/here',
+            raise: true
+        }, async())
+    }, function (error) {
+        assert(error.response.statusCode, 599, 'raised refused status')
+    }], function () {
         ua.fetch({
             url: 'http://127.0.0.1:9999/here',
         }, async())
@@ -233,6 +241,19 @@ function prove (async, assert) {
     }, function (body, response) {
         assert(body.toString(), 'Hello, World!', 'text')
         assert(response.headers['content-type'], 'text/plain', 'text content-type')
+    }, [function () {
+        pseudo.push({
+            statusCode: 404,
+            headers: {
+                'content-type': 'application/json'
+            },
+            payload: {}
+        })
+        ua.fetch({ url: 'http://127.0.0.1:7779', raise: true }, async())
+    }, function (error) {
+        assert(error.response.statusCode, 404, 'raise HTTP error status')
+        assert(error.parsed, {}, 'raise HTTP error parsed body')
+    }], function () {
         pseudo.push({
             statusCode: 200,
             headers: {
