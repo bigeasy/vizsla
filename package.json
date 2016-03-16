@@ -1,6 +1,6 @@
 {
     "name":             "vizsla",
-    "version":          "1.2.3",
+    "version":          "1.2.2",
     "author":           "Alan Gutierrez <alan@prettyrobots.com>",
     "description":      "An error-first callback friendly user agent.",
     "keywords":
