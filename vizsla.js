@@ -88,7 +88,8 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 this.fetch({
                     url: url.format(request.url),
                     ca: request.options.ca,
-                    rejectUnauthorized: request.options.rejectUnauthorized
+                    rejectUnauthorized: request.options.rejectUnauthorized,
+                    timeout: request.options.timeout
                 }, {
                     url: '/token',
                     headers: {
