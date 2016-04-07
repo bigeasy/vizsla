@@ -1,4 +1,4 @@
-require('proof')(43, require('cadence')(prove))
+require('proof')(46, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -40,6 +40,14 @@ function prove (async, assert) {
         assert(response.statusCode, 599, 'refused status')
         assert(response.errno, 'ECONNREFUSED', 'refused errno')
         assert(/^connect ECONNREFUSED/.test(body.message), 'refused body')
+        ua.fetch({
+            socketPath: path.join(__dirname, 'non-existant'),
+            url: '/'
+        }, async())
+    }, function (body, response) {
+        assert(response.statusCode, 599, 'refused status')
+        assert(response.errno, 'ENOENT', 'refused errno')
+        assert(/^connect ENOENT/.test(body.message), 'refused body')
     }, [function () {
         ua.fetch({
             url: 'http://127.0.0.1:9999/here',
