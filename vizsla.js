@@ -1,15 +1,15 @@
 var cadence = require('cadence')
 var url = require('url')
-var ok = require('assert').ok
 var assert = require('assert')
-var typer = require('media-typer')
-var __slice = [].slice
-var Delta = require('delta')
+var slice = [].slice
 var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
+var Transport = require('./http')
 
-function UserAgent (logger) {
-    this._logger = logger || function () {}
+function UserAgent (options) {
+    options || (options = {})
+    this._logger = options.logger || function () {}
     this._tokens = {}
+    this._transport = options.transport || new Transport(this._logger)
 }
 
 UserAgent.prototype.fetch = cadence(function (async) {
@@ -44,7 +44,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
         }
     }
 
-    __slice.call(arguments, 1).forEach(override)
+    slice.call(arguments, 1).forEach(override)
     if (request.put) {
         request.payload = request.put
         request.options.method = 'PUT'
@@ -125,109 +125,21 @@ UserAgent.prototype.fetch = cadence(function (async) {
             options: options,
             sent: request.payload
         })
-        if (request.url.protocol == 'https:') {
-            http = require('https')
-        } else {
-            http = require('http')
+        if (request.payload && !Buffer.isBuffer(request.payload)) {
+            request.payload = new Buffer(JSON.stringify(request.payload))
         }
-        http.globalAgent.maxSockets = 5000
-        var payload = request.payload || null
-        if (payload && !Buffer.isBuffer(payload)) {
-            payload = new Buffer(JSON.stringify(payload))
-        }
-        if (payload) {
-            request.options.headers['content-length'] = payload.length
+        if (request.payload) {
+            request.options.headers['content-length'] = request.payload.length
         }
 
-        var sent = {
-            options: options,
-            body: payload,
-            when: Date.now(),
-            duration: null
+        this._transport.send(request, async())
+    }, function (parsed, response, body) {
+        if (request.grant == 'cc' && response.statusCode == 401) {
+            delete this._tokens[request.key]
         }
-        async([function () {
-            var client = http.request(request.options)
-            new Delta(async()).ee(client).on('response')
-            if (payload) {
-                client.write(payload)
-            }
-            if (request.timeout) {
-                client.setTimeout(request.timeout, function () {
-                    client.abort()
-                })
-            }
-            client.end()
-        }, function (error) {
-            sent.duration = Date.now() - sent.when
-            var body = new Buffer(JSON.stringify({ message: error.message, errno: error.code }))
-            var response = {
-                statusCode: 599,
-                errno: error.code,
-                okay: false,
-                sent: sent,
-                headers: {
-                    'content-length': body.length,
-                    'content-type': 'application/json'
-                }
-            }
-            logger('response', {
-                status: 'exceptional',
-                options: options,
-                sent: request.payload,
-                received: JSON.parse(body.toString()),
-                statusCode: response.statusCode,
-                headers: response.headers
-            })
-            if (request.raise) {
-                throw interrupt(new Error('fetch'), { response: response, parsed: JSON.parse(body.toString()), body: body })
-            }
-            return [ async.break, JSON.parse(body.toString()), response, body ]
-        }], function (response) {
-            var chunks = []
-            async(function () {
-                new Delta(async()).ee(response)
-                     .on('data', function (chunk) { chunks.push(chunk) })
-                     .on('end')
-            }, function () {
-                sent.duration = Date.now() - sent.when
-                response.sent = sent
-                var parsed = null
-                var body = Buffer.concat(chunks)
-                var parsed = body
-                var display = null
-                var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')
-                switch (type.type + '/' + type.subtype) {
-                case 'application/json':
-                    try {
-                        display = parsed = JSON.parse(body.toString())
-                    } catch (e) {
-                        display = body.toString()
-                    }
-                    break
-                case 'text/html':
-                case 'text/plain':
-                    display = body.toString()
-                    break
-                }
-                response.okay = Math.floor(response.statusCode / 100) == 2
-                logger('response', {
-                    status: 'responded',
-                    options: options,
-                    sent: request.payload,
-                    received: display,
-                    parsed: parsed,
-                    statusCode: response.statusCode,
-                    headers: response.headers
-                })
-                if (request.grant == 'cc' && response.statusCode == 401) {
-                    delete this._tokens[request.key]
-                }
-                if (!response.okay && request.raise) {
-                    throw interrupt(new Error('fetch'), { response: response, parsed: parsed, body: body })
-                }
-                return [ parsed, response, body ]
-            })
-        })
+        if (!response.okay && request.raise) {
+            throw interrupt(new Error('fetch'), { response: response, parsed: parsed, body: body })
+        }
     })
 })
 
