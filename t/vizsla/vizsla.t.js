@@ -93,7 +93,7 @@ function prove (async, assert) {
             headers: {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
-                connection: 'keep-alive'
+                connection: 'close'
             },
             url: '/there?1',
             body: {}
@@ -111,7 +111,7 @@ function prove (async, assert) {
             headers: {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
-                connection: 'keep-alive'
+                connection: 'close'
             },
             url: '/there?1',
             body: {}
@@ -146,7 +146,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
-                connection: 'keep-alive'
+                connection: 'close'
             },
             url: '/there',
             body: { a: 1 }
@@ -171,7 +171,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
-                connection: 'keep-alive'
+                connection: 'close'
             },
             url: '/there',
             body: { a: 1 }
@@ -196,7 +196,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
-                connection: 'keep-alive'
+                connection: 'close'
             },
             url: '/there',
             body: { a: 1 }
@@ -221,7 +221,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
-                connection: 'keep-alive'
+                connection: 'close'
             },
             url: '/there',
             body: { a: 1 }
@@ -327,7 +327,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 'content-length': '35',
                 host: '127.0.0.1:7779',
-                connection: 'keep-alive'
+                connection: 'close'
             },
             url: '/token',
             body: { grant_type: 'client_credentials' }
@@ -338,7 +338,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 authorization: 'Bearer x',
                 host: '127.0.0.1:7779',
-                connection: 'keep-alive'
+                connection: 'close'
             },
             url: '/there',
             body: {}

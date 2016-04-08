@@ -1,6 +1,8 @@
 var cadence = require('cadence')
 var url = require('url')
+var typer = require('media-typer')
 var assert = require('assert')
+var Delta = require('delta')
 var slice = [].slice
 var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
 var Transport = require('./http')
@@ -78,6 +80,12 @@ UserAgent.prototype.fetch = cadence(function (async) {
     if (request.grant == 'cc') {
         request.token = this._tokens[request.key]
     }
+    var sent = {
+        options: request.options,
+        body: request.payload,
+        when: Date.now(),
+        duration: null
+    }
 
     async(function () {
         if (request.grant == 'cc' && !request.token) {
@@ -129,15 +137,79 @@ UserAgent.prototype.fetch = cadence(function (async) {
         if (request.payload) {
             request.options.headers['content-length'] = request.payload.length
         }
-
-        this._transport.send(request, async())
-    }, function (parsed, response, body) {
-        if (request.grant == 'cc' && response.statusCode == 401) {
-            delete this._tokens[request.key]
-        }
-        if (!response.okay && request.raise) {
-            throw interrupt(new Error('fetch'), { response: response, parsed: parsed, body: body })
-        }
+        async([function () {
+            this._transport.send(request, async())
+        }, function (error) {
+            sent.duration = Date.now() - sent.when
+            var body = new Buffer(JSON.stringify({ message: error.message, errno: error.code }))
+            var response = {
+                statusCode: 599,
+                errno: error.code,
+                okay: false,
+                sent: sent,
+                headers: {
+                    'content-length': body.length,
+                    'content-type': 'application/json'
+                }
+            }
+            logger('response', {
+                status: 'exceptional',
+                options: request.options,
+                sent: request.payload,
+                received: JSON.parse(body.toString()),
+                statusCode: response.statusCode,
+                headers: response.headers
+            })
+            if (request.raise) {
+                throw interrupt(new Error('fetch'), { response: response, parsed: JSON.parse(body.toString()), body: body, cause: error })
+            }
+            return [ async.break, JSON.parse(body.toString()), response, body ]
+        }], function (response) {
+            var chunks = []
+            async(function () {
+                new Delta(async()).ee(response)
+                     .on('data', function (chunk) { chunks.push(chunk) })
+                     .on('end')
+            }, function () {
+                sent.duration = Date.now() - sent.when
+                response.sent = sent
+                var parsed = null
+                var body = Buffer.concat(chunks)
+                var parsed = body
+                var display = null
+                var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')
+                switch (type.type + '/' + type.subtype) {
+                case 'application/json':
+                    try {
+                        display = parsed = JSON.parse(body.toString())
+                    } catch (e) {
+                        display = body.toString()
+                    }
+                    break
+                case 'text/html':
+                case 'text/plain':
+                    display = body.toString()
+                    break
+                }
+                response.okay = Math.floor(response.statusCode / 100) == 2
+                logger('response', {
+                    status: 'responded',
+                    options: request.options,
+                    sent: request.payload,
+                    received: display,
+                    parsed: parsed,
+                    statusCode: response.statusCode,
+                    headers: response.headers
+                })
+                if (request.grant == 'cc' && response.statusCode == 401) {
+                    delete this._tokens[request.key]
+                }
+                if (!response.okay && request.raise) {
+                    throw interrupt(new Error('fetch'), { response: response, parsed: parsed, body: body })
+                }
+                return [ parsed, response, body ]
+            })
+        })
     })
 })
 
