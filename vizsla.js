@@ -160,8 +160,6 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 statusCode: response.statusCode,
                 headers: response.headers
             })
-            console.log(error.stack)
-            console.log(request.options)
             if (request.raise) {
                 throw interrupt(new Error('fetch'), { response: response, parsed: JSON.parse(body.toString()), body: body, cause: error })
             }

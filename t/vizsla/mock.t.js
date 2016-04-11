@@ -1,4 +1,4 @@
-require('proof')(3, require('cadence')(prove))
+require('proof')(5, require('cadence')(prove))
 
 function prove (async, assert) {
     var UserAgent = require('../..')
@@ -12,6 +12,12 @@ function prove (async, assert) {
         function (request, response, next) {
             response.writeHead(200)
             response.end('foo')
+        },
+        function (response, response, next) {
+            next()
+        },
+        function (response, response, next) {
+            throw new Error
         }
     ]
     var transport = new Transport(function (request, response, next) {
@@ -25,5 +31,11 @@ function prove (async, assert) {
         ua.fetch({ url: '/' }, async())
     }, function (body, response, buffer) {
         assert(response.headers, {}, 'no headers')
+        ua.fetch({ url: '/' }, async())
+    }, function (body, response, buffer) {
+        assert(response.statusCode, 404, 'not found')
+        ua.fetch({ url: '/' }, async())
+    }, function (body, response) {
+        assert(response.statusCode, 599, 'huge error')
     })
 }

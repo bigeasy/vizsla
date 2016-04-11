@@ -51,7 +51,6 @@ Transport.prototype.send = cadence(function (async, request) {
             response.end('')
         })
     }, function (error) {
-        console.log(error.stack)
         throw error
     }], function () {
         return [ response ]
