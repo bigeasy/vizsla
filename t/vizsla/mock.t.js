@@ -8,12 +8,10 @@ function prove (async, assert) {
             response.writeHead(200, 'ignore', { key: 'value' })
             response.end('foo')
             assert(response.getHeader('key'), 'value', 'get header')
-            next()
         },
         function (request, response, next) {
             response.writeHead(200)
             response.end('foo')
-            next()
         }
     ]
     var transport = new Transport(function (request, response, next) {
