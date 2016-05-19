@@ -21,6 +21,7 @@
                         "cadence":              "1.x",
                         "delta":                "1.x",
                         "interrupt":            "1.x",
+                        "prolific":             "2.x",
                         "media-typer":          "0.3.0"
     },
     "devDependencies":

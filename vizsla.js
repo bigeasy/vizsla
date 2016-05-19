@@ -4,19 +4,17 @@ var typer = require('media-typer')
 var assert = require('assert')
 var Delta = require('delta')
 var slice = [].slice
+var logger = require('prolific').createLogger('bigeasy.vizsla')
 var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
 var Transport = require('./http')
 
 function UserAgent (options) {
     options || (options = {})
-    this._logger = options.logger || function () {}
     this._tokens = {}
-    this._transport = options.transport || new Transport(this._logger)
+    this._transport = options.transport || new Transport
 }
 
 UserAgent.prototype.fetch = cadence(function (async) {
-    var logger = this._logger
-
     var request = {
         options: { headers: {} }
     }
@@ -126,7 +124,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 options[key] = request.options[key]
             }
         }
-        logger('request', {
+        logger.debug('request', {
             url: request.url,
             options: options,
             sent: request.payload
@@ -152,7 +150,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     'content-type': 'application/json'
                 }
             }
-            logger('response', {
+            logger.debug('response', {
                 status: 'exceptional',
                 options: request.options,
                 sent: request.payload,
@@ -195,7 +193,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     break
                 }
                 response.okay = Math.floor(response.statusCode / 100) == 2
-                logger('response', {
+                logger.debug('response', {
                     status: 'responded',
                     options: request.options,
                     sent: request.payload,

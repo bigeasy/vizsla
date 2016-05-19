@@ -1,13 +1,10 @@
 var cadence = require('cadence')
-var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla.transport')
 var Delta = require('delta')
 
-function Transport (logger) {
-    this._logger = logger
+function Transport () {
 }
 
 Transport.prototype.send = cadence(function (async, request) {
-    var logger = this._logger
     var http
     if (request.url.protocol == 'https:') {
         http = require('https')
