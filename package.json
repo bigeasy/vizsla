@@ -1,16 +1,15 @@
 {
     "name":             "vizsla",
     "version":          "1.3.5",
-    "author":           "Alan Gutierrez <alan@prettyrobots.com>",
     "description":      "An error-first callback friendly user agent.",
     "keywords":
     [
                         "http", "https", "rest", "json", "curl"
     ],
+    "author":           "Alan Gutierrez <alan@prettyrobots.com>",
     "contributors":     [],
     "homepage":         "https://github.com/bigeasy/vizsla",
     "bugs":             "https://github.com/bigeasy/vizsla/issues",
-    "main":             "vizsla",
     "license":          "MIT",
     "repository":
     {
@@ -29,6 +28,7 @@
                         "semblance":            "1.x",
                         "proof":                "1.x"
     },
+    "main":             "vizsla",
     "scripts":
     {
                         "test": "proof platform win32 && proof test */*/*.t.js || t/test"
