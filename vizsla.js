@@ -37,7 +37,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     for (var header in object.headers) {
                         request.options.headers[header.toLowerCase()] = object.headers[header]
                     }
-                } else if (/^(?:context|body|payload|grant|token|timeout|post|put|raise)$/.test(key)) {
+                } else if (/^(?:context|body|payload|grant|token|timeout|post|put|raise|nullify)$/.test(key)) {
                     request[key] = object[key]
                 } else {
                     request.options[key] = object[key]
@@ -163,6 +163,8 @@ UserAgent.prototype.fetch = cadence(function (async) {
             console.log(error.stack)
             if (request.raise) {
                 throw interrupt(new Error('fetch'), { response: response, parsed: JSON.parse(body.toString()), body: body, cause: error })
+            } else if (request.nullify) {
+                return [ async.break, null, response, body ]
             }
             return [ async.break, JSON.parse(body.toString()), response, body ]
         }], function (response) {
@@ -205,8 +207,12 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 if (request.grant == 'cc' && response.statusCode == 401) {
                     delete this._tokens[request.key]
                 }
-                if (!response.okay && request.raise) {
-                    throw interrupt(new Error('fetch'), { response: response, parsed: parsed, body: body })
+                if (!response.okay) {
+                    if (request.raise) {
+                        throw interrupt(new Error('fetch'), { response: response, parsed: parsed, body: body })
+                    } else if (request.nullify) {
+                        return [ null, response, body ]
+                    }
                 }
                 return [ parsed, response, body ]
             })

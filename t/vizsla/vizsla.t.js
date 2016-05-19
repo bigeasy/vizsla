@@ -1,4 +1,4 @@
-require('proof')(46, require('cadence')(prove))
+require('proof')(48, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -56,6 +56,12 @@ function prove (async, assert) {
     }, function (error) {
         assert(error.response.statusCode, 599, 'raised refused status')
     }], function () {
+        ua.fetch({
+            url: 'http://127.0.0.1:9999/here',
+            nullify: true
+        }, async())
+    }, function (response) {
+        assert(response, null, 'nullify refused status')
         ua.fetch({
             url: 'http://127.0.0.1:9999/here',
         }, async())
@@ -262,6 +268,16 @@ function prove (async, assert) {
         assert(error.response.statusCode, 404, 'raise HTTP error status')
         assert(error.parsed, {}, 'raise HTTP error parsed body')
     }], function () {
+        pseudo.push({
+            statusCode: 404,
+            headers: {
+                'content-type': 'application/json'
+            },
+            payload: {}
+        })
+        ua.fetch({ url: 'http://127.0.0.1:7779', nullify: true }, async())
+    }, function (response) {
+        assert(response, null, 'nullify HTTP error status')
         pseudo.push({
             statusCode: 200,
             headers: {
