@@ -2,7 +2,6 @@ require('proof')(5, require('cadence')(prove))
 
 function prove (async, assert) {
     var UserAgent = require('..')
-    var Transport = require('../mock')
     var responses = [
         function (request, response, next) {
             response.writeHead(200, 'ignore', { key: 'value' })
@@ -20,10 +19,9 @@ function prove (async, assert) {
             throw new Error
         }
     ]
-    var transport = new Transport(function (request, response, next) {
+    var ua = new UserAgent(function (request, response, next) {
         responses.shift()(request, response, next)
     })
-    var ua = new UserAgent({ transport: transport })
     async(function () {
         ua.fetch({ url: '/' }, async())
     }, function (body, response, buffer) {

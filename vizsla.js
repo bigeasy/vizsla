@@ -6,12 +6,14 @@ var Delta = require('delta')
 var slice = [].slice
 var logger = require('prolific').createLogger('bigeasy.vizsla')
 var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
-var Transport = require('./http')
+var transport = {
+    HTTP: require('./http'),
+    Mock: require('./mock')
+}
 
-function UserAgent (options) {
-    options || (options = {})
+function UserAgent (middleware) {
     this._tokens = {}
-    this._transport = options.transport || new Transport
+    this._transport = middleware ? new transport.Mock(middleware) : new transport.HTTP
 }
 
 UserAgent.prototype.fetch = cadence(function (async) {
