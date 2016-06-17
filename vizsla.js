@@ -162,10 +162,10 @@ UserAgent.prototype.fetch = cadence(function (async) {
             })
             if (request.raise) {
                 throw interrupt('fetch', {
-                    url: url,
+                    url: request.options.url,
                     statusCode: response.statusCode,
                     headers: {
-                        sent: request.headers
+                        sent: request.options.headers
                     },
                     cause: error
                 }, {
@@ -220,10 +220,10 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 if (!response.okay) {
                     if (request.raise) {
                         throw interrupt('fetch', {
-                            url: url,
+                            url: request.options.url,
                             statusCode: response.statusCode,
                             headers: {
-                                sent: request.headers,
+                                sent: request.options.headers,
                                 received: response.headers,
                             }
                         }, {
