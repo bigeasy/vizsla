@@ -20,7 +20,7 @@
     {
                         "cadence":              "1.x",
                         "delta":                "1.x",
-                        "interrupt":            "1.x",
+                        "interrupt":            "1.1.2",
                         "prolific":             "2.0.2",
                         "media-typer":          "0.3.0"
     },

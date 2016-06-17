@@ -5,11 +5,11 @@ var assert = require('assert')
 var Delta = require('delta')
 var slice = [].slice
 var logger = require('prolific').createLogger('bigeasy.vizsla')
-var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
 var transport = {
     HTTP: require('./http'),
     Mock: require('./mock')
 }
+var interrupt = require('interrupt/redux').createInterrupter('bigeasy.vizsla')
 
 function UserAgent (middleware) {
     this._tokens = {}
@@ -160,9 +160,19 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 statusCode: response.statusCode,
                 headers: response.headers
             })
-            console.log(error.stack)
             if (request.raise) {
-                throw interrupt(new Error('fetch'), { response: response, parsed: JSON.parse(body.toString()), body: body, cause: error })
+                throw interrupt('fetch', {
+                    url: url,
+                    statusCode: response.statusCode,
+                    headers: {
+                        sent: request.headers
+                    },
+                    cause: error
+                }, {
+                    response: response,
+                    parsed: JSON.parse(body.toString()),
+                    body: body
+                })
             } else if (request.nullify) {
                 return [ async.break, null, response, body ]
             }
@@ -209,7 +219,18 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 }
                 if (!response.okay) {
                     if (request.raise) {
-                        throw interrupt(new Error('fetch'), { response: response, parsed: parsed, body: body })
+                        throw interrupt('fetch', {
+                            url: url,
+                            statusCode: response.statusCode,
+                            headers: {
+                                sent: request.headers,
+                                received: response.headers,
+                            }
+                        }, {
+                            response: response,
+                            parsed: parsed,
+                            body: body
+                        })
                     } else if (request.nullify) {
                         return [ null, response, body ]
                     }
@@ -219,7 +240,6 @@ UserAgent.prototype.fetch = cadence(function (async) {
         })
     })
 })
-
 
 UserAgent.prototype.lookupToken = function (location) {
     location = url.parse(location)
