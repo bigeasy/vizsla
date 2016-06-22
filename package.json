@@ -17,16 +17,16 @@
     },
     "dependencies":
     {
-                            "cadence":                      "1.x",
-                            "delta":                        "1.x",
+                            "cadence":                      "1.0.x",
+                            "delta":                        "1.0.x",
                             "interrupt":                    "2.1.x",
                             "prolific.logger":              "0.0.x",
                             "media-typer":                  "0.3.0"
     },
     "devDependencies":
     {
-                            "semblance":                    "1.x",
-                            "proof":                        "1.x"
+                            "semblance":                    "1.0.x",
+                            "proof":                        "1.0.x"
     },
     "main":                 "vizsla",
     "scripts":
