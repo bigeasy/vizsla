@@ -4,7 +4,7 @@ var typer = require('media-typer')
 var assert = require('assert')
 var Delta = require('delta')
 var slice = [].slice
-var logger = require('prolific').createLogger('bigeasy.vizsla')
+var logger = require('prolific.logger').createLogger('bigeasy.vizsla')
 var transport = {
     HTTP: require('./http'),
     Mock: require('./mock')
