@@ -9,7 +9,7 @@ var transport = {
     HTTP: require('./http'),
     Mock: require('./mock')
 }
-var interrupt = require('interrupt/redux').createInterrupter('bigeasy.vizsla')
+var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
 
 function UserAgent (middleware) {
     this._tokens = {}
@@ -161,17 +161,21 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 headers: response.headers
             })
             if (request.raise) {
-                throw interrupt('fetch', {
-                    url: request.options.url,
-                    statusCode: response.statusCode,
-                    headers: {
-                        sent: request.options.headers
+                throw interrupt({
+                    name: 'fetch',
+                    cause: error,
+                    context: {
+                        statusCode: response.statusCode,
+                        url: request.options.url,
+                        headers: {
+                            sent: request.options.headers
+                        },
                     },
-                    cause: error
-                }, {
-                    response: response,
-                    parsed: JSON.parse(body.toString()),
-                    body: body
+                    properties: {
+                        response: response,
+                        parsed: JSON.parse(body.toString()),
+                        body: body
+                    }
                 })
             } else if (request.nullify) {
                 return [ async.break, null, response, body ]
@@ -219,17 +223,21 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 }
                 if (!response.okay) {
                     if (request.raise) {
-                        throw interrupt('fetch', {
-                            url: request.options.url,
-                            statusCode: response.statusCode,
-                            headers: {
-                                sent: request.options.headers,
-                                received: response.headers,
+                        throw interrupt({
+                            name: 'fetch',
+                            context: {
+                                url: request.options.url,
+                                statusCode: response.statusCode,
+                                headers: {
+                                    sent: request.options.headers,
+                                    received: response.headers,
+                                }
+                            },
+                            properties: {
+                                response: response,
+                                parsed: parsed,
+                                body: body
                             }
-                        }, {
-                            response: response,
-                            parsed: parsed,
-                            body: body
                         })
                     } else if (request.nullify) {
                         return [ null, response, body ]

@@ -19,7 +19,7 @@
     {
                             "cadence":                      "1.x",
                             "delta":                        "1.x",
-                            "interrupt":                    "1.1.2",
+                            "interrupt":                    "2.1.x",
                             "prolific.logger":              "0.0.x",
                             "media-typer":                  "0.3.0"
     },
