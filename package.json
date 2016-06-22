@@ -1,37 +1,36 @@
 {
-    "name":             "vizsla",
-    "version":          "1.5.3",
-    "description":      "An error-first callback friendly user agent.",
+    "name":                 "vizsla",
+    "version":              "1.5.3",
+    "description":          "An error-first callback friendly user agent.",
     "keywords":
     [
-                        "http", "https", "rest", "json", "curl"
+                            "http", "https", "rest", "json", "curl"
     ],
-    "author":           "Alan Gutierrez <alan@prettyrobots.com>",
-    "contributors":     [],
-    "homepage":         "https://github.com/bigeasy/vizsla",
-    "bugs":             "https://github.com/bigeasy/vizsla/issues",
-    "license":          "MIT",
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "homepage":             "https://github.com/bigeasy/vizsla",
+    "bugs":                 "https://github.com/bigeasy/vizsla/issues",
+    "license":              "MIT",
     "repository":
     {
-                        "type": "git",
-                        "url": "http://github.com/bigeasy/vizsla.git"
+                            "type": "git",
+                            "url": "http://github.com/bigeasy/vizsla.git"
     },
     "dependencies":
     {
-                        "cadence":              "1.x",
-                        "delta":                "1.x",
-                        "interrupt":            "1.1.2",
-                        "prolific.logger":      "0.0.x",
-                        "media-typer":          "0.3.0"
+                            "cadence":                      "1.x",
+                            "delta":                        "1.x",
+                            "interrupt":                    "1.1.2",
+                            "prolific.logger":              "0.0.x",
+                            "media-typer":                  "0.3.0"
     },
     "devDependencies":
     {
-                        "semblance":            "1.x",
-                        "proof":                "1.x"
+                            "semblance":                    "1.x",
+                            "proof":                        "1.x"
     },
-    "main":             "vizsla",
+    "main":                 "vizsla",
     "scripts":
     {
-                        "test": "proof platform win32 && proof test */*/*.t.js || t/test"
+                            "test": "proof platform win32 && proof test */*/*.t.js || t/test"
     }
 }
