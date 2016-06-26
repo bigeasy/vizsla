@@ -81,6 +81,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
         request.token = this._tokens[request.key]
     }
     var sent = {
+        url: request.url,
         options: request.options,
         body: request.payload,
         when: Date.now(),
@@ -126,125 +127,99 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 options[key] = request.options[key]
             }
         }
-        logger.debug('request', {
-            url: request.url,
-            options: options,
-            sent: request.payload
-        })
         if (request.payload && !Buffer.isBuffer(request.payload)) {
             request.payload = new Buffer(JSON.stringify(request.payload))
         }
         if (request.payload) {
             request.options.headers['content-length'] = request.payload.length
         }
-        async([function () {
-            this._transport.send(request, async())
-        }, function (error) {
-            sent.duration = Date.now() - sent.when
-            var body = new Buffer(JSON.stringify({ message: error.message, errno: error.code }))
-            var response = {
-                statusCode: 599,
-                errno: error.code,
-                okay: false,
-                sent: sent,
-                headers: {
-                    'content-length': body.length,
-                    'content-type': 'application/json'
-                }
-            }
-            logger.debug('response', {
-                status: 'exceptional',
-                options: request.options,
-                sent: request.payload,
-                received: JSON.parse(body.toString()),
-                statusCode: response.statusCode,
-                headers: response.headers
-            })
-            if (request.raise) {
-                throw interrupt({
-                    name: 'fetch',
+        async(function () {
+            async([function () {
+                logger.trace('request', sent)
+                this._transport.send(request, async())
+            }, function (error) {
+                var body = new Buffer(JSON.stringify({ message: error.message, errno: error.code }))
+                var response = {
+                    statusCode: 599,
+                    duration: Date.now() - sent.when,
+                    errno: error.code,
+                    okay: false,
+                    sent: sent,
                     cause: error,
-                    context: {
-                        statusCode: response.statusCode,
-                        url: request.options.url,
-                        headers: {
-                            sent: request.options.headers
-                        },
-                    },
-                    properties: {
-                        response: response,
-                        parsed: JSON.parse(body.toString()),
-                        body: body
+                    headers: {
+                        'content-length': body.length,
+                        'content-type': 'application/json'
                     }
-                })
-            } else if (request.nullify) {
-                return [ async.break, null, response, body ]
-            }
-            return [ async.break, JSON.parse(body.toString()), response, body ]
-        }], function (response) {
-            var chunks = []
-            async(function () {
-                new Delta(async()).ee(response)
-                     .on('data', function (chunk) { chunks.push(chunk) })
-                     .on('end')
-            }, function () {
-                sent.duration = Date.now() - sent.when
-                response.sent = sent
-                var parsed = null
-                var body = Buffer.concat(chunks)
-                var parsed = body
-                var display = null
-                var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')
-                switch (type.type + '/' + type.subtype) {
-                case 'application/json':
-                    try {
-                        display = parsed = JSON.parse(body.toString())
-                    } catch (e) {
+                }
+                return [ async.break, JSON.parse(body.toString()), response, body ]
+            }], function (response) {
+                var chunks = []
+                async(function () {
+                    new Delta(async()).ee(response)
+                         .on('data', function (chunk) { chunks.push(chunk) })
+                         .on('end')
+                }, function () {
+                    response.duration = Date.now() - sent.when
+                    response.sent = sent
+                    var parsed = null
+                    var body = Buffer.concat(chunks)
+                    var parsed = body
+                    var display = null
+                    var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')
+                    switch (type.type + '/' + type.subtype) {
+                    case 'application/json':
+                        try {
+                            display = parsed = JSON.parse(body.toString())
+                        } catch (e) {
+                            display = body.toString()
+                        }
+                        break
+                    case 'text/html':
+                    case 'text/plain':
                         display = body.toString()
+                        break
                     }
-                    break
-                case 'text/html':
-                case 'text/plain':
-                    display = body.toString()
-                    break
-                }
-                response.okay = Math.floor(response.statusCode / 100) == 2
-                logger.debug('response', {
-                    status: 'responded',
-                    options: request.options,
-                    sent: request.payload,
-                    received: display,
-                    parsed: parsed,
-                    statusCode: response.statusCode,
-                    headers: response.headers
+                    if (request.grant == 'cc' && response.statusCode == 401) {
+                        delete this._tokens[request.key]
+                    }
+                    return [ parsed, response, body ]
                 })
-                if (request.grant == 'cc' && response.statusCode == 401) {
-                    delete this._tokens[request.key]
-                }
-                if (!response.okay) {
-                    if (request.raise) {
-                        throw interrupt({
-                            name: 'fetch',
-                            context: {
-                                url: request.options.url,
-                                statusCode: response.statusCode,
-                                headers: {
-                                    sent: request.options.headers,
-                                    received: response.headers,
-                                }
-                            },
-                            properties: {
-                                response: response,
-                                parsed: parsed,
-                                body: body
-                            }
-                        })
-                    } else if (request.nullify) {
-                        return [ null, response, body ]
-                    }
-                }
-                return [ parsed, response, body ]
             })
+        }, function (body, response, buffer) {
+            logger.trace('response', {
+                sent: sent,
+                received: {
+                    duration: response.duration,
+                    statusCode: response.statusCode,
+                    headers: response.headers,
+                    body: body
+                }
+            })
+            response.okay = Math.floor(response.statusCode / 100) == 2
+            if (!response.okay) {
+                if (request.raise) {
+                    throw interrupt({
+                        name: 'fetch',
+                        cause: response.cause || null,
+                        context: {
+                            statusCode: response.statusCode,
+                            url: request.options.url,
+                            headers: {
+                                sent: request.options.headers,
+                                received: response.headers
+                            }
+                        },
+                        properties: {
+                            response: response,
+                            body: body,
+                            buffer: buffer
+                        }
+                    })
+                } else if (request.nullify) {
+                    return [ async.break, null, response, body ]
+                }
+            }
+            return [ body, response, buffer ]
         })
     })
 })

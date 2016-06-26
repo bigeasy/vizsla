@@ -1,4 +1,4 @@
-require('proof')(48, require('cadence')(prove))
+require('proof')(49, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -266,7 +266,8 @@ function prove (async, assert) {
         ua.fetch({ url: 'http://127.0.0.1:7779', raise: true }, async())
     }, function (error) {
         assert(error.response.statusCode, 404, 'raise HTTP error status')
-        assert(error.parsed, {}, 'raise HTTP error parsed body')
+        assert(error.body, {}, 'raise HTTP error parsed body')
+        assert(error.buffer.toString(), '{}\n', 'raise HTTP error raw body')
     }], function () {
         pseudo.push({
             statusCode: 404,
