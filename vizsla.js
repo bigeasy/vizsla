@@ -116,16 +116,8 @@ UserAgent.prototype.fetch = cadence(function (async) {
         }
     }, function (body, response) {
         if (Math.floor(response.statusCode / 100) != 2) return
-        var http, options = {}
         if (request.token) {
             request.options.headers.authorization = 'Bearer ' + request.token
-        }
-        for (var key in request.options) {
-            if (key == 'ca' || key == 'agent') {
-                options[key] = true
-            } else {
-                options[key] = request.options[key]
-            }
         }
         if (request.payload && !Buffer.isBuffer(request.payload)) {
             request.payload = new Buffer(JSON.stringify(request.payload))
