@@ -1,3 +1,5 @@
+var byline = require('byline')
+var JsonStream = require('./jsons')
 var cadence = require('cadence')
 var url = require('url')
 var typer = require('media-typer')
@@ -136,32 +138,43 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 return [ async.break, JSON.parse(body.toString()), response, body ]
             }], function (response) {
                 var chunks = []
+                var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')
+                var fullType = type.type + '/' + type.subtype
                 async(function () {
-                    new Delta(async()).ee(response)
-                         .on('data', function (chunk) { chunks.push(chunk) })
-                         .on('end')
-                }, function () {
+// TODO Do not gather octet stream.
+                var varp = fullType == 'application/json-stream'
+                    if (fullType == 'application/json-stream') {
+                        return [ response.pipe(byline()).pipe(new JsonStream()) ]
+                    }
+                    async(function () {
+                        new Delta(async())
+                            .ee(response)
+                                .on('data', [])
+                                .on('end')
+                    }, function (chunks) {
+                        return [ Buffer.concat(chunks) ]
+                    })
+                }, function (payload) {
                     response.duration = Date.now() - sent.when
                     response.sent = sent
-                    var parsed = null
-                    var body = Buffer.concat(chunks)
-                    var parsed = body
-                    var display = null
-                    var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')
+                    var display = payload
                     switch (type.type + '/' + type.subtype) {
+                    case 'application/json-stream':
+                        return [ payload, response ]
+                        break
                     case 'application/json':
                         try {
-                            display = parsed = JSON.parse(body.toString())
+                            display = JSON.parse(payload.toString())
                         } catch (e) {
-                            display = body.toString()
+                            display = payload.toString()
                         }
                         break
                     case 'text/html':
                     case 'text/plain':
-                        display = body.toString()
+                        display = payload.toString()
                         break
                     }
-                    return [ parsed, response, body ]
+                    return [ display, response, payload ]
                 })
             })
         }, function (body, response) {
@@ -176,16 +189,21 @@ UserAgent.prototype.fetch = cadence(function (async) {
             })
         })
     }, function (body, response, buffer) {
+        var vargs = slice.call(arguments)
         response.okay = Math.floor(response.statusCode / 100) == 2
         async(function () {
             var loop = async.forEach(function (plugin) {
-                plugin.before(this, request, async())
+                plugin.after(this, request, response, async())
             }, function (outcome) {
-                if (outcome) {
+                if (outcome != null) {
                     return [ loop.break, outcome ]
                 }
             })(request.plugins)
-        }, function () {
+        }, function (outcome) {
+            if (outcome != null) {
+// TODO Outcome is an array to return.
+                return [ outcome.body, outcome.response, outcome.buffer ]
+            }
             if (!response.okay) {
                 if (request.raise) {
                     throw interrupt({
@@ -202,14 +220,14 @@ UserAgent.prototype.fetch = cadence(function (async) {
                         properties: {
                             response: response,
                             body: body,
-                            buffer: buffer
+                            buffer: buffer || null
                         }
                     })
                 } else if (request.nullify) {
-                    return [ async.break, null, response, body ]
+                    return [ async.break, null, null, null ]
                 }
             }
-            return [ body, response, buffer ]
+            return vargs
         })
     })
 })

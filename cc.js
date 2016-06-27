@@ -41,10 +41,11 @@ ClientCredentials.prototype.before = cadence(function (async, ua, request) {
     })
 })
 
-ClientCredentials.prototype.after = cadence(function (async, request, response) {
+ClientCredentials.prototype.after = cadence(function (async, ua, request, response) {
     if (response.statusCode == 401) {
         delete ua.storage.cc[request.key]
     }
+    return [ null ]
 })
 
 module.exports = ClientCredentials

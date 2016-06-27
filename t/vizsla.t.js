@@ -1,4 +1,4 @@
-require('proof')(49, require('cadence')(prove))
+require('proof')(50, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -7,13 +7,14 @@ function prove (async, assert) {
         path = require('path'),
         fs = require('fs'),
         exec = require('child_process').exec,
+        Delta = require('delta'),
         pems
 
     var pseudo = new Semblance,
         ua = new UserAgent,
         binder
 
-    var server = http.createServer(pseudo.dispatch()), request
+    var server = http.createServer(pseudo.dispatch()), request, tls
     async(function () {
         exec('make -C t/fixtures/certs', async())
     }, function () {
@@ -32,7 +33,9 @@ function prove (async, assert) {
         })
     }, function () {
         server.listen(7779, '127.0.0.1', async())
-    }, function () {
+    }, [function () {
+        server.close(async())
+    }], function () {
         ua.fetch({
             url: 'http://127.0.0.1:9999/here'
         }, async())
@@ -370,15 +373,42 @@ function prove (async, assert) {
         }, async())
     }, function (body, response) {
         assert(response.statusCode, 401, 'cleared authentication')
-        server.close(async())
+        pseudo.push({
+            statusCode: 200,
+            headers: {
+                'content-type': 'application/json-stream'
+            },
+            payload: '1\n2\n3\n'
+        })
+        ua.fetch({ url: 'http://127.0.0.1:7779' }, async())
+    }, function (stream, response) {
+        var values = []
+        async(function () {
+            var loop = async(function () {
+                new Delta(async()).ee(stream).on('readable')
+            }, function () {
+                var value, count = 0
+                while ((value = stream.read()) != null) {
+                    count++
+                    values.push(value)
+                }
+                if (count == 0) {
+                    return [ loop.break ]
+                }
+            })()
+        }, function () {
+            assert(values, [ 1, 2, 3 ], 'values')
+        })
     }, function () {
 // SSL!
         binder = [
-            { url: 'https://127.0.0.1:7779' }, pems
+            { url: 'https://127.0.0.1:7778' }, pems
         ]
-        server = require('https').createServer(pems, pseudo.dispatch())
-        server.listen(7779, '127.0.0.1', async())
-    }, function () {
+        tls = require('https').createServer(pems, pseudo.dispatch())
+        tls.listen(7778, '127.0.0.1', async())
+    }, [function () {
+        tls.close(async())
+    }], function () {
         ua.fetch(binder, async())
     }, function (body, response) {
         assert(response.statusCode, 200, 'https code')
@@ -411,6 +441,5 @@ function prove (async, assert) {
         ua.fetch(binder, pems, { agent: false }, async())
     }, function (body, response) {
         assert(response.statusCode, 200, 'TLS client authentication succeeded')
-        server.close(async())
     })
 }
