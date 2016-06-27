@@ -4,6 +4,9 @@ cadence(function () {
         post: input = new stream.PassThrough
         response: 'application/jsonstream'
     }, async())
+    ua.fetch({
+        plugin: cc
+    }, async())
 }, function (response) {
     var staccato = new Staccato(response)
     var loop = async(function () {

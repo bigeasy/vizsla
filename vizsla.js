@@ -5,14 +5,15 @@ var assert = require('assert')
 var Delta = require('delta')
 var slice = [].slice
 var logger = require('prolific.logger').createLogger('bigeasy.vizsla')
+var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
 var transport = {
     HTTP: require('./http'),
     Mock: require('./mock')
 }
-var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
+var ClientCredentials = require('./cc')
 
 function UserAgent (middleware) {
-    this._tokens = {}
+    this.storage = {}
     this._transport = middleware ? new transport.Mock(middleware) : new transport.HTTP
 }
 
@@ -37,7 +38,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     for (var header in object.headers) {
                         request.options.headers[header.toLowerCase()] = object.headers[header]
                     }
-                } else if (/^(?:context|body|payload|grant|token|timeout|post|put|raise|nullify)$/.test(key)) {
+                } else if (/^(?:context|body|payload|grant|token|timeout|post|put|raise|nullify|plugins)$/.test(key)) {
                     request[key] = object[key]
                 } else {
                     request.options[key] = object[key]
@@ -47,6 +48,14 @@ UserAgent.prototype.fetch = cadence(function (async) {
     }
 
     slice.call(arguments, 1).forEach(override)
+
+    if (request.plugins == null) {
+        request.plugins = []
+    }
+    if (request.grant == 'cc') {
+        request.plugins.push(new ClientCredentials(this))
+    }
+
     if (request.put) {
         request.payload = request.put
         request.options.method = 'PUT'
@@ -77,9 +86,6 @@ UserAgent.prototype.fetch = cadence(function (async) {
 
     request.key = request.url.hostname + ':' + request.url.port
 
-    if (request.grant == 'cc') {
-        request.token = this._tokens[request.key]
-    }
     var sent = {
         url: request.url,
         options: request.options,
@@ -87,45 +93,29 @@ UserAgent.prototype.fetch = cadence(function (async) {
         when: Date.now(),
         duration: null
     }
-
     async(function () {
-        if (request.grant == 'cc' && !request.token) {
-            assert.ok(request.baseUrl.auth)
-            async(function () {
-                this.fetch({
-                    url: url.format(request.url),
-                    ca: request.options.ca,
-                    rejectUnauthorized: request.options.rejectUnauthorized,
-                    timeout: request.timeout
-                }, {
-                    url: '/token',
-                    headers: {
-                        authorization: 'Basic ' + new Buffer(request.baseUrl.auth).toString('base64')
-                    },
-                    payload: {
-                        grant_type: 'client_credentials'
-                    }
-                }, async())
-            }, function (body, response) {
-                if (body.token_type == 'Bearer' && body.access_token) {
-                    request.token = this._tokens[request.key] = body.access_token
-                }
-            })
-        } else {
-            return [ null, { statusCode: 200 } ]
-        }
-    }, function (body, response) {
-        if (Math.floor(response.statusCode / 100) != 2) return
-        if (request.token) {
-            request.options.headers.authorization = 'Bearer ' + request.token
-        }
-        if (request.payload && !Buffer.isBuffer(request.payload)) {
-            request.payload = new Buffer(JSON.stringify(request.payload))
-        }
-        if (request.payload) {
-            request.options.headers['content-length'] = request.payload.length
+        var loop = async.forEach(function (plugin) {
+            plugin.before(this, request, async())
+        }, function (outcome) {
+            if (outcome != null) {
+                return [ loop.break, outcome ]
+            }
+        })(request.plugins)
+    }, function (outcome) {
+        if (outcome != null) {
+            return [ outcome.body, outcome.response, outcome.buffer ]
         }
         async(function () {
+// TODO Indent much.
+            if (request.token) {
+                request.options.headers.authorization = 'Bearer ' + request.token
+            }
+            if (request.payload && !Buffer.isBuffer(request.payload)) {
+                request.payload = new Buffer(JSON.stringify(request.payload))
+            }
+            if (request.payload) {
+                request.options.headers['content-length'] = request.payload.length
+            }
             async([function () {
                 logger.trace('request', sent)
                 this._transport.send(request, async())
@@ -171,13 +161,10 @@ UserAgent.prototype.fetch = cadence(function (async) {
                         display = body.toString()
                         break
                     }
-                    if (request.grant == 'cc' && response.statusCode == 401) {
-                        delete this._tokens[request.key]
-                    }
                     return [ parsed, response, body ]
                 })
             })
-        }, function (body, response, buffer) {
+        }, function (body, response) {
             logger.trace('response', {
                 sent: sent,
                 received: {
@@ -187,7 +174,18 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     body: body
                 }
             })
-            response.okay = Math.floor(response.statusCode / 100) == 2
+        })
+    }, function (body, response, buffer) {
+        response.okay = Math.floor(response.statusCode / 100) == 2
+        async(function () {
+            var loop = async.forEach(function (plugin) {
+                plugin.before(this, request, async())
+            }, function (outcome) {
+                if (outcome) {
+                    return [ loop.break, outcome ]
+                }
+            })(request.plugins)
+        }, function () {
             if (!response.okay) {
                 if (request.raise) {
                     throw interrupt({
@@ -215,10 +213,5 @@ UserAgent.prototype.fetch = cadence(function (async) {
         })
     })
 })
-
-UserAgent.prototype.lookupToken = function (location) {
-    location = url.parse(location)
-    return this._tokens[location.hostname + ':' + location.port]
-}
 
 module.exports = UserAgent
