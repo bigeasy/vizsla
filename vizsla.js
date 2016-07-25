@@ -161,7 +161,6 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     switch (type.type + '/' + type.subtype) {
                     case 'application/json-stream':
                         return [ payload, response ]
-                        break
                     case 'application/json':
                         try {
                             display = JSON.parse(payload.toString())
