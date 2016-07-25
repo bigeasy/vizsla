@@ -1,5 +1,5 @@
 var cadence = require('cadence')
-var Delta = require('delta')
+var delta = require('delta')
 
 function Transport () {
 }
@@ -12,7 +12,7 @@ Transport.prototype.send = cadence(function (async, request) {
         http = require('http')
     }
     var client = http.request(request.options)
-    new Delta(async()).ee(client).on('response')
+    delta(async()).ee(client).on('response')
     if (request.payload) {
         client.write(request.payload)
     }

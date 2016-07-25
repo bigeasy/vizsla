@@ -4,7 +4,7 @@ var cadence = require('cadence')
 var url = require('url')
 var typer = require('media-typer')
 var assert = require('assert')
-var Delta = require('delta')
+var delta = require('delta')
 var slice = [].slice
 var logger = require('prolific.logger').createLogger('bigeasy.vizsla')
 var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
@@ -147,7 +147,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                         return [ response.pipe(byline()).pipe(new JsonStream()) ]
                     }
                     async(function () {
-                        new Delta(async())
+                        delta(async())
                             .ee(response)
                                 .on('data', [])
                                 .on('end')

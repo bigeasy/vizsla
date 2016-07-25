@@ -2,7 +2,7 @@ var cadence = require('cadence')
 var slice = [].slice
 var stream = require('stream')
 var util = require('util')
-var Delta = require('delta')
+var delta = require('delta')
 
 function Request (request) {
     this.headers = request.options.headers
@@ -47,7 +47,7 @@ function Transport (dispatch) {
 Transport.prototype.send = cadence(function (async, request) {
     var response = new Response
     async([function () {
-        new Delta(async()).ee(response).on('finish')
+        delta(async()).ee(response).on('finish')
         this._dispatch.call(null, new Request(request), response, function () {
             response.writeHead(404)
             response.end('')

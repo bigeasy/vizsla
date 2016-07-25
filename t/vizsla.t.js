@@ -7,7 +7,7 @@ function prove (async, assert) {
         path = require('path'),
         fs = require('fs'),
         exec = require('child_process').exec,
-        Delta = require('delta'),
+        delta = require('delta'),
         pems
 
     var pseudo = new Semblance,
@@ -385,7 +385,7 @@ function prove (async, assert) {
         var values = []
         async(function () {
             var loop = async(function () {
-                new Delta(async()).ee(stream).on('readable')
+                delta(async()).ee(stream).on('readable')
             }, function () {
                 var value, count = 0
                 while ((value = stream.read()) != null) {
