@@ -27,7 +27,7 @@
     "devDependencies":
     {
                             "semblance":                    "1.0.x",
-                            "proof":                        "1.0.x"
+                            "proof":                        "1.1.x"
     },
     "main":                 "vizsla",
     "scripts":
