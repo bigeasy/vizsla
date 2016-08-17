@@ -5,8 +5,8 @@ var url = require('url')
 var typer = require('media-typer')
 var assert = require('assert')
 var delta = require('delta')
+var noop = require('nop')
 var slice = [].slice
-var logger = require('prolific.logger').createLogger('bigeasy.vizsla')
 var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
 var transport = {
     HTTP: require('./http'),
@@ -40,7 +40,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     for (var header in object.headers) {
                         request.options.headers[header.toLowerCase()] = object.headers[header]
                     }
-                } else if (/^(?:context|body|payload|grant|token|timeout|post|put|raise|nullify|plugins)$/.test(key)) {
+                } else if (/^(?:context|body|payload|grant|token|timeout|post|put|raise|nullify|plugins|log)$/.test(key)) {
                     request[key] = object[key]
                 } else {
                     request.options[key] = object[key]
@@ -88,6 +88,8 @@ UserAgent.prototype.fetch = cadence(function (async) {
 
     request.key = request.url.hostname + ':' + request.url.port
 
+    var log = request.log || noop
+
     var sent = {
         url: request.url,
         options: request.options,
@@ -119,7 +121,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 request.options.headers['content-length'] = request.payload.length
             }
             async([function () {
-                logger.trace('request', sent)
+                log('request', sent)
                 this._transport.send(request, async())
             }, function (error) {
                 var body = new Buffer(JSON.stringify({ message: error.message, errno: error.code }))
@@ -177,7 +179,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 })
             })
         }, function (body, response) {
-            logger.trace('response', {
+            log('response', {
                 sent: sent,
                 received: {
                     duration: response.duration,

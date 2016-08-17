@@ -1,4 +1,4 @@
-require('proof/redux')(50, require('cadence')(prove))
+require('proof/redux')(52, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -26,6 +26,7 @@ function prove (async, assert) {
         var ua = new UserAgent(false)
         async(function () {
             ua.fetch({
+                log: function (type) { assert(true, 'called ' + type) },
                 url: 'http://127.0.0.1:9999/here',
             }, async())
         }, function (body, response) {
