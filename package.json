@@ -17,7 +17,7 @@
     },
     "dependencies":
     {
-                            "byline":                       "4.2.1",
+                            "byline":                       "5.0.0",
                             "cadence":                      "1.0.x",
                             "delta":                        "1.1.x",
                             "interrupt":                    "2.1.x",
