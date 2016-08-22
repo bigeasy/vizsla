@@ -12,6 +12,20 @@ Transport.prototype.send = cadence(function (async, request) {
         http = require('http')
     }
     var client = http.request(request.options)
+    client.once('error', listener('request'))
+    client.once('socket', function (socket) {
+        socket.on('error', listener('socket'))
+    })
+    function listener (direction) {
+        return function (error) {
+            // What do to about? http://stackoverflow.com/a/16995223/90123
+            console.error(direction + ' error', {
+                url: request.options.url,
+                headers: request.options.headers,
+            })
+            console.log(error.stack)
+        }
+    }
     async(function () {
         delta(async()).ee(client).on('response')
         if (request.payload) {
@@ -24,14 +38,7 @@ Transport.prototype.send = cadence(function (async, request) {
         }
         client.end()
     }, function (response) {
-        client.once('error', function (stack) {
-            // What do to about? http://stackoverflow.com/a/16995223/90123
-            console.error('request swallowed error', {
-                url: request.url,
-                headers: request.headers,
-                stack: error.stack
-            })
-        })
+        response.once('error', listener('response'))
         return [ response ]
     })
 })
