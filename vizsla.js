@@ -138,7 +138,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     }
                 }
                 return [ async.break, JSON.parse(body.toString()), response, body ]
-            }], function (response) {
+            }], function (response, request) {
                 var chunks = []
                 var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')
                 var fullType = type.type + '/' + type.subtype
@@ -150,6 +150,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     }
                     async(function () {
                         delta(async())
+                            .ee(request)
                             .ee(response)
                                 .on('data', [])
                                 .on('end')

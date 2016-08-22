@@ -3,6 +3,7 @@ var slice = [].slice
 var stream = require('stream')
 var util = require('util')
 var delta = require('delta')
+var events = require('events')
 
 function Request (request) {
     this.headers = request.options.headers
@@ -55,7 +56,7 @@ Transport.prototype.send = cadence(function (async, request) {
     }, function (error) {
         throw error
     }], function () {
-        return [ response ]
+        return [ response, new events.EventEmitter ]
     })
 })
 

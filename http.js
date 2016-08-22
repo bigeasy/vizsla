@@ -13,9 +13,6 @@ Transport.prototype.send = cadence(function (async, request) {
     }
     var client = http.request(request.options)
     client.once('error', listener('request'))
-    client.once('socket', function (socket) {
-        socket.on('error', listener('socket'))
-    })
     function listener (direction) {
         return function (error) {
             // What do to about? http://stackoverflow.com/a/16995223/90123
@@ -39,7 +36,7 @@ Transport.prototype.send = cadence(function (async, request) {
         client.end()
     }, function (response) {
         response.once('error', listener('response'))
-        return [ response ]
+        return [ response, client ]
     })
 })
 
