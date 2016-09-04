@@ -1,7 +1,10 @@
 {
     "name":                 "vizsla",
     "version":              "2.0.3",
-    "description":          "An error-first callback friendly user agent.",
+    "description":
+
+      "An error-first callback friendly user agent.",
+
     "keywords":
     [
                             "http", "https", "rest", "json", "curl"
@@ -21,13 +24,13 @@
                             "cadence":                      "1.0.x",
                             "delta":                        "1.1.x",
                             "interrupt":                    "2.1.x",
-                            "nop":                          "1.0.0",
-                            "media-typer":                  "0.3.0"
+                            "media-typer":                  "0.3.0",
+                            "nop":                          "1.0.0"
     },
     "devDependencies":
     {
-                            "semblance":                    "1.0.x",
-                            "proof":                        "1.1.x"
+                            "proof":                        "1.1.x",
+                            "semblance":                    "1.0.x"
     },
     "main":                 "vizsla",
     "scripts":
