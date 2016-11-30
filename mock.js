@@ -49,7 +49,8 @@ Transport.prototype.send = cadence(function (async, request) {
     var response = new Response
     async([function () {
         delta(async()).ee(response).on('finish')
-        this._dispatch.call(null, new Request(request), response, function () {
+        this._dispatch.call(null, new Request(request), response, function (error) {
+            if (error) throw error
             response.writeHead(404)
             response.end('')
         })
