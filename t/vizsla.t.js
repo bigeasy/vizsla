@@ -1,4 +1,4 @@
-require('proof/redux')(52, require('cadence')(prove))
+require('proof/redux')(53, require('cadence')(prove))
 
 function prove (async, assert) {
     var Semblance = require('semblance'),
@@ -108,6 +108,24 @@ function prove (async, assert) {
             url: '/there?1',
             body: {}
         }, 'get')
+        pseudo.clear()
+        ua.bind({
+            url: 'http://127.0.0.1:7779/here'
+        }).fetch({
+            method: 'GET',
+            url: '/there?1'
+        }, async())
+    }, function () {
+        assert(pseudo.shift(), {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                host: '127.0.0.1:7779',
+                connection: 'close'
+            },
+            url: '/there?1',
+            body: {}
+        }, 'bind')
         pseudo.clear()
         ua.fetch([{
             url: 'http://127.0.0.1:7779/here'

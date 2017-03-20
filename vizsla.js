@@ -15,8 +15,17 @@ var transport = {
 var ClientCredentials = require('./cc')
 
 function UserAgent (middleware) {
+    this._bind = []
     this.storage = {}
     this._transport = middleware ? new transport.Mock(middleware) : new transport.HTTP
+}
+
+UserAgent.prototype.bind = function () {
+    var ua = new UserAgent
+    ua._transport = this._transport
+    ua._bind = this._bind.concat(Array.prototype.slice.call(arguments))
+    ua.storage = this.storage
+    return ua
 }
 
 UserAgent.prototype.fetch = cadence(function (async) {
@@ -49,7 +58,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
         }
     }
 
-    slice.call(arguments, 1).forEach(override)
+    this._bind.concat(slice.call(arguments, 1)).forEach(override)
 
     if (request.plugins == null) {
         request.plugins = []
