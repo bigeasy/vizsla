@@ -12,6 +12,6 @@ JsonStream.prototype._transform = cadence(function (async, chunk, encoding) {
     return []
 })
 
-JsonStream.prototype._flush = cadence(function () { return [] })
+JsonStream.prototype._flush = cadence(function () { console.log('done'); return [] })
 
 module.exports = JsonStream

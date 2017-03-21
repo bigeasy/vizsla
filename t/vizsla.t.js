@@ -1,6 +1,7 @@
 require('proof/redux')(53, require('cadence')(prove))
 
 function prove (async, assert) {
+    var connection = /^v0\.10\./.test(process.version) ? 'keep-alive' : 'close'
     var Semblance = require('semblance'),
         UserAgent = require('..'),
         http = require('http'),
@@ -103,7 +104,7 @@ function prove (async, assert) {
             headers: {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
-                connection: 'close'
+                connection: connection
             },
             url: '/there?1',
             body: {}
@@ -121,7 +122,7 @@ function prove (async, assert) {
             headers: {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
-                connection: 'close'
+                connection: connection
             },
             url: '/there?1',
             body: {}
@@ -139,7 +140,7 @@ function prove (async, assert) {
             headers: {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
-                connection: 'close'
+                connection: connection
             },
             url: '/there?1',
             body: {}
@@ -174,7 +175,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
-                connection: 'close'
+                connection: connection
             },
             url: '/there',
             body: { a: 1 }
@@ -199,7 +200,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
-                connection: 'close'
+                connection: connection
             },
             url: '/there',
             body: { a: 1 }
@@ -224,7 +225,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
-                connection: 'close'
+                connection: connection
             },
             url: '/there',
             body: { a: 1 }
@@ -249,7 +250,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
-                connection: 'close'
+                connection: connection
             },
             url: '/there',
             body: { a: 1 }
@@ -366,7 +367,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 'content-length': '35',
                 host: '127.0.0.1:7779',
-                connection: 'close'
+                connection: connection
             },
             url: '/token',
             body: { grant_type: 'client_credentials' }
@@ -377,7 +378,7 @@ function prove (async, assert) {
                 accept: 'application/json',
                 authorization: 'Bearer x',
                 host: '127.0.0.1:7779',
-                connection: 'close'
+                connection: connection
             },
             url: '/there',
             body: {}
@@ -403,14 +404,21 @@ function prove (async, assert) {
     }, function (stream, response) {
         var values = []
         async(function () {
+            var wait = null
+            // 'readable' does not emit on 'end' in 0.10.
+            // TODO Need a delta OR.
+            stream.on('end', function () {  if (wait != null) wait.cancel() })
             var loop = async(function () {
-                delta(async()).ee(stream).on('readable')
+                wait = delta(async()).ee(stream).on('readable')
             }, function () {
+                wait = null
                 var value, count = 0
                 while ((value = stream.read()) != null) {
+                    console.log(value)
                     count++
                     values.push(value)
                 }
+        console.log('here', count, value)
                 if (count == 0) {
                     return [ loop.break ]
                 }
