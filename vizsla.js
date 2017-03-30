@@ -2,6 +2,7 @@ var byline = require('byline')
 var JsonStream = require('./jsons')
 var cadence = require('cadence')
 var url = require('url')
+var coalesce = require('extant')
 var typer = require('media-typer')
 var assert = require('assert')
 var delta = require('delta')
@@ -37,8 +38,13 @@ UserAgent.prototype.fetch = cadence(function (async) {
         if (Array.isArray(object)) {
             object.forEach(override)
         } else {
+            if (object.socketPath) {
+                override({ url: 'http://' + encodeURIComponent(object.socketPath) + '@unix' })
+            }
             for (var key in object) {
-                if (key == 'url') {
+                if (key == 'socketPath') {
+                    continue
+                } else if (key == 'url') {
                     if (request.options.url) {
                         request.options.url = url.resolve(request.options.url, object.url)
                     } else {
@@ -85,7 +91,14 @@ UserAgent.prototype.fetch = cadence(function (async) {
     request.options.headers['accept'] = 'application/json'
     request.url = url.parse(request.options.url)
 
-    if (!request.options.socketPath) {
+    if (request.url.hostname == 'unix') {
+        console.log(request.url)
+        var $ = /^(?:(.*):)?(.*)$/.exec(request.url.auth)
+        console.log($)
+        request.url.auth = coalesce($[1])
+        request.options.socketPath = $[2]
+        console.log(request.url)
+    } else if (!request.options.socketPath) {
         request.options.hostname = request.url.hostname
         request.options.port = request.url.port
     }
