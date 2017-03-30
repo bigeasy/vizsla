@@ -23,6 +23,7 @@
                             "byline":                       "5.0.0",
                             "cadence":                      "1.0.x",
                             "delta":                        "1.2.x",
+                            "extant":                       "1.0.x",
                             "interrupt":                    "2.1.x",
                             "media-typer":                  "0.3.0",
                             "nop":                          "1.0.0"
