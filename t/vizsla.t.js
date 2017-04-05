@@ -1,4 +1,4 @@
-require('proof/redux')(53, require('cadence')(prove))
+require('proof')(53, require('cadence')(prove))
 
 function prove (async, assert) {
     var connection = /^v0\.10\./.test(process.version) ? 'keep-alive' : 'close'
