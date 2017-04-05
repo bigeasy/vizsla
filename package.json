@@ -24,12 +24,14 @@
                             "cadence":                      "1.0.x",
                             "delta":                        "1.2.x",
                             "extant":                       "1.0.x",
+                            "interlocutor":                 "0.2.x",
                             "interrupt":                    "2.1.x",
                             "media-typer":                  "0.3.0",
                             "nop":                          "1.0.0"
     },
     "devDependencies":
     {
+                            "connect":                      "3.6.0",
                             "proof":                        "1.2.x",
                             "semblance":                    "1.0.x"
     },

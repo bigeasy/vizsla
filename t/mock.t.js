@@ -13,15 +13,16 @@ function prove (async, assert) {
             response.end('foo')
         },
         function (response, response, next) {
-            next()
+            response.statusCode = 404
+            response.end('foo')
         },
         function (response, response, next) {
             throw new Error
         }
     ]
-    var ua = new UserAgent(function (request, response, next) {
+    var ua = new UserAgent(require('connect')().use(function (request, response, next) {
         responses.shift()(request, response, next)
-    })
+    }))
     async(function () {
         ua.fetch({ url: '/' }, async())
     }, function (body, response, buffer) {
@@ -34,6 +35,6 @@ function prove (async, assert) {
         assert(response.statusCode, 404, 'not found')
         ua.fetch({ url: '/' }, async())
     }, function (body, response) {
-        assert(response.statusCode, 599, 'huge error')
+        assert(response.statusCode, 500, 'huge error')
     })
 }

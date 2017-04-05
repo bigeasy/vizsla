@@ -1,63 +1,41 @@
 var cadence = require('cadence')
-var slice = [].slice
 var stream = require('stream')
 var util = require('util')
 var delta = require('delta')
 var events = require('events')
+var Interlocutor = require('interlocutor')
 
-function Request (request) {
-    this.headers = request.options.headers
-    this.url = request.options.url
-    this.method = request.options.method
-    stream.PassThrough.call(this)
-    this.end(request.payload)
-}
-util.inherits(Request, stream.PassThrough)
-
-function Response () {
-    this.headers = {}
-    stream.PassThrough.call(this)
-}
-util.inherits(Response, stream.PassThrough)
-
-Response.prototype.setHeader = function (name, value) {
-    this.headers[name] = value
-}
-
-Response.prototype.getHeader = function (name) {
-    return this.headers[name]
-}
-
-Response.prototype.writeHead = function (statusCode) {
-    var vargs = slice.call(arguments, 1)
-    if (typeof vargs[0] == 'string') {
-        vargs.shift()
-    }
-    if (vargs.length) {
-        for (var key in vargs[0]) {
-            this.setHeader(key, vargs[0][key])
-        }
-    }
-    this.statusCode = statusCode
-}
-
-function Transport (dispatch) {
-    this._dispatch = dispatch
+function Transport (middleware) {
+    this._interlocutor = new Interlocutor(middleware)
 }
 
 Transport.prototype.send = cadence(function (async, request) {
-    var response = new Response
-    async([function () {
-        delta(async()).ee(response).on('finish')
-        this._dispatch.call(null, new Request(request), response, function (error) {
-            if (error) throw error
-            response.writeHead(404)
-            response.end('')
-        })
-    }, function (error) {
-        throw error
-    }], function () {
-        return [ response, new events.EventEmitter ]
+    var client = this._interlocutor.request(request.options)
+    client.once('error', listener('request'))
+    function listener (direction) {
+        return function (error) {
+            // What do to about? http://stackoverflow.com/a/16995223/90123
+            console.error(direction + ' error', {
+                url: request.options.url,
+                headers: request.options.headers,
+            })
+            console.log(error.stack)
+        }
+    }
+    async(function () {
+        delta(async()).ee(client).on('response')
+        if (request.payload) {
+            client.write(request.payload)
+        }
+        if (request.timeout) {
+            client.setTimeout(request.timeout, function () {
+                client.abort()
+            })
+        }
+        client.end()
+    }, function (response) {
+        response.once('error', listener('response'))
+        return [ response, client ]
     })
 })
 
