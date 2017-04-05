@@ -25,7 +25,7 @@
                             "delta":                        "1.2.x",
                             "extant":                       "1.0.x",
                             "interlocutor":                 "0.2.x",
-                            "interrupt":                    "2.1.x",
+                            "interrupt":                    "5.0.x",
                             "media-typer":                  "0.3.0",
                             "nop":                          "1.0.0"
     },

@@ -8,7 +8,7 @@ var assert = require('assert')
 var delta = require('delta')
 var noop = require('nop')
 var slice = [].slice
-var interrupt = require('interrupt').createInterrupter('bigeasy.vizsla')
+var interrupt = require('interrupt').createInterrupter('vizsla')
 var transport = {
     HTTP: require('./http'),
     Mock: require('./mock')
@@ -230,21 +230,19 @@ UserAgent.prototype.fetch = cadence(function (async) {
             }
             if (!response.okay) {
                 if (request.raise) {
-                    throw interrupt({
-                        name: 'fetch',
-                        cause: response.cause || null,
-                        context: {
-                            statusCode: response.statusCode,
-                            url: request.options.url,
-                            headers: {
-                                sent: request.options.headers,
-                                received: response.headers
-                            }
-                        },
+                    throw interrupt('fetch', {
+                        statusCode: response.statusCode,
+                        url: request.options.url,
+                        headers: {
+                            sent: request.options.headers,
+                            received: response.headers
+                        }
+                    }, {
+                        cause: coalesce(response.cause),
                         properties: {
                             response: response,
                             body: body,
-                            buffer: buffer || null
+                            buffer: coalesce(buffer)
                         }
                     })
                 } else if (request.nullify) {
