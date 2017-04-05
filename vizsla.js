@@ -163,7 +163,6 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 var fullType = type.type + '/' + type.subtype
                 async(function () {
 // TODO Do not gather octet stream.
-                var varp = fullType == 'application/json-stream'
                     if (fullType == 'application/json-stream') {
                         return [ response.pipe(byline()).pipe(new JsonStream()) ]
                     }
