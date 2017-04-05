@@ -92,12 +92,9 @@ UserAgent.prototype.fetch = cadence(function (async) {
     request.url = url.parse(request.options.url)
 
     if (request.url.hostname == 'unix') {
-        console.log(request.url)
         var $ = /^(?:(.*):)?(.*)$/.exec(request.url.auth)
-        console.log($)
         request.url.auth = coalesce($[1])
         request.options.socketPath = $[2]
-        console.log(request.url)
     } else if (!request.options.socketPath) {
         request.options.hostname = request.url.hostname
         request.options.port = request.url.port
