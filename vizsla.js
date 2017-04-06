@@ -143,7 +143,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
                 log('request', sent)
                 this._transport.send(request, async())
             }, function (error) {
-                var body = new Buffer(JSON.stringify({ message: error.message, errno: error.code }))
+                var body = new Buffer(error.message)
                 var response = {
                     statusCode: 599,
                     duration: Date.now() - sent.when,
@@ -153,10 +153,10 @@ UserAgent.prototype.fetch = cadence(function (async) {
                     cause: error,
                     headers: {
                         'content-length': body.length,
-                        'content-type': 'application/json'
+                        'content-type': 'text/plain'
                     }
                 }
-                return [ async.break, JSON.parse(body.toString()), response, body ]
+                return [ async.break, body.toString(), response, body ]
             }], function (response, request) {
                 var chunks = []
                 var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')

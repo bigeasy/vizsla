@@ -44,7 +44,8 @@ function prove (async, assert) {
     }, function (body, response) {
         assert(response.statusCode, 599, 'refused status')
         assert(response.errno, 'ECONNREFUSED', 'refused errno')
-        assert(/^connect ECONNREFUSED/.test(body.message), 'refused body')
+        console.log(body)
+        assert(/^connect ECONNREFUSED/.test(body), 'refused body')
         ua.fetch({
             socketPath: path.join(__dirname, 'non-existant'),
             url: '/'
@@ -52,7 +53,7 @@ function prove (async, assert) {
     }, function (body, response) {
         assert(response.statusCode, 599, 'refused status')
         assert(response.errno, 'ENOENT', 'refused errno')
-        assert(/^connect ENOENT/.test(body.message), 'refused body')
+        assert(/^connect ENOENT/.test(body), 'refused body')
     }, [function () {
         ua.fetch({
             url: 'http://127.0.0.1:9999/here',
@@ -73,7 +74,7 @@ function prove (async, assert) {
     }, function (body, response, buffer) {
         assert(response.statusCode, 599, 'unparsed refused status')
         assert(response.errno, 'ECONNREFUSED', 'unparsed refused errno')
-        assert(/^connect ECONNREFUSED/.test(JSON.parse(buffer.toString()).message), 'unparsed refused body')
+        assert(/^connect ECONNREFUSED/.test(buffer.toString()), 'unparsed refused body')
         ua.fetch({
             grant: 'cc',
             url: 'http://a:z@127.0.0.1:9999/here',
@@ -81,7 +82,7 @@ function prove (async, assert) {
     }, function (body, response, buffer) {
         assert(response.statusCode, 599, 'unparsed refused cc status')
         assert(response.errno, 'ECONNREFUSED', 'unparsed refused cc errno')
-        assert(/^connect ECONNREFUSED/.test(JSON.parse(buffer.toString()).message), 'unparsed refused cc body')
+        assert(/^connect ECONNREFUSED/.test(buffer.toString()), 'unparsed refused cc body')
         pseudo.push({ delay: 1000 })
         ua.fetch({
             url: 'http://127.0.0.1:7779/here',
@@ -90,7 +91,7 @@ function prove (async, assert) {
     }, function (body, response) {
         assert(response.statusCode, 599, 'timeout status')
         assert(response.errno, 'ECONNRESET', 'timeout errno')
-        assert(body, { message: 'socket hang up', errno: 'ECONNRESET' }, 'timeout body')
+        assert(body, 'socket hang up', 'timeout body')
         pseudo.clear()
         ua.fetch({
             url: 'http://127.0.0.1:7779/here'
