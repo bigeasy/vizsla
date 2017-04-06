@@ -1,5 +1,6 @@
 var assert = require('assert')
 var url = require('url')
+var stream = require('stream')
 var cadence = require('cadence')
 
 function ClientCredentials (ua) {
@@ -27,12 +28,30 @@ ClientCredentials.prototype.before = cadence(function (async, ua, request) {
                 grant_type: 'client_credentials'
             }
         }, async())
-    }, function (body, response, buffer) {
+    }, function (body, response) {
         if (!response.okay || body.token_type != 'Bearer' || body.access_token == null) {
-            return {
-                body: body,
-                response: response,
-                buffer: buffer
+            var through = new stream.PassThrough
+            if (response.headers['content-type'] == 'application/json') {
+                through.end(JSON.stringify(body))
+            } else {
+                through.end('{}')
+            }
+            switch (request.response) {
+            case 'parse':
+                return {
+                    body: JSON.parse(through.read().toString()),
+                    response: response
+                }
+            case 'stream':
+                return {
+                    body: through,
+                    response: response
+                }
+            case 'buffer':
+                return {
+                    body: through.read(),
+                    response: response
+                }
             }
         }
         ua.storage.cc[request.key] = body.access_token

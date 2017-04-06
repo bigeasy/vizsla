@@ -1,4 +1,4 @@
-require('proof')(53, require('cadence')(prove))
+require('proof')(51, require('cadence')(prove))
 
 function prove (async, assert) {
     var connection = /^v0\.10\./.test(process.version) ? 'keep-alive' : 'close'
@@ -71,18 +71,16 @@ function prove (async, assert) {
         ua.fetch({
             url: 'http://127.0.0.1:9999/here',
         }, async())
-    }, function (body, response, buffer) {
+    }, function (body, response) {
         assert(response.statusCode, 599, 'unparsed refused status')
         assert(response.errno, 'ECONNREFUSED', 'unparsed refused errno')
-        assert(/^connect ECONNREFUSED/.test(buffer.toString()), 'unparsed refused body')
         ua.fetch({
             grant: 'cc',
             url: 'http://a:z@127.0.0.1:9999/here',
         }, async())
-    }, function (body, response, buffer) {
+    }, function (body, response) {
         assert(response.statusCode, 599, 'unparsed refused cc status')
         assert(response.errno, 'ECONNREFUSED', 'unparsed refused cc errno')
-        assert(/^connect ECONNREFUSED/.test(buffer.toString()), 'unparsed refused cc body')
         pseudo.push({ delay: 1000 })
         ua.fetch({
             url: 'http://127.0.0.1:7779/here',
@@ -151,10 +149,25 @@ function prove (async, assert) {
             url: 'http://127.0.0.1:7779/here'
         }, {
             method: 'GET',
-            url: '/there'
+            url: '/there',
+            response: 'buffer'
         }, async())
-    }, function (body, response, buffer) {
-        assert(buffer.toString(), '{}\n', 'unparsed')
+    }, function (body, response) {
+        assert(body.toString(), '{}\n', 'unparsed')
+        pseudo.push({ payload: {} })
+        ua.fetch({
+            url: 'http://127.0.0.1:7779/here'
+        }, {
+            method: 'GET',
+            url: '/there',
+            response: 'stream'
+        }, async())
+    }, function (body, response) {
+        async(function () {
+            delta(async()).ee(body).on('readable')
+        }, function () {
+            assert(body.read().toString(), '{}\n', 'stream')
+        })
     }, function () {
         pseudo.clear()
         ua.fetch({
@@ -291,7 +304,6 @@ function prove (async, assert) {
     }, function (error) {
         assert(error.response.statusCode, 404, 'raise HTTP error status')
         assert(error.body, {}, 'raise HTTP error parsed body')
-        assert(error.buffer.toString(), '{}\n', 'raise HTTP error raw body')
     }], function () {
         pseudo.push({
             statusCode: 404,

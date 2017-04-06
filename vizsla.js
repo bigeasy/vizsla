@@ -65,7 +65,7 @@ UserAgent.prototype.fetch = function () {
                     for (var header in object.headers) {
                         request.options.headers[header.toLowerCase()] = object.headers[header]
                     }
-                } else if (/^(?:context|body|payload|grant|token|timeout|post|put|raise|nullify|plugins|log)$/.test(key)) {
+                } else if (/^(?:response|context|body|payload|grant|token|timeout|post|put|raise|nullify|plugins|log)$/.test(key)) {
                     request[key] = object[key]
                 } else {
                     request.options[key] = object[key]
@@ -119,6 +119,8 @@ UserAgent.prototype.fetch = function () {
 
     request.input = new stream.PassThrough
 
+    request.response || (request.response = 'parse')
+
     var fetch = new Fetch(this, request)
 
     if (callback != null) {
@@ -153,7 +155,6 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
             return [ outcome.body, outcome.response, outcome.buffer ]
         }
         async(function () {
-// TODO Indent much.
             if (request.token) {
                 request.options.headers.authorization = 'Bearer ' + request.token
             }
@@ -171,7 +172,7 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                 }
                 request.input.end()
             }, function (error) {
-                var body = new Buffer(error.message)
+                var body = error.message
                 var response = {
                     statusCode: 599,
                     duration: Date.now() - sent.when,
@@ -184,19 +185,32 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                         'content-type': 'text/plain'
                     }
                 }
-                return [ async.break, body.toString(), response, body ]
-            }], function (response, request) {
+                switch (request.response) {
+                case 'stream':
+                    var stream = new stream.PassThrough
+                    stream.write(body)
+                    stream.end()
+                    body = stream
+                    break
+                case 'buffer':
+                    body = new Buffer(body)
+                    break
+                }
+                return [ async.break, body, response ]
+            }], function (response, _request) {
                 var chunks = []
                 var type = typer.parse(response.headers['content-type'] || 'application/octet-stream')
                 var fullType = type.type + '/' + type.subtype
                 async(function () {
-// TODO Do not gather octet stream.
-                    if (fullType == 'application/json-stream') {
+                    if (request.response == 'parse' && fullType == 'application/json-stream') {
                         return [ response.pipe(byline()).pipe(new JsonStream()) ]
+                    }
+                    if (request.response == 'stream') {
+                        return [ response, request ]
                     }
                     async(function () {
                         delta(async())
-                            .ee(request)
+                            .ee(_request)
                             .ee(response)
                                 .on('data', [])
                                 .on('end')
@@ -207,6 +221,11 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                     response.duration = Date.now() - sent.when
                     response.sent = sent
                     var display = payload
+                    if (request.response == 'stream') {
+                        return [ display, response, null ]
+                    } else if (request.response == 'buffer') {
+                        return [ display, response, payload  ]
+                    }
                     switch (type.type + '/' + type.subtype) {
                     case 'application/json-stream':
                         return [ payload, response ]
@@ -232,11 +251,11 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                     duration: response.duration,
                     statusCode: response.statusCode,
                     headers: response.headers,
-                    body: body
+                    body: request.response == 'parsed' ? body : (void(0))
                 }
             })
         })
-    }, function (body, response, buffer) {
+    }, function (body, response) {
         var vargs = slice.call(arguments)
         response.okay = Math.floor(response.statusCode / 100) == 2
         async(function () {
@@ -250,7 +269,7 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
         }, function (outcome) {
             if (outcome != null) {
 // TODO Outcome is an array to return.
-                return [ outcome.body, outcome.response, outcome.buffer ]
+                return [ outcome.body, outcome.response ]
             }
             if (!response.okay) {
                 if (request.raise) {
@@ -265,12 +284,11 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                         cause: coalesce(response.cause),
                         properties: {
                             response: response,
-                            body: body,
-                            buffer: coalesce(buffer)
+                            body: body
                         }
                     })
                 } else if (request.nullify) {
-                    return [ async.break, null, null, null ]
+                    return [ async.break, null, null ]
                 }
             }
             return vargs
