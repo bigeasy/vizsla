@@ -27,7 +27,8 @@
                             "interlocutor":                 "0.2.x",
                             "interrupt":                    "5.0.x",
                             "media-typer":                  "0.3.0",
-                            "nop":                          "1.0.0"
+                            "nop":                          "1.0.0",
+                            "signal":                       "1.8.x"
     },
     "devDependencies":
     {
