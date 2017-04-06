@@ -150,7 +150,7 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
             }
         })(request.plugins)
     }, function (outcome) {
-        fetch.request.unlatch(null, fetch, outcome == null)
+        fetch.request.unlatch(null, outcome == null, fetch)
         if (outcome != null) {
             return [ outcome.body, outcome.response, outcome.buffer ]
         }
