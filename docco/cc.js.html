@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>cc.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+
+
+                <a class="source" href="cc.js.html">
+                  cc.js
+                </a>
+
+
+                <a class="source" href="http.js.html">
+                  http.js
+                </a>
+
+
+                <a class="source" href="jsons.js.html">
+                  jsons.js
+                </a>
+
+
+                <a class="source" href="mock.js.html">
+                  mock.js
+                </a>
+
+
+                <a class="source" href="notes.js.html">
+                  notes.js
+                </a>
+
+
+                <a class="source" href="vizsla.js.html">
+                  vizsla.js
+                </a>
+
+            </div>
+          </div>
+        </li>
+      </ul>
+
+    <ul class="sections">
+
+          <li id="title">
+              <div class="annotation">
+                  <h1>cc.js</h1>
+              </div>
+          </li>
+
+
+
+        <li id="section-1">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> assert = <span class="hljs-built_in">require</span>(<span class="hljs-string">'assert'</span>)
+<span class="hljs-keyword">var</span> url = <span class="hljs-built_in">require</span>(<span class="hljs-string">'url'</span>)
+<span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
+<span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ClientCredentials</span> (<span class="hljs-params">ua</span>) </span>{
+    ua.storage.cc = {}
+}
+
+ClientCredentials.prototype.before = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, ua, request</span>) </span>{
+    <span class="hljs-keyword">if</span> (ua.storage.cc[request.key] != <span class="hljs-literal">null</span>) {
+        request.options.headers.authorization = <span class="hljs-string">'Bearer '</span> + ua.storage.cc[request.key]
+        <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span> ]
+    }
+    assert(request.baseUrl.auth)
+    <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        ua.fetch({
+            <span class="hljs-attr">url</span>: url.format(request.url),
+            <span class="hljs-attr">ca</span>: request.options.ca,
+            <span class="hljs-attr">rejectUnauthorized</span>: request.options.rejectUnauthorized,
+            <span class="hljs-attr">timeout</span>: request.timeout
+        }, {
+            <span class="hljs-attr">url</span>: <span class="hljs-string">'/token'</span>,
+            <span class="hljs-attr">headers</span>: {
+                <span class="hljs-attr">authorization</span>: <span class="hljs-string">'Basic '</span> + <span class="hljs-keyword">new</span> Buffer(request.baseUrl.auth).toString(<span class="hljs-string">'base64'</span>)
+            },
+            <span class="hljs-attr">payload</span>: {
+                <span class="hljs-attr">grant_type</span>: <span class="hljs-string">'client_credentials'</span>
+            }
+        }, <span class="hljs-keyword">async</span>())
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response, buffer</span>) </span>{
+        <span class="hljs-keyword">if</span> (!response.okay || body.token_type != <span class="hljs-string">'Bearer'</span> || body.access_token == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">var</span> parsed = body
+            <span class="hljs-keyword">switch</span> (request.response) {
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'stream'</span>:
+                parsed = <span class="hljs-keyword">new</span> stream.PassThrough
+                parsed.end(buffer)
+                buffer = <span class="hljs-literal">null</span>
+                <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'buffer'</span>:
+                parsed = buffer
+                <span class="hljs-keyword">break</span>
+            }
+            <span class="hljs-keyword">return</span> { <span class="hljs-attr">body</span>: parsed, <span class="hljs-attr">response</span>: response, <span class="hljs-attr">buffer</span>: buffer }
+        }
+        ua.storage.cc[request.key] = body.access_token
+        request.options.headers.authorization = <span class="hljs-string">'Bearer '</span> + ua.storage.cc[request.key]
+        <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span> ]
+    })
+})
+
+ClientCredentials.prototype.after = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, ua, request, response</span>) </span>{
+    <span class="hljs-keyword">if</span> (response.statusCode == <span class="hljs-number">401</span>) {
+        <span class="hljs-keyword">delete</span> ua.storage.cc[request.key]
+    }
+    <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span> ]
+})
+
+<span class="hljs-built_in">module</span>.exports = ClientCredentials</pre></div></div>
+
+        </li>
+
+    </ul>
+  </div>
+</body>
+</html>
