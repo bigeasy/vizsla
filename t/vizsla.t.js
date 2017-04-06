@@ -60,6 +60,7 @@ function prove (async, assert) {
             raise: true
         }, async())
     }, function (error) {
+        console.log(error.stack)
         assert(error.response.statusCode, 599, 'raised refused status')
     }], function () {
         ua.fetch({

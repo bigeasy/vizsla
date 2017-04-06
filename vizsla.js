@@ -217,31 +217,31 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                     }, function (chunks) {
                         return [ Buffer.concat(chunks) ]
                     })
-                }, function (payload) {
+                }, function (buffer) {
                     response.duration = Date.now() - sent.when
                     response.sent = sent
-                    var display = payload
+                    var parsed = buffer
                     if (request.response == 'stream') {
-                        return [ display, response, null ]
+                        return [ parsed, response, null ]
                     } else if (request.response == 'buffer') {
-                        return [ display, response, payload  ]
+                        return [ parsed, response, buffer  ]
                     }
                     switch (type.type + '/' + type.subtype) {
                     case 'application/json-stream':
-                        return [ payload, response ]
+                        return [ buffer, response ]
                     case 'application/json':
                         try {
-                            display = JSON.parse(payload.toString())
+                            parsed = JSON.parse(buffer.toString())
                         } catch (e) {
-                            display = payload.toString()
+                            parsed = buffer.toString()
                         }
                         break
                     case 'text/html':
                     case 'text/plain':
-                        display = payload.toString()
+                        parsed = buffer.toString()
                         break
                     }
-                    return [ display, response, payload ]
+                    return [ parsed, response, buffer ]
                 })
             })
         }, function (body, response) {
@@ -255,8 +255,7 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                 }
             })
         })
-    }, function (body, response) {
-        var vargs = slice.call(arguments)
+    }, function (parsed, response, buffer) {
         response.okay = Math.floor(response.statusCode / 100) == 2
         async(function () {
             var loop = async.forEach(function (plugin) {
@@ -269,7 +268,7 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
         }, function (outcome) {
             if (outcome != null) {
 // TODO Outcome is an array to return.
-                return [ outcome.body, outcome.response ]
+                return [ outcome.body, outcome.response, outcome.buffer ]
             }
             if (!response.okay) {
                 if (request.raise) {
@@ -284,14 +283,15 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                         cause: coalesce(response.cause),
                         properties: {
                             response: response,
-                            body: body
+                            body: parsed,
+                            buffer: buffer
                         }
                     })
                 } else if (request.nullify) {
-                    return [ async.break, null, null ]
+                    return [ async.break, null, null, null ]
                 }
             }
-            return vargs
+            return [ parsed, response, buffer ]
         })
     })
 })

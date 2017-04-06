@@ -28,31 +28,20 @@ ClientCredentials.prototype.before = cadence(function (async, ua, request) {
                 grant_type: 'client_credentials'
             }
         }, async())
-    }, function (body, response) {
+    }, function (body, response, buffer) {
         if (!response.okay || body.token_type != 'Bearer' || body.access_token == null) {
-            var through = new stream.PassThrough
-            if (response.headers['content-type'] == 'application/json') {
-                through.end(JSON.stringify(body))
-            } else {
-                through.end('{}')
-            }
+            var parsed = body
             switch (request.response) {
-            case 'parse':
-                return {
-                    body: JSON.parse(through.read().toString()),
-                    response: response
-                }
             case 'stream':
-                return {
-                    body: through,
-                    response: response
-                }
+                parsed = new stream.PassThrough
+                parsed.end(buffer)
+                buffer = null
+                break
             case 'buffer':
-                return {
-                    body: through.read(),
-                    response: response
-                }
+                parsed = buffer
+                break
             }
+            return { body: parsed, response: response, buffer: buffer }
         }
         ua.storage.cc[request.key] = body.access_token
         request.options.headers.authorization = 'Bearer ' + ua.storage.cc[request.key]
