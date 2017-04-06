@@ -25,15 +25,12 @@ Transport.prototype.send = cadence(function (async, request) {
     }
     async(function () {
         delta(async()).ee(client).on('response')
-        if (request.payload) {
-            client.write(request.payload)
-        }
         if (request.timeout) {
             client.setTimeout(request.timeout, function () {
                 client.abort()
             })
         }
-        client.end()
+        request.input.pipe(client)
     }, function (response) {
         response.once('error', listener('response'))
         return [ response, client ]

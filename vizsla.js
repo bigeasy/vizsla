@@ -1,12 +1,14 @@
 var byline = require('byline')
 var JsonStream = require('./jsons')
 var cadence = require('cadence')
+var stream = require('stream')
 var url = require('url')
 var coalesce = require('extant')
 var typer = require('media-typer')
 var assert = require('assert')
 var delta = require('delta')
 var noop = require('nop')
+var Signal = require('signal')
 var slice = [].slice
 var interrupt = require('interrupt').createInterrupter('vizsla')
 var transport = {
@@ -29,7 +31,15 @@ UserAgent.prototype.bind = function () {
     return ua
 }
 
-UserAgent.prototype.fetch = cadence(function (async) {
+function Fetch (ua, request) {
+    this.input = new stream.PassThrough
+    this.request = new Signal
+    this.response = new Signal
+}
+
+UserAgent.prototype.fetch = function () {
+    var vargs = slice.call(arguments)
+    var callback = (typeof vargs[vargs.length - 1] == 'function') ? vargs.pop() : null
     var request = {
         options: { headers: {} }
     }
@@ -64,7 +74,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
         }
     }
 
-    this._bind.concat(slice.call(arguments, 1)).forEach(override)
+    this._bind.concat(slice.call(vargs)).forEach(override)
 
     if (request.plugins == null) {
         request.plugins = []
@@ -107,8 +117,21 @@ UserAgent.prototype.fetch = cadence(function (async) {
 
     request.key = request.url.hostname + ':' + request.url.port
 
-    var log = request.log || noop
+    request.input = new stream.PassThrough
 
+    var fetch = new Fetch(this, request)
+
+    if (callback != null) {
+        fetch.response.wait(callback)
+    }
+
+    this._fetch(request, fetch, fetch.response.unlatch.bind(fetch.response))
+
+    return fetch
+}
+
+UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
+    var log = request.log || noop
     var sent = {
         url: request.url,
         options: request.options,
@@ -125,6 +148,7 @@ UserAgent.prototype.fetch = cadence(function (async) {
             }
         })(request.plugins)
     }, function (outcome) {
+        fetch.request.unlatch(null, fetch, outcome == null)
         if (outcome != null) {
             return [ outcome.body, outcome.response, outcome.buffer ]
         }
@@ -142,6 +166,10 @@ UserAgent.prototype.fetch = cadence(function (async) {
             async([function () {
                 log('request', sent)
                 this._transport.send(request, async())
+                if (('payload' in request)) {
+                    request.input.write(request.payload)
+                }
+                request.input.end()
             }, function (error) {
                 var body = new Buffer(error.message)
                 var response = {
