@@ -1,4 +1,4 @@
-require('proof')(51, require('cadence')(prove))
+require('proof')(52, require('cadence')(prove))
 
 function prove (async, assert) {
     var connection = /^v0\.10\./.test(process.version) ? 'keep-alive' : 'close'
@@ -69,6 +69,12 @@ function prove (async, assert) {
         }, async())
     }, function (response) {
         assert(response, null, 'nullify refused status')
+        ua.fetch({
+            url: 'http://127.0.0.1:9999/here',
+            falsify: true
+        }, async())
+    }, function (response) {
+        assert(response, false, 'falsify refused status')
         ua.fetch({
             url: 'http://127.0.0.1:9999/here',
         }, async())

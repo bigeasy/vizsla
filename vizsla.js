@@ -65,7 +65,7 @@ UserAgent.prototype.fetch = function () {
                     for (var header in object.headers) {
                         request.options.headers[header.toLowerCase()] = object.headers[header]
                     }
-                } else if (/^(?:response|context|body|payload|grant|token|timeout|post|put|raise|nullify|plugins|log)$/.test(key)) {
+                } else if (/^(?:response|context|body|payload|grant|token|timeout|post|put|raise|falsify|nullify|plugins|log)$/.test(key)) {
                     request[key] = object[key]
                 } else {
                     request.options[key] = object[key]
@@ -288,7 +288,9 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                         }
                     })
                 } else if (request.nullify) {
-                    return [ async.break, null, null, null ]
+                    return [ async.break, null ]
+                } else if (request.falsify) {
+                    return [ async.break, false ]
                 }
             }
             return [ parsed, response, buffer ]
