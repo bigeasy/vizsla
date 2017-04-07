@@ -293,7 +293,7 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                     return [ async.break, false ]
                 }
             }
-            return [ parsed, response, buffer ]
+            return request.nullify || request.falsify ? [ parsed ] : [ parsed, response, buffer ]
         })
     })
 })
