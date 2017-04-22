@@ -15,7 +15,6 @@ var transport = {
     HTTP: require('./http'),
     Mock: require('./mock')
 }
-var ClientCredentials = require('./cc')
 
 function UserAgent (middleware) {
     this._bind = []
@@ -82,6 +81,7 @@ UserAgent.prototype.fetch = function () {
     if (request.grant == 'cc') {
         request.plugins.push(new ClientCredentials(this))
     }
+    if (request.plugins.length) throw new Error
 
     if (request.put) {
         request.payload = request.put
