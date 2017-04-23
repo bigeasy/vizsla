@@ -38,6 +38,10 @@ function Fetch (ua, request) {
     this._cancel = new Signal
 }
 
+Fetch.prototype.cancel = function () {
+    this._cancel.unlatch()
+}
+
 UserAgent.prototype.fetch = function () {
     var vargs = slice.call(arguments)
     var callback = (typeof vargs[vargs.length - 1] == 'function') ? vargs.pop() : null
