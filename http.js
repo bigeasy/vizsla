@@ -4,7 +4,7 @@ var delta = require('delta')
 function Transport () {
 }
 
-Transport.prototype.send = cadence(function (async, request) {
+Transport.prototype.send = cadence(function (async, request, cancel) {
     var http
     if (request.url.protocol == 'https:') {
         http = require('https')
@@ -25,11 +25,13 @@ Transport.prototype.send = cadence(function (async, request) {
     }
     async(function () {
         delta(async()).ee(client).on('response')
+        cancel.wait(function () { if (!client.aborted) { client.abort() } })
         if (request.timeout) {
             client.setTimeout(request.timeout, function () {
                 client.abort()
             })
         }
+        // TODO Fetch and Reqest can have the same `PassThrough`.
         request.input.pipe(client)
     }, function (response) {
         response.once('error', listener('response'))

@@ -35,6 +35,7 @@ function Fetch (ua, request) {
     this.input = new stream.PassThrough
     this.request = new Signal
     this.response = new Signal
+    this._cancel = new Signal
 }
 
 UserAgent.prototype.fetch = function () {
@@ -166,7 +167,9 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
             }
             async([function () {
                 log('request', sent)
-                this._transport.send(request, async())
+                this._transport.send(request, fetch._cancel, async())
+                // TODO Make this terminate correctly and pipe up a stream
+                // correctly.
                 if (('payload' in request)) {
                     request.input.write(request.payload)
                 }
