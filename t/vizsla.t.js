@@ -1,4 +1,4 @@
-require('proof')(44, require('cadence')(prove))
+require('proof')(52, require('cadence')(prove))
 
 function prove (async, assert) {
     var connection = /^v0\.10\./.test(process.version) ? 'keep-alive' : 'close'
@@ -81,6 +81,13 @@ function prove (async, assert) {
     }, function (body, response) {
         assert(response.statusCode, 599, 'unparsed refused status')
         assert(response.errno, 'ECONNREFUSED', 'unparsed refused errno')
+        ua.fetch({
+            grant: 'cc',
+            url: 'http://a:z@127.0.0.1:9999/here',
+        }, async())
+    }, function (body, response) {
+        assert(response.statusCode, 599, 'unparsed refused cc status')
+        assert(response.errno, 'ECONNREFUSED', 'unparsed refused cc errno')
         pseudo.push({ delay: 1000 })
         ua.fetch({
             url: 'http://127.0.0.1:7779/here',
@@ -347,6 +354,65 @@ function prove (async, assert) {
         ua.fetch({ url: 'http://127.0.0.1:7779' }, async())
     }, function (body, response) {
         assert(body.toString(), '{a', 'botched json')
+        pseudo.push({ statusCode: 401 })
+        ua.fetch({
+            url: 'http://a:z@127.0.0.1:7779/here'
+        }, {
+            grant: 'cc',
+            url: '/there',
+        }, async())
+    }, function (body, response) {
+        assert(response.statusCode, 401, 'bad authentication')
+        pseudo.clear()
+        pseudo.push({
+            payload: {
+                token_type: 'Bearer',
+                access_token: 'x'
+            }
+        })
+        ua.fetch({
+            url: 'http://a:z@127.0.0.1:7779/here'
+        }, {
+            grant: 'cc',
+            url: '/there',
+        }, async())
+    }, function (body, response) {
+        assert(response.statusCode, 200, 'good authentication')
+        assert(ua.storage.cc['127.0.0.1:7779'], 'x', 'lookup token')
+        assert(pseudo.shift(), {
+            method: 'POST',
+            headers: {
+                authorization: 'Basic YTp6',
+                'content-type': 'application/json',
+                accept: 'application/json',
+                'content-length': '35',
+                host: '127.0.0.1:7779',
+                connection: connection
+            },
+            url: '/token',
+            body: { grant_type: 'client_credentials' }
+        }, 'token request')
+        assert(pseudo.shift(), {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                authorization: 'Bearer x',
+                host: '127.0.0.1:7779',
+                connection: connection
+            },
+            url: '/there',
+            body: {}
+        }, 'request with token')
+        pseudo.clear()
+        pseudo.push({ statusCode: 401 })
+        ua.fetch({
+            url: 'http://a:z@127.0.0.1:7779/here'
+        }, {
+            grant: 'cc',
+            url: '/there',
+        }, async())
+    }, function (body, response) {
+        assert(response.statusCode, 401, 'cleared authentication')
         pseudo.push({
             statusCode: 200,
             headers: {
