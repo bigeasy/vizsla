@@ -24,12 +24,15 @@ Transport.prototype.send = cadence(function (async, request, cancel) {
         }
     }
     async(function () {
-        delta(async()).ee(client).on('response')
-        cancel.wait(function () { if (!client.aborted) { client.abort() } })
+        var wait = delta(async()).ee(client).on('response')
+        cancel.wait(function () { client.abort() })
+        client.on('abort', function () {
+            var error = new Error('socket hang up')
+            error.code = 'ECONNRESET'
+            wait.cancel([ error ])
+        })
         if (request.timeout) {
-            client.setTimeout(request.timeout, function () {
-                client.abort()
-            })
+            client.setTimeout(request.timeout, function () { cancel.unlatch() })
         }
         // TODO Fetch and Reqest can have the same `PassThrough`.
         request.input.pipe(client)
