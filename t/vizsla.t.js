@@ -192,7 +192,7 @@ function prove (async, assert) {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
-                'content-length': '7',
+                'transfer-encoding': 'chunked',
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
@@ -217,7 +217,7 @@ function prove (async, assert) {
             method: 'PUT',
             headers: {
                 'content-type': 'application/json',
-                'content-length': '7',
+                'transfer-encoding': 'chunked',
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
@@ -242,7 +242,7 @@ function prove (async, assert) {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
-                'content-length': '7',
+                'transfer-encoding': 'chunked',
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
@@ -267,7 +267,7 @@ function prove (async, assert) {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
-                'content-length': '7',
+                'transfer-encoding': 'chunked',
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
@@ -385,7 +385,7 @@ function prove (async, assert) {
                 authorization: 'Basic YTp6',
                 'content-type': 'application/json',
                 accept: 'application/json',
-                'content-length': '35',
+                'transfer-encoding': 'chunked',
                 host: '127.0.0.1:7779',
                 connection: connection
             },

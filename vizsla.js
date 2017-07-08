@@ -166,9 +166,6 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
             if (request.payload && !Buffer.isBuffer(request.payload)) {
                 request.payload = new Buffer(JSON.stringify(request.payload))
             }
-            if (request.payload) {
-                request.options.headers['content-length'] = request.payload.length
-            }
             async([function () {
                 log('request', sent)
                 this._transport.send(request, fetch._cancel, async())
