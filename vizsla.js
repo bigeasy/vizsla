@@ -12,7 +12,7 @@ var Signal = require('signal')
 var slice = [].slice
 var interrupt = require('interrupt').createInterrupter('vizsla')
 var transport = {
-    HTTP: require('./http'),
+    Network: require('./network'),
     Mock: require('./mock')
 }
 var ClientCredentials = require('./cc')
@@ -20,7 +20,7 @@ var ClientCredentials = require('./cc')
 function UserAgent (middleware) {
     this._bind = []
     this.storage = {}
-    this._transport = middleware ? new transport.Mock(middleware) : new transport.HTTP
+    this._transport = middleware ? new transport.Mock(middleware) : transport.Network
 }
 
 UserAgent.prototype.bind = function () {

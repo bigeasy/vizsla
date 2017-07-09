@@ -1,16 +1,7 @@
 var cadence = require('cadence')
 var delta = require('delta')
 
-function Transport () {
-}
-
-Transport.prototype.send = cadence(function (async, request, cancel) {
-    var http
-    if (request.url.protocol == 'https:') {
-        http = require('https')
-    } else {
-        http = require('http')
-    }
+module.exports = cadence(function (async, http, request, cancel) {
     var client = http.request(request.options)
     client.once('error', listener('request'))
     function listener (direction) {
@@ -41,5 +32,3 @@ Transport.prototype.send = cadence(function (async, request, cancel) {
         return [ response, client ]
     })
 })
-
-module.exports = Transport
