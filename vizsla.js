@@ -65,7 +65,6 @@ UserAgent.prototype.fetch = function () {
 }
 
 UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
-    var log = request.log || noop
     var sent = {
         url: request.url,
         options: request.options,
@@ -88,7 +87,6 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
         }
         async(function () {
             async([function () {
-                log('request', sent)
                 this._transport.send(request, fetch._cancel, async())
                 // TODO Make this terminate correctly and pipe up a stream
                 // correctly.
@@ -169,16 +167,6 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                     }
                     return [ parsed, response, buffer ]
                 })
-            })
-        }, function (body, response) {
-            log('response', {
-                sent: sent,
-                received: {
-                    duration: response.duration,
-                    statusCode: response.statusCode,
-                    headers: response.headers,
-                    body: request.response == 'parsed' ? body : (void(0))
-                }
             })
         })
     }, function (parsed, response, buffer) {

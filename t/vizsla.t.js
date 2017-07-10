@@ -1,4 +1,4 @@
-require('proof')(52, require('cadence')(prove))
+require('proof')(49, require('cadence')(prove))
 
 function prove (async, assert) {
     var connection = /^v0\.10\./.test(process.version) ? 'keep-alive' : 'close'
@@ -25,14 +25,6 @@ function prove (async, assert) {
             ca: fs.readFileSync(path.join(__dirname, 'fixtures/certs/ca1-cert.pem'))
         }
         var ua = new UserAgent
-        async(function () {
-            ua.fetch({
-                log: function (type) { assert(true, 'called ' + type) },
-                url: 'http://127.0.0.1:9999/here',
-            }, async())
-        }, function (body, response) {
-            assert(response.statusCode, 599, 'no logging refused status')
-        })
     }, function () {
         server.listen(7779, '127.0.0.1', async())
     }, [function () {
