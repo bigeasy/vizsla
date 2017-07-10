@@ -33,8 +33,7 @@ module.exports = function (base, vargs, ua) {
             continue
         }
         for (var name in varg) {
-            if (name == 'socketPath') {
-            } else if (name == 'url') {
+            if (name == 'url') {
                 if (merged.url == null) {
                     merged.url = varg.url
                 } else {
