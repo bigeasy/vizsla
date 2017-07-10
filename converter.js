@@ -7,10 +7,12 @@ var typer = require('media-typer')
 var byline = require('byline')
 var JsonStream = require('./jsons')
 
-function Converter (headers, body, bodyType) {
+function Converter (headers, body, bodyType, start) {
     this._headers = headers
     this._body = body
     this._bodyType = bodyType
+    this._start = start
+    this.duration = Date.now() - this._start
 }
 
 Converter.prototype._parsify = cadence(function (async) {
@@ -76,7 +78,10 @@ Converter.prototype.bufferify = cadence(function (async) {
         async(function () {
             delta(async()).ee(this._body).on('data', []).on('end')
         }, function (chunks) {
-            return [ Buffer.concat(chunks) ]
+            this._bodyType = 'buffer'
+            this._body = Buffer.concat(chunks)
+            this.duration = Date.now() - this._start
+            return this._body
         })
     }
 })
