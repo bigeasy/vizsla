@@ -16,6 +16,8 @@ var transport = {
     Mock: require('./mock')
 }
 var ClientCredentials = require('./cc')
+var merge = require('./merge')
+var defaultify = require('./default')
 
 function UserAgent (middleware) {
     this._bind = []
@@ -45,94 +47,19 @@ Fetch.prototype.cancel = function () {
 UserAgent.prototype.fetch = function () {
     var vargs = slice.call(arguments)
     var callback = (typeof vargs[vargs.length - 1] == 'function') ? vargs.pop() : null
-    var request = {
-        options: { headers: {} }
-    }
 
-    function override (object) {
-        if (Array.isArray(object)) {
-            object.forEach(override)
-        } else {
-            if (object.socketPath) {
-                override({ url: 'http://' + encodeURIComponent(object.socketPath) + '@unix' })
-            }
-            for (var key in object) {
-                if (key == 'socketPath') {
-                    continue
-                } else if (key == 'url') {
-                    if (request.options.url) {
-                        request.options.url = url.resolve(request.options.url, object.url)
-                    } else {
-                        request.options[key] = object[key]
-                        request.baseUrl = url.parse(object.url)
-                    }
-                } else if (key == 'headers') {
-                    for (var header in object.headers) {
-                        request.options.headers[header.toLowerCase()] = object.headers[header]
-                    }
-                } else if (/^(?:response|context|body|payload|grant|token|timeout|post|put|raise|falsify|nullify|plugins|log)$/.test(key)) {
-                    request[key] = object[key]
-                } else {
-                    request.options[key] = object[key]
-                }
-            }
-        }
-    }
+    var merged = defaultify(merge(this._bind, vargs.slice(), this))
+    assert(typeof merged.url == 'object')
 
-    this._bind.concat(slice.call(vargs)).forEach(override)
+    merged.input = new stream.PassThrough
 
-    if (request.plugins == null) {
-        request.plugins = []
-    }
-    if (request.grant == 'cc') {
-        request.plugins.push(new ClientCredentials(this))
-    }
-
-    if (request.put) {
-        request.payload = request.put
-        request.options.method = 'PUT'
-    } else if (request.post) {
-        request.payload = request.post
-        request.options.method = 'POST'
-    } else if (request.body) {
-        request.payload = request.body
-    }
-    if (!request.options.method) {
-        request.options.method = request.payload ? 'POST' : 'GET'
-    }
-    if (request.payload && !request.options.headers['content-type']) {
-        request.options.headers['content-type'] = 'application/json'
-    }
-    request.options.headers['accept'] = 'application/json'
-    request.url = url.parse(request.options.url)
-
-    if (request.url.hostname == 'unix') {
-        var $ = /^(?:(.*):)?(.*)$/.exec(request.url.auth)
-        request.url.auth = coalesce($[1])
-        request.options.socketPath = $[2]
-    } else if (!request.options.socketPath) {
-        request.options.hostname = request.url.hostname
-        request.options.port = request.url.port
-    }
-    request.options.path = url.format({
-        pathname: request.url.pathname,
-        search: request.url.search,
-        hash: request.url.hash
-    })
-
-    request.key = request.url.hostname + ':' + request.url.port
-
-    request.input = new stream.PassThrough
-
-    request.response || (request.response = 'parse')
-
-    var fetch = new Fetch(this, request)
+    var fetch = new Fetch
 
     if (callback != null) {
         fetch.response.wait(callback)
     }
 
-    this._fetch(request, fetch, fetch.response.unlatch.bind(fetch.response))
+    this._fetch(merged, fetch, fetch.response.unlatch.bind(fetch.response))
 
     return fetch
 }
@@ -160,12 +87,6 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
             return [ outcome.body, outcome.response, outcome.buffer ]
         }
         async(function () {
-            if (request.token) {
-                request.options.headers.authorization = 'Bearer ' + request.token
-            }
-            if (request.payload && !Buffer.isBuffer(request.payload)) {
-                request.payload = new Buffer(JSON.stringify(request.payload))
-            }
             async([function () {
                 log('request', sent)
                 this._transport.send(request, fetch._cancel, async())
@@ -177,6 +98,7 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                 request.input.end()
             }, function (error) {
                 var body = error.message
+                console.log(error.stack)
                 var response = {
                     statusCode: 599,
                     duration: Date.now() - sent.when,
@@ -278,9 +200,9 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                 if (request.raise) {
                     throw interrupt('fetch', {
                         statusCode: response.statusCode,
-                        url: request.options.url,
+                        url: request.url,
                         headers: {
-                            sent: request.options.headers,
+                            sent: request.headers,
                             received: response.headers
                         }
                     }, {

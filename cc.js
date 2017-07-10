@@ -8,21 +8,21 @@ function ClientCredentials (ua) {
 }
 
 ClientCredentials.prototype.before = cadence(function (async, ua, request) {
-    if (ua.storage.cc[request.key] != null) {
-        request.options.headers.authorization = 'Bearer ' + ua.storage.cc[request.key]
+    if (ua.storage.cc[request.identifier] != null) {
+        request.options.headers.authorization = 'Bearer ' + ua.storage.cc[request.identifier]
         return [ null ]
     }
-    assert(request.baseUrl.auth)
+    assert(request.url.auth)
     async(function () {
         ua.fetch({
             url: url.format(request.url),
-            ca: request.options.ca,
-            rejectUnauthorized: request.options.rejectUnauthorized,
+            ca: request.ca,
+            rejectUnauthorized: request.rejectUnauthorized,
             timeout: request.timeout
         }, {
             url: '/token',
             headers: {
-                authorization: 'Basic ' + new Buffer(request.baseUrl.auth).toString('base64')
+                authorization: 'Basic ' + new Buffer(request.url.auth).toString('base64')
             },
             payload: {
                 grant_type: 'client_credentials'
@@ -43,15 +43,15 @@ ClientCredentials.prototype.before = cadence(function (async, ua, request) {
             }
             return { body: parsed, response: response, buffer: buffer }
         }
-        ua.storage.cc[request.key] = body.access_token
-        request.options.headers.authorization = 'Bearer ' + ua.storage.cc[request.key]
+        ua.storage.cc[request.identifier] = body.access_token
+        request.headers.authorization = 'Bearer ' + ua.storage.cc[request.identifier]
         return [ null ]
     })
 })
 
 ClientCredentials.prototype.after = cadence(function (async, ua, request, response) {
     if (response.statusCode == 401) {
-        delete ua.storage.cc[request.key]
+        delete ua.storage.cc[request.identifier]
     }
     return [ null ]
 })

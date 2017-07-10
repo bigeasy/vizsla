@@ -44,7 +44,6 @@ function prove (async, assert) {
     }, function (body, response) {
         assert(response.statusCode, 599, 'refused status')
         assert(response.errno, 'ECONNREFUSED', 'refused errno')
-        console.log(body)
         assert(/^connect ECONNREFUSED/.test(body), 'refused body')
         ua.fetch({
             socketPath: path.join(__dirname, 'non-existant'),
@@ -60,7 +59,6 @@ function prove (async, assert) {
             raise: true
         }, async())
     }, function (error) {
-        console.log(error.stack)
         assert(error.response.statusCode, 599, 'raised refused status')
     }], function () {
         ua.fetch({

@@ -1,15 +1,17 @@
 var cadence = require('cadence')
 var delta = require('delta')
+var extractOptions = require('./options')
 
 module.exports = cadence(function (async, http, request, cancel) {
-    var client = http.request(request.options)
+    var options = extractOptions(request)
+    var client = http.request(options)
     client.once('error', listener('request'))
     function listener (direction) {
         return function (error) {
             // What do to about? http://stackoverflow.com/a/16995223/90123
             console.error(direction + ' error', {
-                url: request.options.url,
-                headers: request.options.headers,
+                url: request.url,
+                headers: request.headers,
             })
             console.log(error.stack)
         }
