@@ -24,7 +24,7 @@ function prove (async, assert) {
             key: fs.readFileSync(path.join(__dirname, 'fixtures/certs/agent1-key.pem')),
             ca: fs.readFileSync(path.join(__dirname, 'fixtures/certs/ca1-cert.pem'))
         }
-        var ua = new UserAgent(false)
+        var ua = new UserAgent
         async(function () {
             ua.fetch({
                 log: function (type) { assert(true, 'called ' + type) },
