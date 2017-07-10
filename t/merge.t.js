@@ -12,8 +12,11 @@ function prove (okay) {
     }, 'socket path, url and path')
     okay(merge({ headers: {} }, [{ headers: { value: 1 }}]), { headers: { value: '1' } }, 'headers')
     okay(merge({ method: 'GET' }, []), { method: 'GET' }, 'other property')
-    var plugedin = merge({ plugins: {} }, [{ grant: 'cc' }], { storage: {} })
-    okay(plugedin.plugins.length, 1, 'cc')
+    try {
+        merge({ plugins: {} }, [{ grant: 'cc' }], { storage: {} })
+    } catch (error) {
+        okay(true, 'cc depricated')
+    }
     okay(merge({ put: {} }, []), { method: 'PUT', payload: {} }, 'put')
     okay(merge({ body: {} }, []), { payload: {} }, 'body')
 }

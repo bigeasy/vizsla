@@ -1,6 +1,7 @@
 require('proof')(49, require('cadence')(prove))
 
 function prove (async, assert) {
+    var ClientCredentials = require('../cc')
     var connection = /^v0\.10\./.test(process.version) ? 'keep-alive' : 'close'
     var Semblance = require('semblance'),
         UserAgent = require('..'),
@@ -72,7 +73,7 @@ function prove (async, assert) {
         assert(response.statusCode, 599, 'unparsed refused status')
         assert(response.errno, 'ECONNREFUSED', 'unparsed refused errno')
         ua.fetch({
-            grant: 'cc',
+            plugins: [ new ClientCredentials(ua) ],
             url: 'http://a:z@127.0.0.1:9999/here',
         }, async())
     }, function (body, response) {
@@ -348,7 +349,7 @@ function prove (async, assert) {
         ua.fetch({
             url: 'http://a:z@127.0.0.1:7779/here'
         }, {
-            grant: 'cc',
+            plugins: [ new ClientCredentials(ua) ],
             url: '/there',
         }, async())
     }, function (body, response) {
@@ -363,7 +364,7 @@ function prove (async, assert) {
         ua.fetch({
             url: 'http://a:z@127.0.0.1:7779/here'
         }, {
-            grant: 'cc',
+            plugins: [ new ClientCredentials(ua) ],
             url: '/there',
         }, async())
     }, function (body, response) {
@@ -398,7 +399,7 @@ function prove (async, assert) {
         ua.fetch({
             url: 'http://a:z@127.0.0.1:7779/here'
         }, {
-            grant: 'cc',
+            plugins: [ new ClientCredentials(ua) ],
             url: '/there',
         }, async())
     }, function (body, response) {

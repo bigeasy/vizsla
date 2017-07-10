@@ -1,5 +1,4 @@
 var url = require('url')
-var ClientCredentials = require('./cc')
 
 function copy (object, exclude) {
     var copy = {}
@@ -51,8 +50,12 @@ module.exports = function (base, vargs, ua) {
                     merged.plugins = []
                 }
                 merged.plugins.push.apply(merged.plugins, varg.plugins)
+                var index = merged.plugins.indexOf(null)
+                if (~index) {
+                    merged.plugins = merged.plugins.slice(index + 1)
+                }
             } else if (name == 'grant' && varg.grant == 'cc') {
-                vargs.unshift({ plugins: [ new ClientCredentials(ua) ] })
+                throw new Error('no more grant property')
             } else if (name == 'put' || name == 'post') {
                 merged.payload = varg[name]
                 merged.method = name.toUpperCase()

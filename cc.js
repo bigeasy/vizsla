@@ -1,59 +1,48 @@
 var assert = require('assert')
 var url = require('url')
-var stream = require('stream')
 var cadence = require('cadence')
+var merge = require('./merge')
+var defaultify = require('./default')
 
-function ClientCredentials (ua) {
-    ua.storage.cc = {}
+function ClientCredentials (request) {
+    this._request = request
 }
 
-ClientCredentials.prototype.before = cadence(function (async, ua, request) {
-    if (ua.storage.cc[request.identifier] != null) {
-        request.options.headers.authorization = 'Bearer ' + ua.storage.cc[request.identifier]
-        return [ null ]
+ClientCredentials.prototype.fetch = cadence(function (async, ua, request, fetch) {
+    var expanded = defaultify(request)
+    if (ua.storage.cc == null) {
+        ua.storage.cc = {}
     }
-    assert(request.url.auth)
-    async(function () {
-        ua.fetch({
-            url: url.format(request.url),
-            ca: request.ca,
-            rejectUnauthorized: request.rejectUnauthorized,
-            timeout: request.timeout
-        }, {
-            url: '/token',
-            headers: {
-                authorization: 'Basic ' + new Buffer(request.url.auth).toString('base64')
-            },
-            payload: {
-                grant_type: 'client_credentials'
-            }
-        }, async())
-    }, function (body, response, buffer) {
-        if (!response.okay || body.token_type != 'Bearer' || body.access_token == null) {
-            var parsed = body
-            switch (request.response) {
-            case 'stream':
-                parsed = new stream.PassThrough
-                parsed.end(buffer)
-                buffer = null
-                break
-            case 'buffer':
-                parsed = buffer
-                break
-            }
-            return { body: parsed, response: response, buffer: buffer }
+    var label = async(function () {
+        if (ua.storage.cc[expanded.identifier] == null) {
+            async(function () {
+                ua.fetch(request, this._request, {
+                    headers: {
+                        authorization: 'Basic ' + new Buffer(expanded.url.auth).toString('base64')
+                    },
+                    post: {
+                        grant_type: 'client_credentials'
+                    },
+                    url: '/token',
+                    response: 'parse',
+                    plugins: [ null ]
+                }, async())
+            }, function (body, response) {
+                if (!response.okay || body.token_type != 'Bearer' || body.access_token == null) {
+                    return [ label.break, body, response ]
+                }
+                ua.storage.cc[expanded.identifier] = body.access_token
+            })
         }
-        ua.storage.cc[request.identifier] = body.access_token
-        request.headers.authorization = 'Bearer ' + ua.storage.cc[request.identifier]
-        return [ null ]
-    })
-})
-
-ClientCredentials.prototype.after = cadence(function (async, ua, request, response) {
-    if (response.statusCode == 401) {
-        delete ua.storage.cc[request.identifier]
-    }
-    return [ null ]
+    }, function () {
+        request = merge(request, [{ token: ua.storage.cc[expanded.identifier] }])
+        request.plugins.shift().fetch(ua, request, fetch, async())
+    }, function (body, response) {
+        if (response.statusCode == 401) {
+            delete ua.storage.cc[expanded.identifier]
+        }
+        return [ label.break ].concat(Array.prototype.slice.call(arguments))
+    })()
 })
 
 module.exports = ClientCredentials
