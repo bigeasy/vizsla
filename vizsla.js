@@ -67,32 +67,51 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
     request.plugins.push(new Transport)
     async(function () {
         request.plugins.shift().fetch(this, request, fetch, async())
-    }, function (parsed, response, buffer) {
+    }, function (converter, response) {
         response.okay = Math.floor(response.statusCode / 100) == 2
         if (!response.okay) {
             if (request.raise) {
-                throw interrupt('fetch', {
-                    statusCode: response.statusCode,
-                    url: request.url,
-                    headers: {
-                        sent: request.headers,
-                        received: response.headers
-                    }
-                }, {
-                    cause: coalesce(response.cause),
-                    properties: {
-                        response: response,
-                        body: parsed,
-                        buffer: buffer
-                    }
+                async(function () {
+                    converter.parsify(async())
+                }, function (parsed, buffer) {
+                    throw interrupt('fetch', {
+                        statusCode: response.statusCode,
+                        url: request.url,
+                        headers: {
+                            sent: request.headers,
+                            received: response.headers
+                        }
+                    }, {
+                        cause: coalesce(response.cause),
+                        properties: {
+                            body: parsed,
+                            response: response,
+                            buffer: buffer
+                        }
+                    })
                 })
+                return
             } else if (request.nullify) {
-                return [ async.break, null ]
+                return [ null ]
             } else if (request.falsify) {
-                return [ async.break, false ]
+                return [ false ]
             }
         }
-        return request.nullify || request.falsify ? [ parsed ] : [ parsed, response, buffer ]
+        async(function () {
+            if (request.response == 'stream') {
+                async(function () {
+                    converter.streamify(async())
+                }, function (stream) {
+                    return [ stream, null ]
+                })
+            } else if (request.response == 'buffer') {
+                converter.bufferify(async())
+            } else {
+                converter.parsify(async())
+            }
+        }, function (parsed, buffer) {
+            return [ parsed, response, buffer ]
+        })
     })
 })
 

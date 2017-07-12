@@ -425,11 +425,9 @@ function prove (async, assert) {
                 wait = null
                 var value, count = 0
                 while ((value = stream.read()) != null) {
-                    console.log(value)
                     count++
                     values.push(value)
                 }
-        console.log('here', count, value)
                 if (count == 0) {
                     return [ loop.break ]
                 }

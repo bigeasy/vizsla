@@ -3,6 +3,7 @@ var url = require('url')
 var cadence = require('cadence')
 var merge = require('./merge')
 var defaultify = require('./default')
+var Converter = require('./converter')
 
 function ClientCredentials (request) {
     this._request = request
@@ -27,9 +28,9 @@ ClientCredentials.prototype.fetch = cadence(function (async, ua, request, fetch)
                     response: 'parse',
                     plugins: [ null ]
                 }, async())
-            }, function (body, response) {
+            }, function (body, response, buffer) {
                 if (!response.okay || body.token_type != 'Bearer' || body.access_token == null) {
-                    return [ label.break, body, response ]
+                    return [ label.break, new Converter(response.headers, buffer, 'buffer'), response ]
                 }
                 ua.storage.cc[expanded.identifier] = body.access_token
             })

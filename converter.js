@@ -28,12 +28,17 @@ Converter.prototype._parsify = cadence(function (async) {
         this.bufferify(async())
     }, function (buffer) {
         if (fullType == 'application/json') {
-            return { json: JSON.parse(buffer.toString()) }
+            // TODO Really should be an error with a 599 error code.
+            try {
+                return { json: JSON.parse(buffer.toString()) }
+            } catch (e) {
+                return { text: buffer.toString() }
+            }
         }
         if (type.type == 'text') {
             return { contentType: fullType, text: buffer.toString() }
         }
-        return { contentType: fullType, buffer: buffer.toString('base64') }
+        return { contentType: fullType, buffer: buffer }
     })
 })
 
@@ -41,7 +46,7 @@ Converter.prototype.parsify = cadence(function (async) {
     async(function () {
         this._parsify(async())
     }, function (result) {
-        return result.json || result.text || result.buffer || result.stream
+        return [ result.json || result.text || result.buffer || result.stream, this._body ]
     })
 })
 
@@ -49,6 +54,9 @@ Converter.prototype.jsonify = cadence(function (async) {
     async(function () {
         this._parsify(async())
     }, function (result) {
+        if (result.buffer) {
+            return { contentType: result.contentType, buffer: result.buffer.toString('base64') }
+        }
         return result.json || result.stream || result
     })
 })
@@ -68,7 +76,7 @@ Converter.prototype.streamify = cadence(function (async) {
     }
 })
 
-Converter.prototype.bufferify = cadence(function (async) {
+Converter.prototype._bufferify = cadence(function (async) {
     switch (this._bodyType) {
     case 'buffer':
         return this._body
@@ -84,6 +92,14 @@ Converter.prototype.bufferify = cadence(function (async) {
             return this._body
         })
     }
+})
+
+Converter.prototype.bufferify = cadence(function (async) {
+    async(function () {
+        this._bufferify(async())
+    }, function (buffer) {
+        return [ buffer, buffer ]
+    })
 })
 
 module.exports = Converter
