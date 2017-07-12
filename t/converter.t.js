@@ -1,4 +1,4 @@
-require('proof')(9, require('cadence')(prove))
+require('proof')(11, require('cadence')(prove))
 
 function prove (async, okay) {
     var stream = require('stream')
@@ -12,6 +12,14 @@ function prove (async, okay) {
         converter.jsonify(async())
     }, function (json) {
         okay(json, { contentType: 'application/octet-stream', buffer: 'YQ==' }, 'jsonify buffer')
+        converter = new Converter({ 'content-type': 'text/plain' }, new Buffer('a'), 'buffer')
+        converter.jsonify(async())
+    }, function (json) {
+        okay(json, { contentType: 'text/plain', text: 'a' }, 'jsonify text')
+        converter = new Converter({ 'content-type': 'application/json' }, new Buffer('{'), 'buffer')
+        converter.jsonify(async())
+    }, function (json) {
+        okay(json, { contentType: 'application/json', text: '{' }, 'jsonify bad json')
         converter = new Converter({}, { a: 1 }, 'json')
         converter.parsify(async())
     }, function (json) {

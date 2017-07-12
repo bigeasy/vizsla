@@ -32,7 +32,7 @@ Converter.prototype._parsify = cadence(function (async) {
             try {
                 return { json: JSON.parse(buffer.toString()) }
             } catch (e) {
-                return { text: buffer.toString() }
+                return { contentType: 'application/json', text: buffer.toString() }
             }
         }
         if (type.type == 'text') {
