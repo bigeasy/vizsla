@@ -103,14 +103,13 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                 converter.parsify(async())
             }
         }, function (parsed, buffer) {
-            if (!request.okay) {
+            if (!response.okay) {
                 if (request.nullify) {
                     return [ null ]
                 }
                 if (request.falsify) {
                     return [ false ]
                 }
-                return [ parsed, response, buffer ]
             }
             return request.nullify || request.falsify ? [ parsed ] : [ parsed, response, buffer ]
         })
