@@ -1,4 +1,4 @@
-require('proof')(49, require('cadence')(prove))
+require('proof')(52, require('cadence')(prove))
 
 function prove (async, assert) {
     var ClientCredentials = require('../cc')
@@ -106,6 +106,13 @@ function prove (async, assert) {
             url: '/there?1',
             body: {}
         }, 'get')
+        pseudo.clear()
+        ua.fetch({
+            url: 'http://127.0.0.1:7779/',
+            nullify: true
+        }, async())
+    }, function (body) {
+        assert(body, { message: 'Hello, World!' }, 'nullify okay')
         pseudo.clear()
         ua.bind({
             url: 'http://127.0.0.1:7779/here'
@@ -435,6 +442,13 @@ function prove (async, assert) {
         }, function () {
             assert(values, [ 1, 2, 3 ], 'values')
         })
+    }, function () {
+        ua.fetch({ url: 'http://127.0.0.1:7779' }, async()).cancel()
+    }, function (result, response) {
+        assert(response.statusCode, 599, 'cancel')
+        ua.fetch({ url: 'http://127.0.0.1:7779' }).response.wait(async())
+    }, function (result) {
+        assert(result, { message: 'Hello, World!' }, 'cancel')
     }, function () {
 // SSL!
         binder = [
