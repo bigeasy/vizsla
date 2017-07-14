@@ -28,7 +28,7 @@
                             "interrupt":                    "5.0.x",
                             "media-typer":                  "0.3.0",
                             "nop":                          "1.0.0",
-                            "signal":                       "1.10.x"
+                            "signal":                       "3.0.x"
     },
     "devDependencies":
     {
