@@ -10,9 +10,15 @@ module.exports = function (request) {
     if (request.response == null || request.response == 'parse') {
         request = merge(request, [{ headers: { accept: 'application/json' } }])
     }
-    if (request.payload != null && !Buffer.isBuffer(request.payload)) {
+    if (('payload' in request) && !Buffer.isBuffer(request.payload)) {
         request = merge(request, [{ headers: { 'content-type': 'application/json' } }])
         request.payload = new Buffer(JSON.stringify(request.payload))
+    }
+    // TODO Not right, really. Needs to be converted into an array.
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
+    // TODO Do you want to rename `payload` to `buffer`? Meh.
+    if (request.payload != null && request.headers['transfer-encoding'] != 'chunked') {
+        request.headers['content-length'] = request.payload.length
     }
     var expanded = {}
     for (var name in request) {

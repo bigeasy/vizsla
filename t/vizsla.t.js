@@ -190,7 +190,7 @@ function prove (async, assert) {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
-                'transfer-encoding': 'chunked',
+                'content-length': '7',
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
@@ -226,7 +226,7 @@ function prove (async, assert) {
             },
             url: '/there',
             body: { a: 1 }
-        }, 'payload')
+        }, 'upload')
         pseudo.clear()
         ua.fetch({
             url: 'http://127.0.0.1:7779/here'
@@ -243,7 +243,7 @@ function prove (async, assert) {
             method: 'PUT',
             headers: {
                 'content-type': 'application/json',
-                'transfer-encoding': 'chunked',
+                'content-length': '7',
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
@@ -268,7 +268,7 @@ function prove (async, assert) {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
-                'transfer-encoding': 'chunked',
+                'content-length': '7',
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
@@ -293,7 +293,7 @@ function prove (async, assert) {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
-                'transfer-encoding': 'chunked',
+                'content-length': '7',
                 accept: 'application/json',
                 host: '127.0.0.1:7779',
                 greeting: 'Hello, World!',
@@ -411,7 +411,7 @@ function prove (async, assert) {
                 authorization: 'Basic YTp6',
                 'content-type': 'application/json',
                 accept: 'application/json',
-                'transfer-encoding': 'chunked',
+                'content-length': '35',
                 host: '127.0.0.1:7779',
                 connection: connection
             },
