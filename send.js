@@ -18,8 +18,9 @@ module.exports = cadence(function (async, http, request, cancel) {
     }
     async(function () {
         var wait = delta(async()).ee(client).on('response')
-        cancel.wait(function () { client.abort() })
-        client.on('abort', function () {
+        cancel.wait(function () {
+            request.input.unpipe()
+            client.abort()
             var error = new Error('socket hang up')
             error.code = 'ECONNRESET'
             wait.cancel([ error ])
