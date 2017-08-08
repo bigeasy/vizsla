@@ -1,4 +1,4 @@
-require('proof')(52, require('cadence')(prove))
+require('proof')(53, require('cadence')(prove))
 
 function prove (async, assert) {
     var ClientCredentials = require('../cc')
@@ -185,6 +185,34 @@ function prove (async, assert) {
                 greeting: 'Hello, World!'
             }
         }, async())
+    }, function () {
+        assert(pseudo.shift(), {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                'transfer-encoding': 'chunked',
+                accept: 'application/json',
+                host: '127.0.0.1:7779',
+                greeting: 'Hello, World!',
+                connection: connection
+            },
+            url: '/there',
+            body: { a: 1 }
+        }, 'payload')
+        pseudo.clear()
+        var fetch = ua.fetch({
+            url: 'http://127.0.0.1:7779/here'
+        }, {
+            url: '/there',
+            method: 'POST'
+        }, {
+            headers: {
+                'content-type': 'application/json',
+                greeting: 'Hello, World!'
+            }
+        }, async())
+        fetch.input.write(JSON.stringify({ a: 1 }))
+        fetch.input.end()
     }, function () {
         assert(pseudo.shift(), {
             method: 'POST',

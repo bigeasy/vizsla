@@ -50,6 +50,7 @@ UserAgent.prototype.fetch = function () {
     merged.input = new stream.PassThrough
 
     var fetch = new Fetch
+    merged.input = fetch.input
 
     if (callback != null) {
         fetch.response.wait(callback)

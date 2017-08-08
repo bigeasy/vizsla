@@ -27,7 +27,19 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
             if (('payload' in request)) {
                 request.input.write(request.payload)
             }
-            request.input.end()
+            // TODO Should we close ourselves based on headers or a flag? There
+            // should be a flag to defeat this behavior, maybe, or else maybe if
+            // you have an API where you need to pass a body to DELETE you need
+            // to use `http` directly to accommodate that. Should be more like
+            // cURL, defaults and defeats.
+            if (
+                ('payload' in request) ||
+                request.method == 'HEAD' ||
+                request.method == 'DELETE' ||
+                request.method == 'GET'
+            ) {
+                request.input.end()
+            }
         }, function (error) {
             var body = error.message
             console.log(error.stack)
