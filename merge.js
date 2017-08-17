@@ -61,6 +61,8 @@ module.exports = function (base, vargs, ua) {
                 merged.method = name.toUpperCase()
             } else if (name == 'body') {
                 merged.payload = varg.body
+            } else if (name == 'method') {
+                merged.method = varg.method.toUpperCase()
             } else {
                 merged[name] = varg[name]
             }
