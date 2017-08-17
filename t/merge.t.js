@@ -1,4 +1,4 @@
-require('proof')(10, prove)
+require('proof')(11, prove)
 
 function prove (okay) {
     var merge = require('../merge')
@@ -18,5 +18,6 @@ function prove (okay) {
         okay(true, 'cc depricated')
     }
     okay(merge({ put: {} }, []), { method: 'PUT', payload: {} }, 'put')
+    okay(merge({ method: 'post', body: {} }, []), { method: 'POST', payload: {} }, 'post')
     okay(merge({ body: {} }, []), { payload: {} }, 'body')
 }
