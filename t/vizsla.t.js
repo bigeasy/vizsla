@@ -368,6 +368,7 @@ function prove (async, assert) {
         })
         ua.fetch({ url: 'http://127.0.0.1:7779' }, async())
     }, function (body, response) {
+        console.log(body)
         assert(body.toString(), 'Hello, World!', 'unknown')
         assert(response.headers['content-type'], 'application/octet-stream', 'unknown content-type')
         pseudo.push({

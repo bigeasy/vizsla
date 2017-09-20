@@ -46,7 +46,7 @@ Converter.prototype.parsify = cadence(function (async) {
     async(function () {
         this._parsify(async())
     }, function (result) {
-        return [ result.json || result.text || result.buffer || result.stream, this._body ]
+        return [ result.buffer || result.stream || (('json' in result) ? result.json : result.text), this._body ]
     })
 })
 
