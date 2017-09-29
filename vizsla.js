@@ -91,6 +91,14 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                     })
                 })
         }
+        if (!response.okay) {
+            if (request.nullify) {
+                return [ null ]
+            }
+            if (request.falsify) {
+                return [ false ]
+            }
+        }
         async(function () {
             if (request.response == 'stream') {
                 async(function () {
@@ -104,14 +112,6 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
                 converter.parsify(async())
             }
         }, function (parsed, buffer) {
-            if (!response.okay) {
-                if (request.nullify) {
-                    return [ null ]
-                }
-                if (request.falsify) {
-                    return [ false ]
-                }
-            }
             return request.nullify || request.falsify ? [ parsed ] : [ parsed, response, buffer ]
         })
     })
