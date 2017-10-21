@@ -26,7 +26,7 @@ Converter.prototype._parsify = cadence(function (async) {
     }
     async(function () {
         this.bufferify(async())
-    }, function (buffer) {
+    }, function (parsed, buffer) {
         if (fullType == 'application/json') {
             // TODO Really should be an error with a 599 error code.
             try {
@@ -46,7 +46,7 @@ Converter.prototype.parsify = cadence(function (async) {
     async(function () {
         this._parsify(async())
     }, function (result) {
-        return [ result.buffer || result.stream || (('json' in result) ? result.json : result.text), this._body ]
+        return [ true, result.buffer || result.stream || (('json' in result) ? result.json : result.text), this._body ]
     })
 })
 
@@ -55,9 +55,9 @@ Converter.prototype.jsonify = cadence(function (async) {
         this._parsify(async())
     }, function (result) {
         if (result.buffer) {
-            return { contentType: result.contentType, buffer: result.buffer.toString('base64') }
+            return [ true, { contentType: result.contentType, buffer: result.buffer.toString('base64') } ]
         }
-        return result.json || result.stream || result
+        return [ true, result.json || result.stream || result ]
     })
 })
 
@@ -65,14 +65,14 @@ Converter.prototype.streamify = cadence(function (async) {
     var body = this._body
     switch (this._bodyType) {
     case 'stream':
-        return body
+        return [ true, body ]
     case 'json':
         body = JSON.stringify(body)
     case 'buffer':
         var readable = new stream.PassThrough
         readable.write(body)
         readable.end()
-        return readable
+        return [ true, readable ]
     }
 })
 
@@ -98,7 +98,7 @@ Converter.prototype.bufferify = cadence(function (async) {
     async(function () {
         this._bufferify(async())
     }, function (buffer) {
-        return [ buffer, buffer ]
+        return [ true, buffer, buffer ]
     })
 })
 

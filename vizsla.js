@@ -73,7 +73,7 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
         if (!response.okay && request.raise) {
                 async(function () {
                     converter.parsify(async())
-                }, function (parsed, buffer) {
+                }, function (okay, parsed, buffer) {
                     throw interrupt('fetch', {
                         statusCode: response.statusCode,
                         url: request.url,
@@ -103,15 +103,15 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
             if (request.response == 'stream') {
                 async(function () {
                     converter.streamify(async())
-                }, function (stream) {
-                    return [ stream, null ]
+                }, function (okay, stream) {
+                    return [ okay, stream, null ]
                 })
             } else if (request.response == 'buffer') {
                 converter.bufferify(async())
             } else {
                 converter.parsify(async())
             }
-        }, function (parsed, buffer) {
+        }, function (okay, parsed, buffer) {
             return request.nullify || request.falsify ? [ parsed ] : [ parsed, response, buffer ]
         })
     })
