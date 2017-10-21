@@ -7,7 +7,6 @@ module.exports = cadence(function (async, http, request, cancel) {
     var options = extractOptions(request)
     var client = http.request(options)
     async(function () {
-        console.log('waiting', request.url.href)
         var wait = delta(async()).ee(client).on('response')
         cancel.wait(function () {
             client.once('error', function (error) { assert(error.message == 'socket hang up') })
