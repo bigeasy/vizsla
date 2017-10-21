@@ -1,24 +1,16 @@
 var cadence = require('cadence')
 var delta = require('delta')
+var assert = require('assert')
 var extractOptions = require('./options')
 
 module.exports = cadence(function (async, http, request, cancel) {
     var options = extractOptions(request)
     var client = http.request(options)
-    client.once('error', listener('request'))
-    function listener (direction) {
-        return function (error) {
-            // What do to about? http://stackoverflow.com/a/16995223/90123
-            console.error(direction + ' error', {
-                url: request.url,
-                headers: request.headers,
-            })
-            console.log(error.stack)
-        }
-    }
     async(function () {
+        console.log('waiting', request.url.href)
         var wait = delta(async()).ee(client).on('response')
         cancel.wait(function () {
+            client.once('error', function (error) { assert(error.message == 'socket hang up') })
             request.input.unpipe()
             client.abort()
             var error = new Error('socket hang up')
@@ -31,7 +23,6 @@ module.exports = cadence(function (async, http, request, cancel) {
         // TODO Fetch and Reqest can have the same `PassThrough`.
         request.input.pipe(client)
     }, function (response) {
-        response.once('error', listener('response'))
         return [ response, client ]
     })
 })
