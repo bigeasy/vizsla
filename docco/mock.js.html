@@ -25,8 +25,13 @@
                 </a>
 
 
-                <a class="source" href="http.js.html">
-                  http.js
+                <a class="source" href="converter.js.html">
+                  converter.js
+                </a>
+
+
+                <a class="source" href="default.js.html">
+                  default.js
                 </a>
 
 
@@ -35,13 +40,38 @@
                 </a>
 
 
+                <a class="source" href="merge.js.html">
+                  merge.js
+                </a>
+
+
                 <a class="source" href="mock.js.html">
                   mock.js
                 </a>
 
 
+                <a class="source" href="network.js.html">
+                  network.js
+                </a>
+
+
                 <a class="source" href="notes.js.html">
                   notes.js
+                </a>
+
+
+                <a class="source" href="options.js.html">
+                  options.js
+                </a>
+
+
+                <a class="source" href="send.js.html">
+                  send.js
+                </a>
+
+
+                <a class="source" href="transport.js.html">
+                  transport.js
                 </a>
 
 
@@ -73,58 +103,20 @@
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
-<span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
-<span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>)
-<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
-<span class="hljs-keyword">var</span> events = <span class="hljs-built_in">require</span>(<span class="hljs-string">'events'</span>)
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> send = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./send'</span>)
 <span class="hljs-keyword">var</span> Interlocutor = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interlocutor'</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Transport</span> (<span class="hljs-params">middleware</span>) </span>{
     <span class="hljs-keyword">this</span>._interlocutor = <span class="hljs-keyword">new</span> Interlocutor(middleware)
 }
 
-Transport.prototype.send = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, request</span>) </span>{
-    <span class="hljs-keyword">var</span> client = <span class="hljs-keyword">this</span>._interlocutor.request(request.options)
-    client.once(<span class="hljs-string">'error'</span>, listener(<span class="hljs-string">'request'</span>))
-    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">listener</span> (<span class="hljs-params">direction</span>) </span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{</pre></div></div>
+Transport.prototype.send = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">request, cancel, callback</span>) </span>{
+    send(<span class="hljs-keyword">this</span>._interlocutor, request, cancel, callback)
+}
 
-        </li>
+<span class="hljs-built_in">module</span>.exports = Transport
 
-
-        <li id="section-2">
-            <div class="annotation">
-
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>
-              <p>What do to about? <a href="http://stackoverflow.com/a/16995223/90123">http://stackoverflow.com/a/16995223/90123</a></p>
-
-            </div>
-
-            <div class="content"><div class='highlight'><pre>            <span class="hljs-built_in">console</span>.error(direction + <span class="hljs-string">' error'</span>, {
-                <span class="hljs-attr">url</span>: request.options.url,
-                <span class="hljs-attr">headers</span>: request.options.headers,
-            })
-            <span class="hljs-built_in">console</span>.log(error.stack)
-        }
-    }
-    <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        delta(<span class="hljs-keyword">async</span>()).ee(client).on(<span class="hljs-string">'response'</span>)
-        <span class="hljs-keyword">if</span> (request.timeout) {
-            client.setTimeout(request.timeout, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-                client.abort()
-            })
-        }
-        request.input.pipe(client)
-    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response</span>) </span>{
-        response.once(<span class="hljs-string">'error'</span>, listener(<span class="hljs-string">'response'</span>))
-        <span class="hljs-keyword">return</span> [ response, client ]
-    })
-})
-
-<span class="hljs-built_in">module</span>.exports = Transport</pre></div></div>
+</pre></div></div>
 
         </li>
 

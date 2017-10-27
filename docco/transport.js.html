@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>transport.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+
+
+                <a class="source" href="cc.js.html">
+                  cc.js
+                </a>
+
+
+                <a class="source" href="converter.js.html">
+                  converter.js
+                </a>
+
+
+                <a class="source" href="default.js.html">
+                  default.js
+                </a>
+
+
+                <a class="source" href="jsons.js.html">
+                  jsons.js
+                </a>
+
+
+                <a class="source" href="merge.js.html">
+                  merge.js
+                </a>
+
+
+                <a class="source" href="mock.js.html">
+                  mock.js
+                </a>
+
+
+                <a class="source" href="network.js.html">
+                  network.js
+                </a>
+
+
+                <a class="source" href="notes.js.html">
+                  notes.js
+                </a>
+
+
+                <a class="source" href="options.js.html">
+                  options.js
+                </a>
+
+
+                <a class="source" href="send.js.html">
+                  send.js
+                </a>
+
+
+                <a class="source" href="transport.js.html">
+                  transport.js
+                </a>
+
+
+                <a class="source" href="vizsla.js.html">
+                  vizsla.js
+                </a>
+
+            </div>
+          </div>
+        </li>
+      </ul>
+
+    <ul class="sections">
+
+          <li id="title">
+              <div class="annotation">
+                  <h1>transport.js</h1>
+              </div>
+          </li>
+
+
+
+        <li id="section-1">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+<span class="hljs-keyword">var</span> _stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
+<span class="hljs-keyword">var</span> typer = <span class="hljs-built_in">require</span>(<span class="hljs-string">'media-typer'</span>)
+<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
+<span class="hljs-keyword">var</span> defaultify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./default'</span>)
+<span class="hljs-keyword">var</span> byline = <span class="hljs-built_in">require</span>(<span class="hljs-string">'byline'</span>)
+<span class="hljs-keyword">var</span> JsonStream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./jsons'</span>)
+<span class="hljs-keyword">var</span> Converter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./converter'</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Transport</span> (<span class="hljs-params"></span>) </span>{
+}
+
+Transport.prototype.fetch = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, ua, request, fetch</span>) </span>{
+    request = defaultify(request)
+    <span class="hljs-keyword">var</span> sent = {
+        <span class="hljs-attr">url</span>: request.url,
+        <span class="hljs-attr">options</span>: request.options,
+        <span class="hljs-attr">body</span>: request.payload,
+        <span class="hljs-attr">when</span>: <span class="hljs-built_in">Date</span>.now(),
+        <span class="hljs-attr">duration</span>: <span class="hljs-literal">null</span>
+    }
+    <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">async</span>([<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            ua._transport.send(request, fetch._cancel, <span class="hljs-keyword">async</span>())
+</pre></div></div>
+
+        </li>
+
+
+        <li id="section-2">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>TODO Make this terminate correctly and pipe up a stream
+correctly.</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> ((<span class="hljs-string">'payload'</span> <span class="hljs-keyword">in</span> request)) {
+                request.input.write(request.payload)
+            }
+</pre></div></div>
+
+        </li>
+
+
+        <li id="section-3">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>TODO Should we close ourselves based on headers or a flag? There
+should be a flag to defeat this behavior, maybe, or else maybe if
+you have an API where you need to pass a body to DELETE you need
+to use <code>http</code> directly to accommodate that. Should be more like
+cURL, defaults and defeats.</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (
+                (<span class="hljs-string">'payload'</span> <span class="hljs-keyword">in</span> request) ||
+                request.method == <span class="hljs-string">'HEAD'</span> ||
+                request.method == <span class="hljs-string">'DELETE'</span> ||
+                request.method == <span class="hljs-string">'GET'</span>
+            ) {
+                request.input.end()
+            }
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
+            <span class="hljs-keyword">var</span> body = error.message
+            <span class="hljs-built_in">console</span>.log(error.stack)
+            <span class="hljs-keyword">var</span> response = {
+                <span class="hljs-attr">statusCode</span>: <span class="hljs-number">599</span>,
+                <span class="hljs-attr">duration</span>: <span class="hljs-built_in">Date</span>.now() - sent.when,
+                <span class="hljs-attr">errno</span>: error.code,
+                <span class="hljs-attr">okay</span>: <span class="hljs-literal">false</span>,
+                <span class="hljs-attr">sent</span>: sent,
+                <span class="hljs-attr">cause</span>: error,
+                <span class="hljs-attr">headers</span>: {
+                    <span class="hljs-string">'content-length'</span>: body.length,
+                    <span class="hljs-string">'content-type'</span>: <span class="hljs-string">'text/plain'</span>
+                }
+            }
+            <span class="hljs-keyword">return</span> [ <span class="hljs-keyword">async</span>.break, <span class="hljs-keyword">new</span> Converter(response.headers, <span class="hljs-keyword">new</span> Buffer(body), <span class="hljs-string">'buffer'</span>), response ]
+        }], <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response, _request</span>) </span>{
+            <span class="hljs-keyword">return</span> [ <span class="hljs-keyword">new</span> Converter(response.headers, response, <span class="hljs-string">'stream'</span>), response ]
+        })
+    })
+})
+
+<span class="hljs-built_in">module</span>.exports = Transport
+
+</pre></div></div>
+
+        </li>
+
+    </ul>
+  </div>
+</body>
+</html>

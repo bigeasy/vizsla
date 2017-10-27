@@ -25,8 +25,13 @@
                 </a>
 
 
-                <a class="source" href="http.js.html">
-                  http.js
+                <a class="source" href="converter.js.html">
+                  converter.js
+                </a>
+
+
+                <a class="source" href="default.js.html">
+                  default.js
                 </a>
 
 
@@ -35,13 +40,38 @@
                 </a>
 
 
+                <a class="source" href="merge.js.html">
+                  merge.js
+                </a>
+
+
                 <a class="source" href="mock.js.html">
                   mock.js
                 </a>
 
 
+                <a class="source" href="network.js.html">
+                  network.js
+                </a>
+
+
                 <a class="source" href="notes.js.html">
                   notes.js
+                </a>
+
+
+                <a class="source" href="options.js.html">
+                  options.js
+                </a>
+
+
+                <a class="source" href="send.js.html">
+                  send.js
+                </a>
+
+
+                <a class="source" href="transport.js.html">
+                  transport.js
                 </a>
 
 
@@ -73,29 +103,28 @@
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> byline = <span class="hljs-built_in">require</span>(<span class="hljs-string">'byline'</span>)
-<span class="hljs-keyword">var</span> JsonStream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./jsons'</span>)
-<span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
 <span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
 <span class="hljs-keyword">var</span> url = <span class="hljs-built_in">require</span>(<span class="hljs-string">'url'</span>)
 <span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
-<span class="hljs-keyword">var</span> typer = <span class="hljs-built_in">require</span>(<span class="hljs-string">'media-typer'</span>)
 <span class="hljs-keyword">var</span> assert = <span class="hljs-built_in">require</span>(<span class="hljs-string">'assert'</span>)
-<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
 <span class="hljs-keyword">var</span> noop = <span class="hljs-built_in">require</span>(<span class="hljs-string">'nop'</span>)
 <span class="hljs-keyword">var</span> Signal = <span class="hljs-built_in">require</span>(<span class="hljs-string">'signal'</span>)
 <span class="hljs-keyword">var</span> slice = [].slice
 <span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'vizsla'</span>)
+<span class="hljs-keyword">var</span> Transport = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./transport'</span>)
 <span class="hljs-keyword">var</span> transport = {
-    <span class="hljs-attr">HTTP</span>: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./http'</span>),
+    <span class="hljs-attr">Network</span>: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./network'</span>),
     <span class="hljs-attr">Mock</span>: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./mock'</span>)
 }
 <span class="hljs-keyword">var</span> ClientCredentials = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./cc'</span>)
+<span class="hljs-keyword">var</span> merge = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./merge'</span>)
+<span class="hljs-keyword">var</span> defaultify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./default'</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">UserAgent</span> (<span class="hljs-params">middleware</span>) </span>{
     <span class="hljs-keyword">this</span>._bind = []
     <span class="hljs-keyword">this</span>.storage = {}
-    <span class="hljs-keyword">this</span>._transport = middleware ? <span class="hljs-keyword">new</span> transport.Mock(middleware) : <span class="hljs-keyword">new</span> transport.HTTP
+    <span class="hljs-keyword">this</span>._transport = middleware ? <span class="hljs-keyword">new</span> transport.Mock(middleware) : transport.Network
 }
 
 UserAgent.prototype.bind = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
@@ -110,281 +139,92 @@ UserAgent.prototype.bind = <span class="hljs-function"><span class="hljs-keyword
     <span class="hljs-keyword">this</span>.input = <span class="hljs-keyword">new</span> stream.PassThrough
     <span class="hljs-keyword">this</span>.request = <span class="hljs-keyword">new</span> Signal
     <span class="hljs-keyword">this</span>.response = <span class="hljs-keyword">new</span> Signal
+    <span class="hljs-keyword">this</span>._cancel = <span class="hljs-keyword">new</span> Signal
+}
+
+Fetch.prototype.cancel = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>._cancel.unlatch()
 }
 
 UserAgent.prototype.fetch = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
     <span class="hljs-keyword">var</span> vargs = slice.call(<span class="hljs-built_in">arguments</span>)
     <span class="hljs-keyword">var</span> callback = (<span class="hljs-keyword">typeof</span> vargs[vargs.length - <span class="hljs-number">1</span>] == <span class="hljs-string">'function'</span>) ? vargs.pop() : <span class="hljs-literal">null</span>
-    <span class="hljs-keyword">var</span> request = {
-        <span class="hljs-attr">options</span>: { <span class="hljs-attr">headers</span>: {} }
-    }
 
-    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">override</span> (<span class="hljs-params">object</span>) </span>{
-        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(object)) {
-            object.forEach(override)
-        } <span class="hljs-keyword">else</span> {
-            <span class="hljs-keyword">if</span> (object.socketPath) {
-                override({ <span class="hljs-attr">url</span>: <span class="hljs-string">'http://'</span> + <span class="hljs-built_in">encodeURIComponent</span>(object.socketPath) + <span class="hljs-string">'@unix'</span> })
-            }
-            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> key <span class="hljs-keyword">in</span> object) {
-                <span class="hljs-keyword">if</span> (key == <span class="hljs-string">'socketPath'</span>) {
-                    <span class="hljs-keyword">continue</span>
-                } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (key == <span class="hljs-string">'url'</span>) {
-                    <span class="hljs-keyword">if</span> (request.options.url) {
-                        request.options.url = url.resolve(request.options.url, object.url)
-                    } <span class="hljs-keyword">else</span> {
-                        request.options[key] = object[key]
-                        request.baseUrl = url.parse(object.url)
-                    }
-                } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (key == <span class="hljs-string">'headers'</span>) {
-                    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> header <span class="hljs-keyword">in</span> object.headers) {
-                        request.options.headers[header.toLowerCase()] = object.headers[header]
-                    }
-                } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-regexp">/^(?:response|context|body|payload|grant|token|timeout|post|put|raise|nullify|plugins|log)$/</span>.test(key)) {
-                    request[key] = object[key]
-                } <span class="hljs-keyword">else</span> {
-                    request.options[key] = object[key]
-                }
-            }
-        }
-    }
+    <span class="hljs-keyword">var</span> merged = merge(<span class="hljs-keyword">this</span>._bind, vargs.slice(), <span class="hljs-keyword">this</span>)
 
-    <span class="hljs-keyword">this</span>._bind.concat(slice.call(vargs)).forEach(override)
+    merged.input = <span class="hljs-keyword">new</span> stream.PassThrough
 
-    <span class="hljs-keyword">if</span> (request.plugins == <span class="hljs-literal">null</span>) {
-        request.plugins = []
-    }
-    <span class="hljs-keyword">if</span> (request.grant == <span class="hljs-string">'cc'</span>) {
-        request.plugins.push(<span class="hljs-keyword">new</span> ClientCredentials(<span class="hljs-keyword">this</span>))
-    }
-
-    <span class="hljs-keyword">if</span> (request.put) {
-        request.payload = request.put
-        request.options.method = <span class="hljs-string">'PUT'</span>
-    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (request.post) {
-        request.payload = request.post
-        request.options.method = <span class="hljs-string">'POST'</span>
-    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (request.body) {
-        request.payload = request.body
-    }
-    <span class="hljs-keyword">if</span> (!request.options.method) {
-        request.options.method = request.payload ? <span class="hljs-string">'POST'</span> : <span class="hljs-string">'GET'</span>
-    }
-    <span class="hljs-keyword">if</span> (request.payload &amp;&amp; !request.options.headers[<span class="hljs-string">'content-type'</span>]) {
-        request.options.headers[<span class="hljs-string">'content-type'</span>] = <span class="hljs-string">'application/json'</span>
-    }
-    request.options.headers[<span class="hljs-string">'accept'</span>] = <span class="hljs-string">'application/json'</span>
-    request.url = url.parse(request.options.url)
-
-    <span class="hljs-keyword">if</span> (request.url.hostname == <span class="hljs-string">'unix'</span>) {
-        <span class="hljs-keyword">var</span> $ = <span class="hljs-regexp">/^(?:(.*):)?(.*)$/</span>.exec(request.url.auth)
-        request.url.auth = coalesce($[<span class="hljs-number">1</span>])
-        request.options.socketPath = $[<span class="hljs-number">2</span>]
-    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!request.options.socketPath) {
-        request.options.hostname = request.url.hostname
-        request.options.port = request.url.port
-    }
-    request.options.path = url.format({
-        <span class="hljs-attr">pathname</span>: request.url.pathname,
-        <span class="hljs-attr">search</span>: request.url.search,
-        <span class="hljs-attr">hash</span>: request.url.hash
-    })
-
-    request.key = request.url.hostname + <span class="hljs-string">':'</span> + request.url.port
-
-    request.input = <span class="hljs-keyword">new</span> stream.PassThrough
-
-    request.response || (request.response = <span class="hljs-string">'parse'</span>)
-
-    <span class="hljs-keyword">var</span> fetch = <span class="hljs-keyword">new</span> Fetch(<span class="hljs-keyword">this</span>, request)
+    <span class="hljs-keyword">var</span> fetch = <span class="hljs-keyword">new</span> Fetch
+    merged.input = fetch.input
 
     <span class="hljs-keyword">if</span> (callback != <span class="hljs-literal">null</span>) {
         fetch.response.wait(callback)
     }
 
-    <span class="hljs-keyword">this</span>._fetch(request, fetch, fetch.response.unlatch.bind(fetch.response))
+    <span class="hljs-keyword">this</span>._fetch(merged, fetch, fetch.response.unlatch.bind(fetch.response))
 
     <span class="hljs-keyword">return</span> fetch
 }
 
 UserAgent.prototype._fetch = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, request, fetch</span>) </span>{
-    <span class="hljs-keyword">var</span> log = request.log || noop
-    <span class="hljs-keyword">var</span> sent = {
-        <span class="hljs-attr">url</span>: request.url,
-        <span class="hljs-attr">options</span>: request.options,
-        <span class="hljs-attr">body</span>: request.payload,
-        <span class="hljs-attr">when</span>: <span class="hljs-built_in">Date</span>.now(),
-        <span class="hljs-attr">duration</span>: <span class="hljs-literal">null</span>
+    <span class="hljs-keyword">if</span> (request.plugins == <span class="hljs-literal">null</span>) {
+        request.plugins = []
     }
+    request.plugins.push(<span class="hljs-keyword">new</span> Transport)
     <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        <span class="hljs-keyword">var</span> loop = <span class="hljs-keyword">async</span>.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">plugin</span>) </span>{
-            plugin.before(<span class="hljs-keyword">this</span>, request, <span class="hljs-keyword">async</span>())
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">outcome</span>) </span>{
-            <span class="hljs-keyword">if</span> (outcome != <span class="hljs-literal">null</span>) {
-                <span class="hljs-keyword">return</span> [ loop.break, outcome ]
-            }
-        })(request.plugins)
-    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">outcome</span>) </span>{
-        fetch.request.unlatch(<span class="hljs-literal">null</span>, outcome == <span class="hljs-literal">null</span>, fetch)
-        <span class="hljs-keyword">if</span> (outcome != <span class="hljs-literal">null</span>) {
-            <span class="hljs-keyword">return</span> [ outcome.body, outcome.response, outcome.buffer ]
-        }
-        <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-            <span class="hljs-keyword">if</span> (request.token) {
-                request.options.headers.authorization = <span class="hljs-string">'Bearer '</span> + request.token
-            }
-            <span class="hljs-keyword">if</span> (request.payload &amp;&amp; !Buffer.isBuffer(request.payload)) {
-                request.payload = <span class="hljs-keyword">new</span> Buffer(<span class="hljs-built_in">JSON</span>.stringify(request.payload))
-            }
-            <span class="hljs-keyword">if</span> (request.payload) {
-                request.options.headers[<span class="hljs-string">'content-length'</span>] = request.payload.length
-            }
-            <span class="hljs-keyword">async</span>([<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-                log(<span class="hljs-string">'request'</span>, sent)
-                <span class="hljs-keyword">this</span>._transport.send(request, <span class="hljs-keyword">async</span>())
-                <span class="hljs-keyword">if</span> ((<span class="hljs-string">'payload'</span> <span class="hljs-keyword">in</span> request)) {
-                    request.input.write(request.payload)
-                }
-                request.input.end()
-            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
-                <span class="hljs-keyword">var</span> body = error.message
-                <span class="hljs-keyword">var</span> response = {
-                    <span class="hljs-attr">statusCode</span>: <span class="hljs-number">599</span>,
-                    <span class="hljs-attr">duration</span>: <span class="hljs-built_in">Date</span>.now() - sent.when,
-                    <span class="hljs-attr">errno</span>: error.code,
-                    <span class="hljs-attr">okay</span>: <span class="hljs-literal">false</span>,
-                    <span class="hljs-attr">sent</span>: sent,
-                    <span class="hljs-attr">cause</span>: error,
-                    <span class="hljs-attr">headers</span>: {
-                        <span class="hljs-string">'content-length'</span>: body.length,
-                        <span class="hljs-string">'content-type'</span>: <span class="hljs-string">'text/plain'</span>
-                    }
-                }
-                <span class="hljs-keyword">switch</span> (request.response) {
-                <span class="hljs-keyword">case</span> <span class="hljs-string">'stream'</span>:
-                    <span class="hljs-keyword">var</span> stream = <span class="hljs-keyword">new</span> stream.PassThrough
-                    stream.write(body)
-                    stream.end()
-                    body = stream
-                    <span class="hljs-keyword">break</span>
-                <span class="hljs-keyword">case</span> <span class="hljs-string">'buffer'</span>:
-                    body = <span class="hljs-keyword">new</span> Buffer(body)
-                    <span class="hljs-keyword">break</span>
-                }
-                <span class="hljs-keyword">return</span> [ <span class="hljs-keyword">async</span>.break, body, response ]
-            }], <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response, _request</span>) </span>{
-                <span class="hljs-keyword">var</span> chunks = []
-                <span class="hljs-keyword">var</span> type = typer.parse(response.headers[<span class="hljs-string">'content-type'</span>] || <span class="hljs-string">'application/octet-stream'</span>)
-                <span class="hljs-keyword">var</span> fullType = type.type + <span class="hljs-string">'/'</span> + type.subtype
-                <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-                    <span class="hljs-keyword">if</span> (request.response == <span class="hljs-string">'parse'</span> &amp;&amp; fullType == <span class="hljs-string">'application/json-stream'</span>) {
-                        <span class="hljs-keyword">return</span> [ response.pipe(byline()).pipe(<span class="hljs-keyword">new</span> JsonStream()) ]
-                    }
-                    <span class="hljs-keyword">if</span> (request.response == <span class="hljs-string">'stream'</span>) {
-                        <span class="hljs-keyword">return</span> [ response, request ]
-                    }
-                    <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-                        delta(<span class="hljs-keyword">async</span>())
-                            .ee(_request)
-                            .ee(response)
-                                .on(<span class="hljs-string">'data'</span>, [])
-                                .on(<span class="hljs-string">'end'</span>)
-                    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunks</span>) </span>{
-                        <span class="hljs-keyword">return</span> [ Buffer.concat(chunks) ]
-                    })
-                }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">buffer</span>) </span>{
-                    response.duration = <span class="hljs-built_in">Date</span>.now() - sent.when
-                    response.sent = sent
-                    <span class="hljs-keyword">var</span> parsed = buffer
-                    <span class="hljs-keyword">if</span> (request.response == <span class="hljs-string">'stream'</span>) {
-                        <span class="hljs-keyword">return</span> [ parsed, response, <span class="hljs-literal">null</span> ]
-                    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (request.response == <span class="hljs-string">'buffer'</span>) {
-                        <span class="hljs-keyword">return</span> [ parsed, response, buffer  ]
-                    }
-                    <span class="hljs-keyword">switch</span> (type.type + <span class="hljs-string">'/'</span> + type.subtype) {
-                    <span class="hljs-keyword">case</span> <span class="hljs-string">'application/json-stream'</span>:
-                        <span class="hljs-keyword">return</span> [ buffer, response ]
-                    <span class="hljs-keyword">case</span> <span class="hljs-string">'application/json'</span>:
-                        <span class="hljs-keyword">try</span> {
-                            parsed = <span class="hljs-built_in">JSON</span>.parse(buffer.toString())
-                        } <span class="hljs-keyword">catch</span> (e) {
-                            parsed = buffer.toString()
-                        }
-                        <span class="hljs-keyword">break</span>
-                    <span class="hljs-keyword">case</span> <span class="hljs-string">'text/html'</span>:
-                    <span class="hljs-keyword">case</span> <span class="hljs-string">'text/plain'</span>:
-                        parsed = buffer.toString()
-                        <span class="hljs-keyword">break</span>
-                    }
-                    <span class="hljs-keyword">return</span> [ parsed, response, buffer ]
-                })
-            })
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response</span>) </span>{
-            log(<span class="hljs-string">'response'</span>, {
-                <span class="hljs-attr">sent</span>: sent,
-                <span class="hljs-attr">received</span>: {
-                    <span class="hljs-attr">duration</span>: response.duration,
-                    <span class="hljs-attr">statusCode</span>: response.statusCode,
-                    <span class="hljs-attr">headers</span>: response.headers,
-                    <span class="hljs-attr">body</span>: request.response == <span class="hljs-string">'parsed'</span> ? body : (<span class="hljs-keyword">void</span>(<span class="hljs-number">0</span>))
-                }
-            })
-        })
-    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">parsed, response, buffer</span>) </span>{
+        request.plugins.shift().fetch(<span class="hljs-keyword">this</span>, request, fetch, <span class="hljs-keyword">async</span>())
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">converter, response</span>) </span>{
         response.okay = <span class="hljs-built_in">Math</span>.floor(response.statusCode / <span class="hljs-number">100</span>) == <span class="hljs-number">2</span>
-        <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-            <span class="hljs-keyword">var</span> loop = <span class="hljs-keyword">async</span>.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">plugin</span>) </span>{
-                plugin.after(<span class="hljs-keyword">this</span>, request, response, <span class="hljs-keyword">async</span>())
-            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">outcome</span>) </span>{
-                <span class="hljs-keyword">if</span> (outcome != <span class="hljs-literal">null</span>) {
-                    <span class="hljs-keyword">return</span> [ loop.break, outcome ]
-                }
-            })(request.plugins)
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">outcome</span>) </span>{
-            <span class="hljs-keyword">if</span> (outcome != <span class="hljs-literal">null</span>) {</pre></div></div>
-
-        </li>
-
-
-        <li id="section-2">
-            <div class="annotation">
-
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>
-              <p>TODO Outcome is an array to return.</p>
-
-            </div>
-
-            <div class="content"><div class='highlight'><pre>                <span class="hljs-keyword">return</span> [ outcome.body, outcome.response, outcome.buffer ]
-            }
-            <span class="hljs-keyword">if</span> (!response.okay) {
-                <span class="hljs-keyword">if</span> (request.raise) {
+        <span class="hljs-keyword">if</span> (!response.okay &amp;&amp; request.raise) {
+                <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                    converter.parsify(<span class="hljs-keyword">async</span>())
+                }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">okay, parsed, buffer</span>) </span>{
                     <span class="hljs-keyword">throw</span> interrupt(<span class="hljs-string">'fetch'</span>, {
                         <span class="hljs-attr">statusCode</span>: response.statusCode,
-                        <span class="hljs-attr">url</span>: request.options.url,
+                        <span class="hljs-attr">url</span>: request.url,
                         <span class="hljs-attr">headers</span>: {
-                            <span class="hljs-attr">sent</span>: request.options.headers,
+                            <span class="hljs-attr">sent</span>: request.headers,
                             <span class="hljs-attr">received</span>: response.headers
                         }
                     }, {
                         <span class="hljs-attr">cause</span>: coalesce(response.cause),
                         <span class="hljs-attr">properties</span>: {
-                            <span class="hljs-attr">response</span>: response,
                             <span class="hljs-attr">body</span>: parsed,
+                            <span class="hljs-attr">response</span>: response,
                             <span class="hljs-attr">buffer</span>: buffer
                         }
                     })
-                } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (request.nullify) {
-                    <span class="hljs-keyword">return</span> [ <span class="hljs-keyword">async</span>.break, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span> ]
-                }
+                })
+        }
+        <span class="hljs-keyword">if</span> (!response.okay) {
+            <span class="hljs-keyword">if</span> (request.nullify) {
+                <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span> ]
             }
-            <span class="hljs-keyword">return</span> [ parsed, response, buffer ]
+            <span class="hljs-keyword">if</span> (request.falsify) {
+                <span class="hljs-keyword">return</span> [ <span class="hljs-literal">false</span> ]
+            }
+        }
+        <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">if</span> (request.response == <span class="hljs-string">'stream'</span>) {
+                <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                    converter.streamify(<span class="hljs-keyword">async</span>())
+                }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">okay, stream</span>) </span>{
+                    <span class="hljs-keyword">return</span> [ okay, stream, <span class="hljs-literal">null</span> ]
+                })
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (request.response == <span class="hljs-string">'buffer'</span>) {
+                converter.bufferify(<span class="hljs-keyword">async</span>())
+            } <span class="hljs-keyword">else</span> {
+                converter.parsify(<span class="hljs-keyword">async</span>())
+            }
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">okay, parsed, buffer</span>) </span>{
+            <span class="hljs-keyword">return</span> request.nullify || request.falsify ? [ parsed ] : [ parsed, response, buffer ]
         })
     })
 })
 
-<span class="hljs-built_in">module</span>.exports = UserAgent</pre></div></div>
+<span class="hljs-built_in">module</span>.exports = UserAgent
+
+</pre></div></div>
 
         </li>
 

@@ -25,8 +25,13 @@
                 </a>
 
 
-                <a class="source" href="http.js.html">
-                  http.js
+                <a class="source" href="converter.js.html">
+                  converter.js
+                </a>
+
+
+                <a class="source" href="default.js.html">
+                  default.js
                 </a>
 
 
@@ -35,13 +40,38 @@
                 </a>
 
 
+                <a class="source" href="merge.js.html">
+                  merge.js
+                </a>
+
+
                 <a class="source" href="mock.js.html">
                   mock.js
                 </a>
 
 
+                <a class="source" href="network.js.html">
+                  network.js
+                </a>
+
+
                 <a class="source" href="notes.js.html">
                   notes.js
+                </a>
+
+
+                <a class="source" href="options.js.html">
+                  options.js
+                </a>
+
+
+                <a class="source" href="send.js.html">
+                  send.js
+                </a>
+
+
+                <a class="source" href="transport.js.html">
+                  transport.js
                 </a>
 
 
@@ -75,63 +105,55 @@
 
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> assert = <span class="hljs-built_in">require</span>(<span class="hljs-string">'assert'</span>)
 <span class="hljs-keyword">var</span> url = <span class="hljs-built_in">require</span>(<span class="hljs-string">'url'</span>)
-<span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
 <span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+<span class="hljs-keyword">var</span> merge = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./merge'</span>)
+<span class="hljs-keyword">var</span> defaultify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./default'</span>)
+<span class="hljs-keyword">var</span> Converter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./converter'</span>)
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ClientCredentials</span> (<span class="hljs-params">ua</span>) </span>{
-    ua.storage.cc = {}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ClientCredentials</span> (<span class="hljs-params">request</span>) </span>{
+    <span class="hljs-keyword">this</span>._request = request
 }
 
-ClientCredentials.prototype.before = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, ua, request</span>) </span>{
-    <span class="hljs-keyword">if</span> (ua.storage.cc[request.key] != <span class="hljs-literal">null</span>) {
-        request.options.headers.authorization = <span class="hljs-string">'Bearer '</span> + ua.storage.cc[request.key]
-        <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span> ]
+ClientCredentials.prototype.fetch = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, ua, request, fetch</span>) </span>{
+    <span class="hljs-keyword">var</span> expanded = defaultify(request)
+    <span class="hljs-keyword">if</span> (ua.storage.cc == <span class="hljs-literal">null</span>) {
+        ua.storage.cc = {}
     }
-    assert(request.baseUrl.auth)
-    <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        ua.fetch({
-            <span class="hljs-attr">url</span>: url.format(request.url),
-            <span class="hljs-attr">ca</span>: request.options.ca,
-            <span class="hljs-attr">rejectUnauthorized</span>: request.options.rejectUnauthorized,
-            <span class="hljs-attr">timeout</span>: request.timeout
-        }, {
-            <span class="hljs-attr">url</span>: <span class="hljs-string">'/token'</span>,
-            <span class="hljs-attr">headers</span>: {
-                <span class="hljs-attr">authorization</span>: <span class="hljs-string">'Basic '</span> + <span class="hljs-keyword">new</span> Buffer(request.baseUrl.auth).toString(<span class="hljs-string">'base64'</span>)
-            },
-            <span class="hljs-attr">payload</span>: {
-                <span class="hljs-attr">grant_type</span>: <span class="hljs-string">'client_credentials'</span>
-            }
-        }, <span class="hljs-keyword">async</span>())
-    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response, buffer</span>) </span>{
-        <span class="hljs-keyword">if</span> (!response.okay || body.token_type != <span class="hljs-string">'Bearer'</span> || body.access_token == <span class="hljs-literal">null</span>) {
-            <span class="hljs-keyword">var</span> parsed = body
-            <span class="hljs-keyword">switch</span> (request.response) {
-            <span class="hljs-keyword">case</span> <span class="hljs-string">'stream'</span>:
-                parsed = <span class="hljs-keyword">new</span> stream.PassThrough
-                parsed.end(buffer)
-                buffer = <span class="hljs-literal">null</span>
-                <span class="hljs-keyword">break</span>
-            <span class="hljs-keyword">case</span> <span class="hljs-string">'buffer'</span>:
-                parsed = buffer
-                <span class="hljs-keyword">break</span>
-            }
-            <span class="hljs-keyword">return</span> { <span class="hljs-attr">body</span>: parsed, <span class="hljs-attr">response</span>: response, <span class="hljs-attr">buffer</span>: buffer }
+    <span class="hljs-keyword">var</span> label = <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (ua.storage.cc[expanded.identifier] == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                ua.fetch(request, <span class="hljs-keyword">this</span>._request, {
+                    <span class="hljs-attr">headers</span>: {
+                        <span class="hljs-attr">authorization</span>: <span class="hljs-string">'Basic '</span> + <span class="hljs-keyword">new</span> Buffer(expanded.url.auth).toString(<span class="hljs-string">'base64'</span>)
+                    },
+                    <span class="hljs-attr">post</span>: {
+                        <span class="hljs-attr">grant_type</span>: <span class="hljs-string">'client_credentials'</span>
+                    },
+                    <span class="hljs-attr">url</span>: <span class="hljs-string">'/token'</span>,
+                    <span class="hljs-attr">response</span>: <span class="hljs-string">'parse'</span>,
+                    <span class="hljs-attr">plugins</span>: [ <span class="hljs-literal">null</span> ]
+                }, <span class="hljs-keyword">async</span>())
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response, buffer</span>) </span>{
+                <span class="hljs-keyword">if</span> (!response.okay || body.token_type != <span class="hljs-string">'Bearer'</span> || body.access_token == <span class="hljs-literal">null</span>) {
+                    <span class="hljs-keyword">return</span> [ label.break, <span class="hljs-keyword">new</span> Converter(response.headers, buffer, <span class="hljs-string">'buffer'</span>), response ]
+                }
+                ua.storage.cc[expanded.identifier] = body.access_token
+            })
         }
-        ua.storage.cc[request.key] = body.access_token
-        request.options.headers.authorization = <span class="hljs-string">'Bearer '</span> + ua.storage.cc[request.key]
-        <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span> ]
-    })
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        request = merge(request, [{ <span class="hljs-attr">token</span>: ua.storage.cc[expanded.identifier] }])
+        request.plugins.shift().fetch(ua, request, fetch, <span class="hljs-keyword">async</span>())
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response</span>) </span>{
+        <span class="hljs-keyword">if</span> (response.statusCode == <span class="hljs-number">401</span>) {
+            <span class="hljs-keyword">delete</span> ua.storage.cc[expanded.identifier]
+        }
+        <span class="hljs-keyword">return</span> [ label.break ].concat(<span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>))
+    })()
 })
 
-ClientCredentials.prototype.after = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, ua, request, response</span>) </span>{
-    <span class="hljs-keyword">if</span> (response.statusCode == <span class="hljs-number">401</span>) {
-        <span class="hljs-keyword">delete</span> ua.storage.cc[request.key]
-    }
-    <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span> ]
-})
+<span class="hljs-built_in">module</span>.exports = ClientCredentials
 
-<span class="hljs-built_in">module</span>.exports = ClientCredentials</pre></div></div>
+</pre></div></div>
 
         </li>
 

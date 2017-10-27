@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>jsons.js</title>
+  <title>network.js</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -88,7 +88,7 @@
 
           <li id="title">
               <div class="annotation">
-                  <h1>jsons.js</h1>
+                  <h1>network.js</h1>
               </div>
           </li>
 
@@ -103,23 +103,15 @@
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>)
-<span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
-<span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> http = <span class="hljs-built_in">require</span>(<span class="hljs-string">'http'</span>)
+<span class="hljs-keyword">var</span> https = <span class="hljs-built_in">require</span>(<span class="hljs-string">'https'</span>)
+<span class="hljs-keyword">var</span> send = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./send'</span>)
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">JsonStream</span> (<span class="hljs-params"></span>) </span>{
-    stream.Transform.call(<span class="hljs-keyword">this</span>, { <span class="hljs-attr">objectMode</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-built_in">module</span>.exports = {
+    <span class="hljs-attr">send</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">request, cancel, callback</span>) </span>{
+        send(request.url.protocol == <span class="hljs-string">'https:'</span> ? https : http, request, cancel, callback)
+    }
 }
-util.inherits(JsonStream, stream.Transform)
-
-JsonStream.prototype._transform = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, chunk, encoding</span>) </span>{
-    <span class="hljs-keyword">this</span>.push(<span class="hljs-built_in">JSON</span>.parse(chunk.toString()))
-    <span class="hljs-keyword">return</span> []
-})
-
-JsonStream.prototype._flush = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">return</span> [] })
-
-<span class="hljs-built_in">module</span>.exports = JsonStream
 
 </pre></div></div>
 

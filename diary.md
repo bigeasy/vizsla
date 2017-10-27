@@ -1,3 +1,108 @@
+## Thu Oct 26 19:10:33 CDT 2017
+
+Vizsla is supposed to have a default opinionated mode about HTTP. For the most
+part I'm sending and receiving JSON payloads between servers using HTTP. I'm not
+making extensive use of error codes. I'm making no use of REST as it is defined
+by Ruby on Rails with it's proscription for mixing URL paths and verbs. There is
+no caching between services, so everything is a JSON up and JSON down.
+
+This is the general use of Vizsla in my applications. With the Paxos algorithm,
+any error is considered fatal. With this I use the `nullify` flag with Vizla so
+than if anything bad happens, the request returns null. After a retry or two we
+run the Paxos algorithm to reshape the network topology and remove the bad
+service.
+
+The response is binary. Vizsla works okay for this.
+
+There are boundaries where a service that is expecting HTTP codes enters into a
+system I've created that is using HTTP for it's network communication.
+
+The problem that I have is that I want to have a single status code for an HTTP
+request. The requester is going to respond differently for three different
+states. A 2xx means everything is okay. A 404 means that an object is not
+present and the caller will stop asking about it. Any other 4xx or 5xx means
+something bad happened and the caller try again later.
+
+With this, I'm generally interested in returning a payload with 200 or else
+reutrning 404 if the object is missing or 5xx if something bad happens. I'm
+propaging these error messages through a network of servers.
+
+Unlike Paxos where I get a return value or null, here I really do want to
+inspect the status codes and make decisions based on them.
+
+So, I've come to a place where I want to have way of working with HTTP, but I
+still want to corral all of the errors into a single error code.
+
+This is where I've been confused about how to funnel all of HTTP's problems into
+a single HTTP response.
+
+If there is a socket connection failure it is the same to the caller as if there
+was a gateway error at a load balancer. Vizsla has already made the decision to
+turn this into a 599 error code. This 599 error code is already out there in the
+wild as an unoffical error code.
+
+It is no problem to set this error code because if I cannot connect then the
+error code would be unset anyway. Plan Node.js HTTP would generate an `"error"`
+event. I don't want to have to hook up two different error handling mechanisms
+for each HTTP request. Vizsla was supposed to be about slurping.
+
+The problem is with the result. In my opinionated mode, I want to assume that I
+get good JSON back from the caller. If I get bad JSON I want to say that the
+request failed even if it succeeded. Except that unlike a failed socket
+conneciton, by the time I'm parsing JSON I already have an error code. If I set
+an error code I am overwritting an error.
+
+That doesn't seem like a bad thing, but it is. Vizsla itself is a client. It
+doesn't make sense for Vizsla to rewrite server responses.
+
+In fact, from what I can see, once the response is created, Node.js will no
+longer raise an exception. Any error that occurs thereafter will result in the
+response stream being truncated if the error occurs before the end of stream
+message is sent.
+
+Thus, the streaming result is an application problem according to Node.js, but I
+don't want it to be. I want simple error-first callback calls to get a JSON
+response.
+
+And yet, I can imagine that if I had a proxy server between myself and the
+service returning bad JSON, I'd be okay with the proxy server returning a 502
+error. In fact, a garbled stream response really ought to erode my faith that
+all is okay in the world desipte a 2xx status code.
+
+I can see myself writing a proxy. I can see that I already accept that an error
+from a proxy means that the proxy logged the error, I don't need to receive a
+huge chained error message as a payload, nor should I. Stack traces and error
+messages belong in logs, not in responses.
+
+So, rather than try and slide this into Vizsla the client, it makes sense to me
+to adopt some sort of middleware. That middleware can act as an in-memory
+gateway and failures to connect can be 503 errors and failures to parse a
+response can be 502. That middleware can have some sort of logging for the
+errors.
+
+The nature of the middleware is another matter. Could it be Sencha connect
+middleware. Yes, we already support using it for mocking. But, we probably don't
+want to serialize and deserialize JSON in memory, just return it.
+
+Also, the middleware might be itself opininated or specific to a paritcular
+problem. It might not be prepare to handle streaming content or parse XML. It is
+written as a gateway to handle specific cases.
+
+Finally, with these specific cases you could decide that you want to create
+middleware that dispatches based on URL. I'd say that might be overdoing it for
+most cases. If you wanted to use a middleware that does some sort of fancy
+streaming then you could create an instance of Vizsla that has just that
+middleware, probably based on a common instance of Vizsla.
+
+## Sat Apr 22 12:20:05 CDT 2017
+
+Revisited Vizsla today. Saw the two stage code and immediately want it gone. It
+is for the special case of client credentials OAuth. That is a state transition.
+It should not be transparent. You can easily create a Vizsla that wraps the
+authentication, then give that to your objects. When you reach a 401 you're
+going to get an exception, so you're going to have to retry. That retry should
+be outside of Vizsla somewhere.
+
 ## Thu Apr  6 01:37:35 CDT 2017
 
 Had a go at implementing streams through Vizsla.
