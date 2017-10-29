@@ -1,4 +1,4 @@
-require('proof')(10, prove)
+require('proof')(12, prove)
 
 function prove (okay) {
     var merge = require('../merge')
@@ -19,4 +19,6 @@ function prove (okay) {
     }
     okay(merge({ put: {} }, []), { method: 'PUT', payload: {} }, 'put')
     okay(merge({ body: {} }, []), { payload: {} }, 'body')
+    okay(merge({ gateways: [ 'x' ] }, [{ gateways: [ 'y' ] }]), { gateways: [ 'y', 'x' ] }, 'gateway')
+    okay(merge({ gateways: [ 'x' ] }, [{ gateways: [ 'y', null ] }]), { gateways: [ 'y' ] }, 'gateway reset')
 }

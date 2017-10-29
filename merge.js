@@ -45,6 +45,15 @@ module.exports = function (base, vargs, ua) {
                 for (var header in varg.headers) {
                     merged.headers[header] = String(varg.headers[header])
                 }
+            } else if (name == 'gateways') {
+                if (merged.gateways == null) {
+                    merged.gateways = []
+                }
+                merged.gateways.unshift.apply(merged.gateways, varg.gateways)
+                var index = merged.gateways.indexOf(null)
+                if (~index) {
+                    merged.gateways = merged.gateways.slice(0, index)
+                }
             } else if (name == 'plugins') {
                 if (merged.plugins == null) {
                     merged.plugins = []
