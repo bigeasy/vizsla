@@ -1,9 +1,10 @@
-require('proof')(14, require('cadence')(prove))
+require('proof')(17, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
     var coalesce = require('extant')
     var delta = require('delta')
+    var bufferify = require('../bufferify')
     var responses = [{
         statusCode: 200,
         body: new Buffer('x')
@@ -20,6 +21,9 @@ function prove (async, okay) {
         statusCode: 200,
         expect: {},
         body: new Buffer('x')
+    }, {
+        statusCode: 200,
+        body: new Buffer('z')
     }]
     var server = http.createServer(function (request, response) {
         var send = responses.shift()
@@ -154,5 +158,14 @@ function prove (async, okay) {
         }, function (chunks) {
             okay(Buffer.concat(chunks).toString(), 'x', 'stream body ok')
         })
+    }, function () {
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            gateways: [ bufferify({ when: [ 200 ] }) ]
+        }, async())
+    }, function (body, response) {
+        okay(response.statusCode, 200, 'buffer status code')
+        okay(Buffer.isBuffer(body), 'buffer is buffer')
+        okay(body.toString(), 'z', 'buffer body')
     })
 }
