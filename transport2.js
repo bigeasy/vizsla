@@ -11,6 +11,7 @@ var byline = require('byline')
 var JsonStream = require('./jsons')
 var Converter = require('./converter')
 var noop = require('nop')
+var coalesce = require('extant')
 
 function Transport () {
 }
@@ -70,7 +71,8 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
                 statusMessage: response.statusMessage,
                 headers: JSON.parse(JSON.stringify(response.headers)),
                 rawHeaders: JSON.parse(JSON.stringify(response.rawHeaders)),
-                trailers: null
+                trailers: null,
+                type: typer.parse(coalesce(response.headers['content-type'], 'application/octet-stream'))
             }
             return [ response, _response ]
         })

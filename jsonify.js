@@ -1,43 +1,30 @@
-var assert = require('assert')
-var url = require('url')
 var cadence = require('cadence')
-var merge = require('./merge')
-var defaultify = require('./default')
-var typer = require('media-typer')
 
-function Parser (options) {
-    this._options = options
+var errorify = require('./errorify')
+
+var coalesce = require('extant')
+var createSelector = require('./select')
+var util = require('util')
+
+var stringify = require('./stringify')
+
+var Parser = require('./parser')
+
+function Jsonify (options) {
+    options.when = [ 'content-type: application/json' ].concat(coalesce(options.when, []))
+    Parser.call(this, options, [{ gateways: [ stringify({ when: options.when }) ] }])
+}
+util.inherits(Jsonify, Parser)
+
+Jsonify.prototype._parse = function (body, response, callback) {
+    try {
+        callback(null,  JSON.parse(body.toString()), response)
+    } catch (e) {
+        var errorified = errorify(502, {})
+        callback(null, errorified[0], errorified[1])
+    }
 }
 
-Parser.prototype.fetch = cadence(function (async, ua, request, fetch) {
-    var expanded = defaultify(request)
-    stringify({
-        when: [ coalesce(this._options.when, []), function (response) {
-            return response.type.type + '/' + response.type.subtype == 'application/json'
-        } ]
-        unless: coalesce(this._options.unless, [])
-    })
-    async(function () {
-        request.plugins.shift().fetch(ua, request, fetch, async())
-    }, function (body, response) {
-        if (codes(response.code, this._when, this._unless)) {
-            if (response.type.type + '/' + response.type.subtype == 'application/json') {
-                try {
-                    return [ JSON.parse(body), response ]
-                } catch (e) {
-                    return errorify(503)
-                }
-            } else if (this._passThrough) {
-                return [ response, response ]
-            } else {
-                return errorify(503)
-            }
-        } else {
-            return [ response, response ]
-        }
-    })
-})
-
 module.exports = function (options) {
-    return new Parser(options)
+    return new Jsonify(options)
 }

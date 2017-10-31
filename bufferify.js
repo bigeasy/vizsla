@@ -6,31 +6,25 @@ var createSelector = require('./select')
 var coalesce = require('extant')
 var errorify = require('./errorify')
 var delta = require('delta')
+var util = require('util')
+var Parser = require('./parser')
 
-function Parser (options) {
-    this._options = options
-    this._select = createSelector(coalesce(options.when, []))
+function Bufferify (options) {
+    Parser.call(this, options, [])
 }
+util.inherits(Bufferify, Parser)
 
-Parser.prototype.fetch = cadence(function (async, ua, request, fetch) {
-    var expanded = defaultify(request)
-    async(function () {
-        request.gateways.shift().fetch(ua, request, fetch, async())
-    }, function (body, response) {
-        if (this._select.call(null, response)) {
-            async([function () {
-                delta(async()).ee(body).on('data', []).on('end')
-            }, function (error) {
-                // TODO Maybe report stack here.
-                return [ async.break ].concat(errorify(502, {}))
-            }], function (chunks) {
-                return [ Buffer.concat(chunks), response ]
-            })
-        }
-        return [ body, response ]
+Bufferify.prototype._parse = cadence(function (async, body, response) {
+    async([function () {
+        delta(async()).ee(body).on('data', []).on('end')
+    }, function (error) {
+        // TODO Maybe report stack here.
+        return [ async.break ].concat(errorify(502, {}))
+    }], function (chunks) {
+        return [ Buffer.concat(chunks), response ]
     })
 })
 
 module.exports = function (options) {
-    return new Parser(options)
+    return new Bufferify(options)
 }
