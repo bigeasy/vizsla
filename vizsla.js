@@ -8,7 +8,7 @@ var Signal = require('signal')
 var slice = [].slice
 var interrupt = require('interrupt').createInterrupter('vizsla')
 var Transport = require('./transport')
-var Transport2 = require('./transport2')
+var Redux = { Transport: require('./redux/transport') }
 var transport = {
     Network: require('./network'),
     Mock: require('./mock')
@@ -69,7 +69,7 @@ UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
     request.plugins.push(new Transport)
     async(function () {
         if (request.gateways != null) {
-            request.gateways.push(new Transport2)
+            request.gateways.push(new Redux.Transport)
             request.gateways.shift().fetch(this, request, fetch, async())
         } else {
             request.plugins.shift().fetch(this, request, fetch, async())
