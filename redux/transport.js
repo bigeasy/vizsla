@@ -9,6 +9,7 @@ var defaultify = require('../default')
 var Signal = require('signal')
 var noop = require('nop')
 var coalesce = require('extant')
+var logger = require('prolific.logger').createLogger('vizsla')
 
 function Transport () {
 }
@@ -22,11 +23,18 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
         when: Date.now(),
         duration: null
     }
-    var timeout = null
+    var timeout = null, status = 'requesting', errors = 0
     async([function () {
         async(function () {
             var options = extractOptions(request)
             var client = http.request(options)
+            client.on('error', function (error) {
+                switch (status) {
+                case 'requesting':
+                    logger.error(status, { errors: ++errors, stack: error.stack, $options: options })
+                    break
+                }
+            })
             var wait = delta(async()).ee(client).on('response')
             var signal = new Signal
             fetch._cancel.wait(function () {
