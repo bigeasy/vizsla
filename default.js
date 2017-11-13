@@ -2,6 +2,8 @@ var url = require('url')
 var coalesce = require('extant')
 
 var merge = require('./merge')
+var http = require('http')
+var https = require('https')
 
 module.exports = function (request) {
     if (request.token) {
@@ -48,5 +50,6 @@ module.exports = function (request) {
     if (expanded.plugins == null) {
         expanded.plugins = []
     }
+    expanded.http = request.http || (request.url.protocol == 'https:' ? https : http)
     return expanded
 }
