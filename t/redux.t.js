@@ -1,10 +1,56 @@
-require('proof')(17, require('cadence')(prove))
+require('proof')(18, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
+    var util = require('util')
+    var stream = require('stream')
+
     var coalesce = require('extant')
     var delta = require('delta')
+
     var bufferify = require('../bufferify')
+
+    function PseudoRequest (options) {
+        stream.PassThrough.call(this)
+    }
+    util.inherits(PseudoRequest, stream.PassThrough)
+
+    PseudoRequest.prototype.request = function (options) {
+    }
+
+    var pseudo = {
+        request: function (options) {
+            return pseudos.shift()(this, options)
+        }
+    }
+
+    var pseudos = [function (options) {
+        var request = new PseudoRequest(options)
+        request.once('finish', function () {
+            var response = new PseudoResponse({ statusCode: 200 })
+            setImmediate(function () {
+                console.log(response.on)
+                console.log('> ----------')
+                request.emit('response', response)
+                console.log('< ----------')
+                request.emit('error', new Error('response'))
+            })
+        })
+        return request
+    }]
+
+    function PseudoResponse (send) {
+        stream.PassThrough.call(this)
+        this.statusCode = coalesce(send.statusCode, 200)
+        this.statusMessage = coalesce(send.statusCode, http.STATUS_CODES[this.statusCode])
+        this.headers = coalesce(send.headers, {})
+        this.rawHeaders = []
+        for (var key in this.headers) {
+            this.rawHeaders.push(key, this.headers[key])
+        }
+    }
+    util.inherits(PseudoResponse, stream.PassThrough)
+
     var responses = [{
         statusCode: 200,
         body: new Buffer('x')
@@ -24,6 +70,7 @@ function prove (async, okay) {
     }, {
         statusCode: 200,
         body: new Buffer('z')
+    }, {
     }]
     var server = http.createServer(function (request, response) {
         var send = responses.shift()
@@ -167,5 +214,17 @@ function prove (async, okay) {
         okay(response.statusCode, 200, 'buffer status code')
         okay(Buffer.isBuffer(body), 'buffer is buffer')
         okay(body.toString(), 'z', 'buffer body')
-    })
+    }, function () {
+        console.log('!')
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            http: pseudo,
+            gateways: []
+        }, async())
+    }, [function (body, response) {
+        console.log('returned')
+        delta(async()).ee(body).on('end')
+    }, function (error) {
+        okay(error.message, 'response', 'response error')
+    }])
 }

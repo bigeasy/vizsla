@@ -23,19 +23,26 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
         when: Date.now(),
         duration: null
     }
-    var timeout = null, status = 'requesting', errors = 0
+    var timeout = null, status = 'requesting', errors = 0, $response = null
     async([function () {
         async(function () {
             var options = extractOptions(request)
-            var client = http.request(options)
+            var client = request.http.request(options)
             client.on('error', function (error) {
+                console.log('errrored')
                 switch (status) {
                 case 'requesting':
                     logger.error(status, { errors: ++errors, stack: error.stack, $options: options })
                     break
+                case 'responded':
+                    logger.error(status, { errors: ++errors, stack: error.stack, $options: options })
+                    $response.emit('error', error)
+                    break
                 }
             })
+            client.on('response', function () { console.log('yes response') })
             var wait = delta(async()).ee(client).on('response')
+            client.on('response', function () { console.log('yes response 2') })
             var signal = new Signal
             fetch._cancel.wait(function () {
                 signal.unlatch('ECONNABORTED')
@@ -65,9 +72,14 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
             // to use `http` directly to accommodate that. Should be more like
             // cURL, defaults and defeats.
             if (('payload' in request) || /^HEAD|DELETE|GET$/.test(request.method)) {
+                console.log('-ending-')
                 client.end()
             }
         }, function (response) {
+            console.log('endering', status)
+            status = 'responded'
+            $response = response
+            console.log('endering', status)
             response.once('end', function () {
                 _response.trailers = response.trailers
             })
@@ -82,6 +94,7 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
             return [ response, _response ]
         })
     }, function (error) {
+        console.log('.', error.stack)
         var statusCode = typeof error == 'string' ? 504 : 503
         var code = typeof error == 'string' ? error : error.code
         return errorify(statusCode, { 'x-vizsla-errno': code })
