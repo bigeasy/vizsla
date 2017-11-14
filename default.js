@@ -50,6 +50,6 @@ module.exports = function (request) {
     if (expanded.plugins == null) {
         expanded.plugins = []
     }
-    expanded.http = request.http || (request.url.protocol == 'https:' ? https : http)
+    expanded.http = request.http || (expanded.url.protocol == 'https:' ? https : http)
     return expanded
 }

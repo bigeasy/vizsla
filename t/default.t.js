@@ -1,10 +1,14 @@
-require('proof')(8, prove)
+require('proof')(9, prove)
 
 function prove (okay) {
     var expand = require('../default')
+    var https = require('https')
     okay(expand({
         url: 'http://127.0.0.1:8888/path'
     }).path, '/path', 'path')
+    okay(expand({
+        url: 'https://127.0.0.1:8888/path'
+    }).http === https, 'https')
     okay(expand({
         url: 'http://127.0.0.1:8888/path'
     }).identifier, '127.0.0.1:8888', 'ip identifier')
