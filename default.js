@@ -5,7 +5,7 @@ var merge = require('./merge')
 var http = require('http')
 var https = require('https')
 
-module.exports = function (request) {
+module.exports = function (request, extended) {
     if (request.token) {
         request = merge(request, [{ headers: { authorization: 'Bearer ' + request.token } }])
     }
@@ -51,5 +51,15 @@ module.exports = function (request) {
         expanded.plugins = []
     }
     expanded.http = request.http || (expanded.url.protocol == 'https:' ? https : http)
+    if (extended) {
+        // TODO Should we close ourselves based on headers or a flag? There
+        // should be a flag to defeat this behavior, maybe, or else maybe if you
+        // have an API where you need to pass a body to DELETE you need to use
+        // `http` directly to accommodate that. Should be more like cURL,
+        // defaults and defeats.
+        if (!('payload' in expanded) && /^HEAD|DELETE|GET$/.test(expanded.method)) {
+            expanded.payload = new Buffer(0)
+        }
+    }
     return expanded
 }

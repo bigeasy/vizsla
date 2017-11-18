@@ -29,10 +29,7 @@ function prove (async, okay) {
         request.once('finish', function () {
             var response = new PseudoResponse({ statusCode: 200 })
             setImmediate(function () {
-                console.log(response.on)
-                console.log('> ----------')
                 request.emit('response', response)
-                console.log('< ----------')
                 request.emit('error', new Error('response'))
             })
         })
@@ -215,14 +212,12 @@ function prove (async, okay) {
         okay(Buffer.isBuffer(body), 'buffer is buffer')
         okay(body.toString(), 'z', 'buffer body')
     }, function () {
-        console.log('!')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             http: pseudo,
             gateways: []
         }, async())
     }, [function (body, response) {
-        console.log('returned')
         delta(async()).ee(body).on('end')
     }, function (error) {
         okay(error.message, 'response', 'response error')
