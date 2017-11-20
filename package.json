@@ -34,8 +34,7 @@
     "devDependencies":
     {
                             "connect":                      "3.6.5",
-                            "proof":                        "3.0.x",
-                            "semblance":                    "1.0.x"
+                            "proof":                        "3.0.x"
     },
     "main":                 "vizsla",
     "scripts":
