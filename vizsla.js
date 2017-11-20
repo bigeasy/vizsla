@@ -2,7 +2,7 @@ var cadence = require('cadence')
 var stream = require('stream')
 var noop = require('nop')
 var Signal = require('signal')
-var Redux = { Transport: require('./redux/transport') }
+var Transport = require('./transport')
 var merge = require('./merge')
 
 function UserAgent () {
@@ -51,7 +51,7 @@ UserAgent.prototype.fetch = function () {
 
 UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
     async(function () {
-        request.gateways.push(new Redux.Transport)
+        request.gateways.push(new Transport)
         request.gateways.shift().fetch(this, request, fetch, async())
     }, function (converter, response) {
         return [ converter, response ]
