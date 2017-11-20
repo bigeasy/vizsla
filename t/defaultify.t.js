@@ -1,7 +1,7 @@
 require('proof')(9, prove)
 
 function prove (okay) {
-    var expand = require('../default')
+    var expand = require('../defaultify')
     var https = require('https')
     okay(expand({
         url: 'http://127.0.0.1:8888/path'
