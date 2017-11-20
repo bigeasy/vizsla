@@ -1,18 +1,11 @@
 var cadence = require('cadence')
 var stream = require('stream')
-var url = require('url')
-var coalesce = require('extant')
-var assert = require('assert')
 var noop = require('nop')
 var Signal = require('signal')
-var slice = [].slice
-var interrupt = require('interrupt').createInterrupter('vizsla')
 var Redux = { Transport: require('./redux/transport') }
-var ClientCredentials = require('./cc')
 var merge = require('./merge')
-var defaultify = require('./default')
 
-function UserAgent (middleware) {
+function UserAgent () {
     this._bind = []
     this.storage = {}
 }
@@ -37,7 +30,7 @@ Fetch.prototype.cancel = function () {
 }
 
 UserAgent.prototype.fetch = function () {
-    var vargs = slice.call(arguments)
+    var vargs = Array.prototype.slice.call(arguments)
     var callback = (typeof vargs[vargs.length - 1] == 'function') ? vargs.pop() : null
 
     var merged = merge(this._bind, vargs.slice(), this)
