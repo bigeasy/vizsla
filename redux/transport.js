@@ -69,14 +69,16 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
             response.once('end', function () {
                 _response.trailers = response.trailers
             })
+            console.log('here ->', response.headers, response.rawHeaders)
             var _response = {
                 statusCode: response.statusCode,
                 statusMessage: response.statusMessage,
                 headers: JSON.parse(JSON.stringify(response.headers)),
-                rawHeaders: JSON.parse(JSON.stringify(response.rawHeaders)),
+//                rawHeaders: JSON.parse(JSON.stringify(response.rawHeaders)),
                 trailers: null,
                 type: typer.parse(coalesce(response.headers['content-type'], 'application/octet-stream'))
             }
+            console.log('!!!', _response)
             return [ response, _response ]
         })
     }, function (error) {

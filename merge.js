@@ -54,15 +54,6 @@ module.exports = function (base, vargs, ua) {
                 if (~index) {
                     merged.gateways = merged.gateways.slice(0, index)
                 }
-            } else if (name == 'plugins') {
-                if (merged.plugins == null) {
-                    merged.plugins = []
-                }
-                merged.plugins.push.apply(merged.plugins, varg.plugins)
-                var index = merged.plugins.indexOf(null)
-                if (~index) {
-                    merged.plugins = merged.plugins.slice(index + 1)
-                }
             } else if (name == 'grant' && varg.grant == 'cc') {
                 throw new Error('no more grant property')
             } else if (name == 'put' || name == 'post') {
