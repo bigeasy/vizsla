@@ -6,19 +6,28 @@ function prove (async, okay) {
     var requestify = require('./requestify')
     var jsonify = require('../jsonify')
 
-    var gateway = jsonify({ when: [ 200 ] })
+    var Descent = require('../descent')
+    var descent
+
+     var gateway = jsonify({ when: [ 200 ] })
 
     async(function () {
-        gateway.fetch(null, requestify('{}', {
-            statusCode: 200,
-            type: { type: 'application', subtype: 'json', parameters: {} }
-        }), null, async())
+        descent = new Descent([{
+            gateways: [ gateway, requestify('{}', {
+                statusCode: 200,
+                type: { type: 'application', subtype: 'json', parameters: {} }
+            }).gateways.shift() ]
+        }])
+        descent.descend(async())
     }, function (body, response) {
         okay(body, {}, 'json parsed')
-        gateway.fetch(null, requestify('}', {
-            statusCode: 200,
-            type: { type: 'application', subtype: 'json', parameters: {} }
-        }), null, async())
+        descent = new Descent([{
+            gateways: [ gateway, requestify('}', {
+                statusCode: 200,
+                type: { type: 'application', subtype: 'json', parameters: {} }
+            }).gateways.shift() ]
+        }])
+        descent.descend(async())
     }, function (body, response) {
         okay(response.statusCode, 502, 'bad parse')
     })

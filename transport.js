@@ -12,8 +12,8 @@ var logger = require('prolific.logger').createLogger('vizsla')
 function Transport () {
 }
 
-Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
-    request = defaultify(request, true)
+Transport.prototype.fetch = cadence(function (async, descent) {
+    var request = descent.defaults()
     var sent = {
         url: request.url,
         options: request.options,
@@ -39,9 +39,7 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
             })
             var wait = delta(async()).ee(client).on('response')
             var signal = new Signal
-            fetch._cancel.wait(function () {
-                signal.unlatch('ECONNABORTED')
-            })
+            descent.cancel.wait(function () { signal.unlatch('ECONNABORTED') })
             if (request.timeout != null) {
                 timeout = setTimeout(function () {
                     timeout = null
@@ -50,7 +48,7 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
             }
             signal.wait(function (error) {
                 client.once('error', noop)
-                request.input.unpipe()
+                descent.input.unpipe()
                 client.abort()
                 wait.cancel([ error ])
             })
@@ -59,7 +57,7 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
             if (('payload' in request)) {
                 client.end(request.payload)
             } else {
-                fetch.input.pipe(client)
+                descent.input.pipe(client)
             }
         }, function (response) {
             status = 'responded'
@@ -67,7 +65,6 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
             response.once('end', function () {
                 _response.trailers = response.trailers
             })
-            console.log('here ->', response.headers, response.rawHeaders)
             var _response = {
                 statusCode: response.statusCode,
                 statusMessage: response.statusMessage,
@@ -76,10 +73,10 @@ Transport.prototype.fetch = cadence(function (async, ua, request, fetch) {
                 trailers: null,
                 type: typer.parse(coalesce(response.headers['content-type'], 'application/octet-stream'))
             }
-            console.log('!!!', _response)
             return [ response, _response ]
         })
     }, function (error) {
+        console.log(error.stack)
         var statusCode = typeof error == 'string' ? 504 : 503
         var code = typeof error == 'string' ? error : error.code
         return errorify(statusCode, { 'x-vizsla-errno': code })

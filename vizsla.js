@@ -2,8 +2,8 @@ var cadence = require('cadence')
 var stream = require('stream')
 var noop = require('nop')
 var Signal = require('signal')
-var Transport = require('./transport')
 var merge = require('./merge')
+var Descent = require('./descent')
 
 function UserAgent () {
     this._bind = []
@@ -18,11 +18,11 @@ UserAgent.prototype.bind = function () {
     return ua
 }
 
-function Fetch (ua, request) {
+function Fetch (cancel) {
     this.input = new stream.PassThrough
     this.request = new Signal
     this.response = new Signal
-    this._cancel = new Signal
+    this._cancel = cancel
 }
 
 Fetch.prototype.cancel = function () {
@@ -33,29 +33,18 @@ UserAgent.prototype.fetch = function () {
     var vargs = Array.prototype.slice.call(arguments)
     var callback = (typeof vargs[vargs.length - 1] == 'function') ? vargs.pop() : null
 
-    var merged = merge(this._bind, vargs.slice(), this)
-
-    merged.input = new stream.PassThrough
-
-    var fetch = new Fetch
-    merged.input = fetch.input
+    var cancel = new Signal
+    var fetch = new Fetch(cancel)
 
     if (callback != null) {
         fetch.response.wait(callback)
     }
 
-    this._fetch(merged, fetch, fetch.response.unlatch.bind(fetch.response))
+    var descent = new Descent(this._bind.concat(vargs), fetch.input, cancel)
+
+    descent.descend(fetch.response.unlatch.bind(fetch.response))
 
     return fetch
 }
-
-UserAgent.prototype._fetch = cadence(function (async, request, fetch) {
-    async(function () {
-        request.gateways.push(new Transport)
-        request.gateways.shift().fetch(this, request, fetch, async())
-    }, function (converter, response) {
-        return [ converter, response ]
-    })
-})
 
 module.exports = UserAgent

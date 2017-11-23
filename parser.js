@@ -6,15 +6,14 @@ var merge = require('./merge')
 
 function Parser (options, merge) {
     this._options = options
-    this._merge = merge
+    this._merge = coalesce(merge, [])
     this._select = createSelector(coalesce(options.when, []))
 }
 
-Parser.prototype.fetch = cadence(function (async, ua, request, fetch) {
-    var expanded = defaultify(request)
+Parser.prototype.fetch = cadence(function (async, descent) {
     async(function () {
-        request = merge(request, this._merge.slice())
-        request.gateways.shift().fetch(ua, request, fetch, async())
+        descent.merge(this._merge.slice())
+        descent.descend(async())
     }, function (body, response) {
         if (this._select.call(null, response)) {
             this._parse(body, response, async())

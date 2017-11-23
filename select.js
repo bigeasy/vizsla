@@ -11,7 +11,6 @@ function createHeaderTest (header) {
     header = header.split(/\s*:\s*/, 2)
     return function (response) {
         if (header[0] == 'content-type') {
-            console.log(response.headers)
             if (~header[1].indexOf('/')) {
                 return header[1] == response.type.type + '/' + response.type.subtype ? action : null
             }
@@ -44,7 +43,6 @@ function createStatusCodeTest (statusCode) {
 module.exports = function (condition) {
     var tests = []
     for (var i = 0, I = condition.length; i < I; i++) {
-        console.log(condition)
         switch (typeof condition[i]) {
         case 'number':
             tests.push(createStatusCodeTest(condition[i]))

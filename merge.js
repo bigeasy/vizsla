@@ -10,7 +10,7 @@ function copy (object, exclude) {
     return copy
 }
 
-module.exports = function (base, vargs, ua) {
+module.exports = function (base, vargs) {
     var merged = {}
     vargs.unshift(base)
     while (vargs.length != 0) {

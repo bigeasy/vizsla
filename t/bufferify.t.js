@@ -8,8 +8,14 @@ function prove (async, okay) {
 
     var gateway = bufferify({ when: [ 200 ] })
 
+    var Descent = require('../descent')
+    var descent
+
     async(function () {
-        gateway.fetch(null, requestify(new Error('stream'), { statusCode: 200 }), null, async())
+        descent = new Descent([{
+            gateways: [ gateway, requestify(new Error('stream'), { statusCode: 200 }).gateways.shift() ]
+        }])
+        descent.descend(async())
     }, function (body, response) {
         okay(response, {
             statusCode: 502,
@@ -18,7 +24,10 @@ function prove (async, okay) {
             rawHeaders: [ 'content-type', 'application/json' ],
             trailers: null
         }, 'error')
-        gateway.fetch(null, requestify(null, { statusCode: 404 }), null, async())
+        descent = new Descent([{
+            gateways: [ gateway, requestify(null, { statusCode: 404 }).gateways.shift() ]
+        }])
+        descent.descend(async())
     }, function (body, response) {
         okay(body, null, 'ignored')
         okay(response, {
