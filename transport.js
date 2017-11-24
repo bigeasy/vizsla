@@ -62,21 +62,20 @@ Transport.prototype.fetch = cadence(function (async, descent) {
         }, function (response) {
             status = 'responded'
             $response = response
-            response.once('end', function () {
-                _response.trailers = response.trailers
+            $response.once('end', function () {
+                response.trailers = $response.trailers
             })
-            var _response = {
-                statusCode: response.statusCode,
-                statusMessage: response.statusMessage,
-                headers: JSON.parse(JSON.stringify(response.headers)),
+            response = {
+                statusCode: $response.statusCode,
+                statusMessage: $response.statusMessage,
+                headers: JSON.parse(JSON.stringify($response.headers)),
 //                rawHeaders: JSON.parse(JSON.stringify(response.rawHeaders)),
                 trailers: null,
                 type: typer.parse(coalesce(response.headers['content-type'], 'application/octet-stream'))
             }
-            return [ response, _response ]
+            return [ $response, response ]
         })
     }, function (error) {
-        console.log(error.stack)
         var statusCode = typeof error == 'string' ? 504 : 503
         var code = typeof error == 'string' ? error : error.code
         return errorify(statusCode, { 'x-vizsla-errno': code })
