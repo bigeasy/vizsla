@@ -23,8 +23,10 @@ Descent.prototype.options = function () {
     return options(this._merged)
 }
 
-Descent.prototype.defaults = function () {
-    return defaults(this._merged, true)
+Descent.prototype.request = function () {
+    var defaulted = defaults(this._merged, true)
+    defaulted.options = options(defaulted)
+    return defaulted
 }
 
 Descent.prototype.descend = cadence(function (async) {

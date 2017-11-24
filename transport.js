@@ -13,7 +13,7 @@ function Transport () {
 }
 
 Transport.prototype.fetch = cadence(function (async, descent) {
-    var request = descent.defaults()
+    var request = descent.request()
     var sent = {
         url: request.url,
         options: request.options,
@@ -24,15 +24,14 @@ Transport.prototype.fetch = cadence(function (async, descent) {
     var timeout = null, status = 'requesting', errors = 0, $response = null
     async([function () {
         async(function () {
-            var options = extractOptions(request)
-            var client = request.http.request(options)
+            var client = request.http.request(request.options)
             client.on('error', function (error) {
                 switch (status) {
                 case 'requesting':
-                    logger.error(status, { errors: ++errors, stack: error.stack, $options: options })
+                    logger.error(status, { errors: ++errors, stack: error.stack, $options: request.options })
                     break
                 case 'responded':
-                    logger.error(status, { errors: ++errors, stack: error.stack, $options: options })
+                    logger.error(status, { errors: ++errors, stack: error.stack, $options: request.options })
                     $response.emit('error', error)
                     break
                 }
