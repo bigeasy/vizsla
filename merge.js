@@ -47,7 +47,11 @@ module.exports = function (base, vargs) {
                     merged.headers = {}
                 }
                 for (var header in varg.headers) {
-                    merged.headers[header] = String(varg.headers[header])
+                    if (varg.headers[header] == null) {
+                        delete merged.headers[header]
+                    } else {
+                        merged.headers[header] = String(varg.headers[header])
+                    }
                 }
             } else if (name == 'gateways') {
                 if (merged.gateways == null) {

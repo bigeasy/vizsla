@@ -1,4 +1,4 @@
-require('proof')(13, prove)
+require('proof')(14, prove)
 
 function prove (okay) {
     var merge = require('../merge')
@@ -11,6 +11,7 @@ function prove (okay) {
         method: 'GET'
     }, 'socket path, url and path')
     okay(merge({ headers: {} }, [{ headers: { value: 1 }}]), { headers: { value: '1' } }, 'headers')
+    okay(merge({ headers: { value: 1 } }, [{ headers: { value: null }}]), { headers: { } }, 'delete headers')
     okay(merge({ method: 'GET' }, []), { method: 'GET' }, 'other property')
     try {
         merge({ plugins: {} }, [{ grant: 'cc' }], { storage: {} })
