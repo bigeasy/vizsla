@@ -19,10 +19,6 @@ Descent.prototype.merge = function (vargs) {
     this._merged = merge(this._merged, vargs)
 }
 
-Descent.prototype.options = function () {
-    return options(this._merged)
-}
-
 Descent.prototype.request = function () {
     var defaulted = defaults(this._merged, true)
     defaulted.options = options(defaulted)
