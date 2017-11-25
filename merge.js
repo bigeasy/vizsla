@@ -19,6 +19,10 @@ module.exports = function (base, vargs) {
             vargs.unshift.apply(vargs, varg)
             continue
         }
+        if (varg == null) {
+            merged = {}
+            continue
+        }
         // If we have a UNIX domain socket, make it a base URL.
         if (varg.socketPath) {
             vargs.unshift(copy(varg, 'socketPath'))
