@@ -31,6 +31,12 @@ server.listen(8888, function () {
         response.on('data', function (chunk) {
             console.log(chunk.toString())
         })
+        response.on('aborted', function () {
+            console.log('client aborted')
+        })
+        response.on('close', function () {
+            console.log('client close')
+        })
         response.on('end', function () {
             console.log('end', Date.now() - start)
             server.close()

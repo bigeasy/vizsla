@@ -16,13 +16,13 @@ var server = http.createServer(function (request, response) {
         console.log(chunk.toString())
     })
     request.on('close', function () {
-        console.log('!!!!!! closed!!!')
+        console.log('server close')
     })
     request.on('aborted', function () {
-        console.log('!!!!!! aborted!!!')
+        console.log('server aborted')
     })
     request.on('end', function () {
-        console.log('!!!!!! up ended')
+        console.log('server ended')
     })
     setTimeout(function () {
         resume.client()
@@ -46,8 +46,14 @@ server.listen(8888, function () {
         response.on('data', function (chunk) {
             console.log(chunk.toString())
         })
+        response.on('aborted', function () {
+            console.log('client aborted')
+        })
+        response.on('close', function () {
+            console.log('client close')
+        })
         response.on('end', function () {
-            console.log('end', Date.now() - start)
+            console.log('client end')
             setTimeout(function () {
                 server.close()
             }, 3000)
