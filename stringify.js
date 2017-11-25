@@ -15,14 +15,13 @@ function Stringify (options) {
 }
 util.inherits(Stringify, Parser)
 
-Stringify.prototype._parse = function (body, response, callback) {
+Stringify.prototype._parse = cadence(function (async, body, response) {
     try {
-        callback(null, body.toString(coalesce(response.type.parameters.charset, 'utf8')), response)
+        return [ body.toString(coalesce(response.type.parameters.charset, 'utf8')), response ]
     } catch (error) {
-        var errorified = errorify(502, {})
-        callback(null, errorified[0], errorified[1])
+        return errorify(502, {})
     }
-}
+})
 
 module.exports = function (options) {
     return new Stringify(options)

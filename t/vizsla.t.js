@@ -1,4 +1,4 @@
-require('proof')(18, require('cadence')(prove))
+require('proof')(19, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -221,5 +221,7 @@ function prove (async, okay) {
         delta(async()).ee(body).on('end')
     }, function (error) {
         okay(error.message, 'response', 'response error')
-    }])
+    }], function () {
+        okay(true, 'done')
+    })
 }

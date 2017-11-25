@@ -17,8 +17,9 @@ Parser.prototype.fetch = cadence(function (async, descent) {
     }, function (body, response) {
         if (this._select.call(null, response)) {
             this._parse(body, response, async())
+        } else {
+            return [ body, response ]
         }
-        return [ body, response ]
     })
 })
 

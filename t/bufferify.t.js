@@ -29,7 +29,7 @@ function prove (async, okay) {
         }])
         descent.descend(async())
     }, function (body, response) {
-        okay(body, null, 'ignored')
+        okay(body, null, 'response')
         okay(response, {
             statusCode: 404
         }, 'ignored response')

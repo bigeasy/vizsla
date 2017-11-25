@@ -13,5 +13,5 @@ module.exports = function (statusCode, headers) {
         headers: headers,
         rawHeaders: rawHeaders,
         trailers: null
-    } ]
+    }]
 }

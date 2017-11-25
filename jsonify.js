@@ -16,14 +16,13 @@ function Jsonify (options) {
 }
 util.inherits(Jsonify, Parser)
 
-Jsonify.prototype._parse = function (body, response, callback) {
+Jsonify.prototype._parse = cadence(function (async, body, response) {
     try {
-        callback(null,  JSON.parse(body.toString()), response)
+        return [ JSON.parse(body.toString()), response ]
     } catch (e) {
-        var errorified = errorify(502, {})
-        callback(null, errorified[0], errorified[1])
+        return  errorify(502, {})
     }
-}
+})
 
 module.exports = function (options) {
     return new Jsonify(options)
