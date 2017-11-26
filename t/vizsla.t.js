@@ -34,6 +34,20 @@ function prove (async, okay) {
             })
         })
         return request
+    }, function (options) {
+        var request = new PseudoRequest(options)
+        /*
+        var end = request.end
+        request.end = function () {
+            console.log('hello')
+            request.emit('error', new Error('request'))
+            end.call(request)
+        }*/
+            setImmediate(function () {
+                request.emit('error', new Error('natural'))
+                request.emit('error', new Error('abnormal'))
+            })
+        return request
     }]
 
     function PseudoResponse (send) {
@@ -222,6 +236,13 @@ function prove (async, okay) {
     }, function (error) {
         okay(error.message, 'response', 'response error')
     }], function () {
-        okay(true, 'done')
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            http: pseudo,
+            gateways: [],
+            psot: {}
+        }, async())
+    }, function (body, response) {
+        okay(response.statusCode, 503, 'error')
     })
 }

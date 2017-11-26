@@ -82,9 +82,10 @@ Transport.prototype.fetch = cadence(function (async, descent) {
         })
     }, function (error) {
         var statusCode = typeof error == 'string' ? 504 : 503
-        var code = typeof error == 'string' ? error : error.code
+        var code = typeof error == 'string' ? error : coalesce(error.code, 'EIO')
         return errorify(statusCode, { 'x-vizsla-errno': code })
     }], function (body, response) {
+        // TODO Come back and test this when you've created a Prolific Test library.
         client.on('error', function (error) {
             switch (status) {
             case 'aborted':
