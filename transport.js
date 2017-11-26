@@ -66,7 +66,7 @@ Transport.prototype.fetch = cadence(function (async, descent) {
                 signal.notify(error, 'errored')
             })
             signal.wait(function (code, newStatus) {
-                status = newStatus
+            //    status = newStatus
                 $response.unpipe()
                 $response.resume()
                 if (typeof code == 'string') {
@@ -74,7 +74,9 @@ Transport.prototype.fetch = cadence(function (async, descent) {
                     error.code = code
                     body.emit('error', error)
                 } else {
+                    console.log('emit')
                     body.emit('error', code)
+                    console.log('emit')
                 }
             })
             $response.once('end', function () {
@@ -105,11 +107,9 @@ Transport.prototype.fetch = cadence(function (async, descent) {
     }], function (body, response) {
         // TODO Come back and test this when you've created a Prolific Test library.
         client.on('error', function (error) {
-            console.log(status)
             switch (status) {
             case 'timedout':
             case 'aborted':
-                console.log(caught)
                 logger.error(status, { errors: ++errors, stack: error.stack, $options: request.options })
                 break
             case 'requesting':
@@ -117,13 +117,13 @@ Transport.prototype.fetch = cadence(function (async, descent) {
                 break
             case 'responded':
                 logger.error(status, { errors: ++errors, stack: error.stack, $options: request.options })
-                body.emit('error', error)
                 break
             }
         })
         if (timeout) {
             clearTimeout(timeout)
         }
+        console.log('here')
         return [ body, response ]
     })
 })

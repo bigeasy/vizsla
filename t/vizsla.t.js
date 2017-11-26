@@ -1,4 +1,4 @@
-require('proof')(22, require('cadence')(prove))
+require('proof')(23, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -83,6 +83,9 @@ function prove (async, okay) {
         statusCode: 200,
         body: new Buffer('a'),
         timeout: 250
+    }, {
+        statusCode: 200,
+        cancel: true
     }]
     var server = http.createServer(function (request, response) {
         var send = responses.shift()
@@ -104,11 +107,19 @@ function prove (async, okay) {
             done()
         }
         function done () {
-            setTimeout(function () {
+            if (send.cancel) {
                 response.writeHead(send.statusCode, coalesce(send.headers, {}))
-                response.write(send.body)
-                setTimeout(function () { response.end() }, 1)
-            }, coalesce(send.timeout, 0))
+                response.write('a')
+                setTimeout(function () {
+                    response.socket.destroy()
+                }, 100)
+            } else {
+                setTimeout(function () {
+                    response.writeHead(send.statusCode, coalesce(send.headers, {}))
+                    response.write(send.body)
+                    setTimeout(function () { response.end() }, 1)
+                }, coalesce(send.timeout, 0))
+            }
         }
     })
 
@@ -266,6 +277,20 @@ function prove (async, okay) {
             fetch.cancel()
         }, function (error) {
             okay(error.code, 'ECONNABORTED', 'abort response')
+        }])
+    } , function () {
+        var fetch
+        async(function () {
+            fetch = ua.fetch({
+                url: 'http://127.0.0.1:8888/endpoint',
+                gateways: [ null ]
+            }, async())
+        }, [function (body, response) {
+            body.resume()
+            delta(async()).ee(body).on('end')
+            fetch.cancel()
+        }, function (error) {
+            okay(error.code, 'ECONNABORTED', 'abort response at server')
         }])
     } , function () {
         okay(true, 'done')
