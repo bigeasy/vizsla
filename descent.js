@@ -1,4 +1,5 @@
 var cadence = require('cadence')
+var coalesce = require('extant')
 
 var merge = require('./merge')
 var options = require('./options')
@@ -9,8 +10,13 @@ var Signal = require('signal')
 
 var Transport = require('./transport')
 
+var jsonify = require('./jsonify')
+
 function Descent (bind, input, cancel) {
     this._merged = merge({}, bind)
+    if (this._merged.gateways == null) {
+        this._merged.gateways = [ jsonify({ when: [ 'content-type: application/json' ] }) ]
+    }
     this.input = input || new stream.PassThrough
     this.cancel = cancel || new Signal
 }

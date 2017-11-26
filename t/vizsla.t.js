@@ -1,4 +1,4 @@
-require('proof')(23, require('cadence')(prove))
+require('proof')(24, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -60,6 +60,12 @@ function prove (async, okay) {
     var responses = [{
         statusCode: 200,
         body: new Buffer('x')
+    }, {
+        statusCode: 200,
+        body: new Buffer('{}'),
+        headers: {
+            'content-type': 'application/json'
+        }
     }, {
         statusCode: 200,
         body: new Buffer('x'),
@@ -143,6 +149,12 @@ function prove (async, okay) {
         }, function (chunks) {
             okay(Buffer.concat(chunks).toString(), 'x', 'minimal ok body')
         })
+    }, function () {
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+        }, async())
+    }, function (body) {
+        okay(body, {}, 'default json')
     }, function () {
         ua.fetch({
             url: 'http://127.0.0.1:8889/endpoint',
