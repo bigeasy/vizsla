@@ -123,7 +123,6 @@ Transport.prototype.fetch = cadence(function (async, descent) {
         if (timeout) {
             clearTimeout(timeout)
         }
-        console.log('here')
         return [ body, response ]
     })
 })
