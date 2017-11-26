@@ -10,7 +10,7 @@ function Parser (options, merge) {
     this._select = createSelector(coalesce(options.when, []))
 }
 
-Parser.prototype.fetch = cadence(function (async, descent) {
+Parser.prototype.descend = cadence(function (async, descent) {
     async(function () {
         descent.merge(this._merge.slice())
         descent.descend(async())

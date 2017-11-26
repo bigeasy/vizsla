@@ -14,7 +14,7 @@ var Instance = 0
 function Transport () {
 }
 
-Transport.prototype.fetch = cadence(function (async, descent) {
+Transport.prototype.descend = cadence(function (async, descent) {
     var instance = ++Instance
     var request = descent.request()
     var sent = {

@@ -6,7 +6,7 @@ module.exports = function (value, response) {
     return {
         url: 'http://127.0.0.1:8888/url',
         gateways: [{
-            fetch: cadence(function (async) {
+            descend: cadence(function (async) {
                 if (value == null) {
                     return [ value, response ]
                 }

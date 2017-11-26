@@ -27,9 +27,9 @@ Descent.prototype.request = function () {
 
 Descent.prototype.descend = cadence(function (async) {
     if (this._merged.gateways.length != 0) {
-        this._merged.gateways.shift().fetch(this, async())
+        this._merged.gateways.shift().descend(this, async())
     } else {
-        new Transport().fetch(this, async())
+        new Transport().descend(this, async())
     }
 })
 
