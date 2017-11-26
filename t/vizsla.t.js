@@ -1,9 +1,11 @@
-require('proof')(20, require('cadence')(prove))
+require('proof')(22, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
     var util = require('util')
     var stream = require('stream')
+
+    var extra = false
 
     var coalesce = require('extant')
     var delta = require('delta')
@@ -36,17 +38,10 @@ function prove (async, okay) {
         return request
     }, function (options) {
         var request = new PseudoRequest(options)
-        /*
-        var end = request.end
-        request.end = function () {
-            console.log('hello')
-            request.emit('error', new Error('request'))
-            end.call(request)
-        }*/
-            setImmediate(function () {
-                request.emit('error', new Error('natural'))
-                request.emit('error', new Error('abnormal'))
-            })
+        setImmediate(function () {
+            request.emit('error', new Error('natural'))
+            request.emit('error', new Error('abnormal'))
+        })
         return request
     }]
 
@@ -84,6 +79,10 @@ function prove (async, okay) {
     }, {
         statusCode: 200,
         body: new Buffer('x')
+    }, {
+        statusCode: 200,
+        body: new Buffer('a'),
+        timeout: 250
     }]
     var server = http.createServer(function (request, response) {
         var send = responses.shift()
@@ -107,7 +106,8 @@ function prove (async, okay) {
         function done () {
             setTimeout(function () {
                 response.writeHead(send.statusCode, coalesce(send.headers, {}))
-                response.end(send.body)
+                response.write(send.body)
+                setTimeout(function () { response.end() }, 1)
             }, coalesce(send.timeout, 0))
         }
     })
@@ -253,5 +253,21 @@ function prove (async, okay) {
         fetch.response.wait(async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'fetch signal')
+        var fetch
+        async(function () {
+            extra = true
+            fetch = ua.fetch({
+                url: 'http://127.0.0.1:8888/endpoint',
+                gateways: [ null ]
+            }, async())
+        }, [function (body, response) {
+            body.resume()
+            delta(async()).ee(body).on('end')
+            fetch.cancel()
+        }, function (error) {
+            okay(error.code, 'ECONNABORTED', 'abort response')
+        }])
+    } , function () {
+        okay(true, 'done')
     })
 }

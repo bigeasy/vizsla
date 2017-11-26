@@ -25,31 +25,31 @@ Transport.prototype.fetch = cadence(function (async, descent) {
         duration: null
     }
     var timeout = null, status = 'requesting', errors = 0, $response = null, caught = false
+    var signal = new Signal, wait = null
     var client = request.http.request(request.options)
     async([function () {
         async(function () {
-            var wait = delta(async()).ee(client).on('response')
-            var signal = new Signal
-            descent.cancel.wait(function () { signal.unlatch('ECONNABORTED') })
+            var event = delta(async()).ee(client).on('response')
+            descent.cancel.wait(function () {
+                client.abort()
+                signal.unlatch('ECONNABORTED', 'aborted')
+            })
             if (request.timeout != null) {
                 timeout = setTimeout(function () {
                     timeout = null
-                    signal.unlatch('ETIMEDOUT')
+                    client.abort()
+                    signal.unlatch('ETIMEDOUT', 'timedout')
                 }, request.timeout)
             }
-            signal.wait(function (error) {
+            wait = signal.wait(function (code, newStatus) {
                 // The abort is going to close the socket. If we are waiting on
                 // a response there is going to be an error. Otherwise, there is
                 // going to be an `"aborted"` message on the response.
-                if (status == 'requesting') {
-                    client.once('error', function () {
-                        caught = true
-                    })
-                }
-                status = 'aborted'
+                client.once('error', function () { caught = true })
                 descent.input.unpipe()
-                client.abort()
-                wait.cancel([ error ])
+                descent.input.resume()
+                event.cancel([ code ])
+                status = newStatus
             })
             // TODO Make this terminate correctly and pipe up a stream
             // correctly.
@@ -59,14 +59,31 @@ Transport.prototype.fetch = cadence(function (async, descent) {
                 descent.input.pipe(client)
             }
         }, function (response) {
+            signal.cancel(wait)
             status = 'responded'
             $response = response
             client.once('error', function (error) {
+                signal.notify(error, 'errored')
+            })
+            signal.wait(function (code, newStatus) {
+                status = newStatus
                 $response.unpipe()
                 $response.resume()
+                if (typeof code == 'string') {
+                    var error = new Error('vizsla#cancel')
+                    error.code = code
+                    body.emit('error', error)
+                } else {
+                    body.emit('error', code)
+                }
             })
             $response.once('end', function () {
+                $response.unpipe()
+                $response.resume()
                 response.trailers = $response.trailers
+            })
+            $response.once('aborted', function () {
+                signal.notify('ECONNABORTED', 'aborted')
             })
             response = {
                 statusCode: $response.statusCode,
@@ -81,13 +98,16 @@ Transport.prototype.fetch = cadence(function (async, descent) {
             return [ body, response ]
         })
     }, function (error) {
+        signal.cancel(wait)
         var statusCode = typeof error == 'string' ? 504 : 503
         var code = typeof error == 'string' ? error : coalesce(error.code, 'EIO')
         return errorify(statusCode, { 'x-vizsla-errno': code })
     }], function (body, response) {
         // TODO Come back and test this when you've created a Prolific Test library.
         client.on('error', function (error) {
+            console.log(status)
             switch (status) {
+            case 'timedout':
             case 'aborted':
                 console.log(caught)
                 logger.error(status, { errors: ++errors, stack: error.stack, $options: request.options })
