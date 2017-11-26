@@ -1,4 +1,4 @@
-require('proof')(19, require('cadence')(prove))
+require('proof')(20, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -82,6 +82,8 @@ function prove (async, okay) {
         statusCode: 200,
         body: new Buffer('z')
     }, {
+        statusCode: 200,
+        body: new Buffer('x')
     }]
     var server = http.createServer(function (request, response) {
         var send = responses.shift()
@@ -244,5 +246,12 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 503, 'error')
+        var fetch = ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            gateways: []
+        })
+        fetch.response.wait(async())
+    }, function (body, response) {
+        okay(response.statusCode, 200, 'fetch signal')
     })
 }
