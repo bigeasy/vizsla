@@ -29,7 +29,7 @@
                             "media-typer":                  "0.3.0",
                             "nop":                          "1.0.0",
                             "prolific.logger":              "5.0.x",
-                            "signal":                       "3.0.x"
+                            "signal":                       "3.2.x"
     },
     "devDependencies":
     {
