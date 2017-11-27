@@ -2,48 +2,57 @@ var assert = require('assert')
 var url = require('url')
 var cadence = require('cadence')
 var merge = require('./merge')
-var defaultify = require('./default')
-var Converter = require('./converter')
+var coalesce = require('extant')
+var errorify = require('./errorify')
+var jsonify = require('./jsonify')
 
 function ClientCredentials (request) {
-    this._request = request
+    this._request = coalesce(request, { url: '/token' })
 }
 
-ClientCredentials.prototype.fetch = cadence(function (async, ua, request, fetch) {
-    var expanded = defaultify(request)
-    if (ua.storage.cc == null) {
-        ua.storage.cc = {}
+ClientCredentials.prototype.descend = cadence(function (async, descent) {
+    if (descent.storage.cc == null) {
+        descent.storage.cc = {}
     }
+    var request = descent.request()
     var label = async(function () {
-        if (ua.storage.cc[expanded.identifier] == null) {
+        if (descent.storage.cc[request.identifier] == null) {
+            if (request.url.auth == null) {
+                return [ label.break ].concat(errorify(503, {}))
+            }
             async(function () {
-                ua.fetch(request, this._request, {
+                descent.fetch(this._request, {
                     headers: {
-                        authorization: 'Basic ' + new Buffer(expanded.url.auth).toString('base64')
+                        authorization: 'Basic ' + new Buffer(request.url.auth).toString('base64')
                     },
                     post: {
                         grant_type: 'client_credentials'
                     },
-                    url: '/token',
-                    response: 'parse',
-                    plugins: [ null ]
-                }, async())
-            }, function (body, response, buffer) {
-                if (!response.okay || body.token_type != 'Bearer' || body.access_token == null) {
-                    return [ label.break, new Converter(response.headers, buffer, 'buffer'), response ]
+                    gateways: [ jsonify({ when: [ 'content-type: application/json' ] }), null ]
+                }).response.wait(async())
+            }, function (body, response) {
+                if (
+                    !response.okay ||
+                    response.headers['content-type'] != 'application/json' ||
+                    body.token_type != 'Bearer' ||
+                    body.access_token == null
+                ) {
+                    return [ label.break ].concat(errorify(503, {}))
                 }
-                ua.storage.cc[expanded.identifier] = body.access_token
+                descent.storage.cc[request.identifier] = body.access_token
             })
         }
     }, function () {
-        request = merge(request, [{ token: ua.storage.cc[expanded.identifier] }])
-        request.plugins.shift().fetch(ua, request, fetch, async())
+        descent.merge([{ headers: { 'authorization': 'Bearer ' + descent.storage.cc[request.identifier] } }])
+        descent.descend(async())
     }, function (body, response) {
         if (response.statusCode == 401) {
-            delete ua.storage.cc[expanded.identifier]
+            delete descent.storage.cc[request.identifier]
         }
-        return [ label.break ].concat(Array.prototype.slice.call(arguments))
+        return [ label.break, body, response ]
     })()
 })
 
-module.exports = ClientCredentials
+module.exports = function (options) {
+    return new ClientCredentials(options)
+}

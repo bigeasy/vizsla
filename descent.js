@@ -12,13 +12,15 @@ var Transport = require('./transport')
 
 var jsonify = require('./jsonify')
 
-function Descent (bind, input, cancel) {
+function Descent (bind, input, cancel, storage, UserAgent) {
+    this._UserAgent = UserAgent
     this._merged = merge({}, bind)
     if (this._merged.gateways == null) {
         this._merged.gateways = [ jsonify({ when: [ 'content-type: application/json' ] }) ]
     }
     this.input = input || new stream.PassThrough
     this.cancel = cancel || new Signal
+    this.storage = storage
 }
 
 Descent.prototype.merge = function (vargs) {
@@ -29,6 +31,10 @@ Descent.prototype.request = function () {
     var defaulted = defaults(this._merged, true)
     defaulted.options = options(defaulted)
     return defaulted
+}
+
+Descent.prototype.fetch = function () {
+    return new (this._UserAgent)().fetch(this._merged, Array.prototype.slice.call(arguments))
 }
 
 Descent.prototype.descend = cadence(function (async) {

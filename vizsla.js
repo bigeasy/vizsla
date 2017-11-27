@@ -40,8 +40,7 @@ UserAgent.prototype.fetch = function () {
         fetch.response.wait(callback)
     }
 
-    var descent = new Descent(this._bind.concat(vargs), fetch.input, cancel)
-
+    var descent = new Descent(this._bind.concat(vargs), fetch.input, cancel, this.storage, UserAgent)
     descent.descend(fetch.response.unlatch.bind(fetch.response))
 
     return fetch

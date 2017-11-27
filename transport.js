@@ -87,8 +87,11 @@ Transport.prototype.descend = cadence(function (async, descent) {
             $response.once('aborted', function () {
                 signal.notify('ECONNABORTED', 'aborted')
             })
+            var statusCodeClass = Math.floor($response.statusCode / 100)
             response = {
+                okay: statusCodeClass == 2,
                 statusCode: $response.statusCode,
+                statusCodeClass: statusCodeClass,
                 statusMessage: $response.statusMessage,
                 headers: JSON.parse(JSON.stringify($response.headers)),
 //                rawHeaders: JSON.parse(JSON.stringify(response.rawHeaders)),
