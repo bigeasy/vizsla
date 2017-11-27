@@ -37,5 +37,5 @@ function prove (okay) {
         headers: { 'transfer-encoding': 'chunked' }
     }), 'exclude header')
     okay(createSelector([ function () { return true } ])({}), 'function')
-    okay(!createSelector([])({}), 'empty')
+    okay(createSelector([])({}), 'empty')
 }

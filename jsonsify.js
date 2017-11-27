@@ -12,7 +12,7 @@ var JsonStream = require('./jsons')
 var Parser = require('./parser')
 
 function Jsonpify (options) {
-    options.when = [ 'content-type: application/json' ].concat(coalesce(options.when, []))
+    options.when = [ 'content-type: application/json-stream' ].concat(coalesce(options.when, []))
     Parser.call(this, options, [])
 }
 util.inherits(Jsonpify, Parser)

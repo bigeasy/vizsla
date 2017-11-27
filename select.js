@@ -58,8 +58,10 @@ module.exports = function (condition) {
     return function (request) {
         var action = false
         for (var i = 0, I = tests.length; i < I; i++) {
-            action = coalesce(tests[i](request), action)
+            if (!tests[i](request)) {
+                return false
+            }
         }
-        return action
+        return true
     }
 }
