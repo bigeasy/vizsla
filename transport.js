@@ -94,7 +94,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
                 statusCodeClass: statusCodeClass,
                 statusMessage: $response.statusMessage,
                 headers: JSON.parse(JSON.stringify($response.headers)),
-//                rawHeaders: JSON.parse(JSON.stringify(response.rawHeaders)),
+                rawHeaders: JSON.parse(JSON.stringify(response.rawHeaders)),
                 trailers: null,
                 type: typer.parse(coalesce(response.headers['content-type'], 'application/octet-stream'))
             }
