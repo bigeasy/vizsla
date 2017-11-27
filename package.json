@@ -26,7 +26,6 @@
                             "extant":                       "1.0.x",
                             "interrupt":                    "5.0.x",
                             "media-typer":                  "0.3.0",
-                            "nop":                          "1.0.0",
                             "prolific.logger":              "5.0.x",
                             "signal":                       "3.2.x"
     },

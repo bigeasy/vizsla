@@ -1,6 +1,5 @@
 var cadence = require('cadence')
 var stream = require('stream')
-var noop = require('nop')
 var Signal = require('signal')
 var merge = require('./merge')
 var Descent = require('./descent')
