@@ -172,7 +172,13 @@ function prove (async, okay) {
                 'x-vizsla-errno', 'ECONNREFUSED',
                 'content-type', 'application/json'
             ],
-            trailers: null
+            trailers: null,
+            type: {
+                type: 'application',
+                subtype: 'json',
+                suffix: null,
+                parameters: {}
+            }
         }, 'refused properties')
         okay(body, 'Service Unavailable', 'refused message')
         var fetch = ua.fetch({
@@ -192,7 +198,13 @@ function prove (async, okay) {
                 'x-vizsla-errno', 'ECONNABORTED',
                 'content-type', 'application/json'
             ],
-            trailers: null
+            trailers: null,
+            type: {
+                type: 'application',
+                subtype: 'json',
+                suffix: null,
+                parameters: {}
+            }
         }, 'cancel properties')
         okay(body, 'Gateway Timeout', 'cancel body')
         ua.fetch({
@@ -212,7 +224,13 @@ function prove (async, okay) {
                 'x-vizsla-errno', 'ETIMEDOUT',
                 'content-type', 'application/json'
             ],
-            trailers: null
+            trailers: null,
+            type: {
+                type: 'application',
+                subtype: 'json',
+                suffix: null,
+                parameters: {}
+            }
         }, 'cancel properties')
         okay(body, 'Gateway Timeout', 'cancel body')
         ua.fetch({

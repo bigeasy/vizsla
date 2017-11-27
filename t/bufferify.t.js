@@ -22,7 +22,13 @@ function prove (async, okay) {
             statusMessage: 'Bad Gateway',
             headers: { 'content-type': 'application/json' },
             rawHeaders: [ 'content-type', 'application/json' ],
-            trailers: null
+            trailers: null,
+            type: {
+                type: 'application',
+                subtype: 'json',
+                suffix: null,
+                parameters: {}
+            }
         }, 'error')
         descent = new Descent([{
             gateways: [ gateway, requestify(null, { statusCode: 404 }).gateways.shift() ]

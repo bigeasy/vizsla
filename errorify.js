@@ -12,6 +12,12 @@ module.exports = function (statusCode, headers) {
         statusMessage: description,
         headers: headers,
         rawHeaders: rawHeaders,
-        trailers: null
+        trailers: null,
+        type: {
+            type: 'application',
+            subtype: 'json',
+            suffix: null,
+            parameters: {}
+        }
     }]
 }
