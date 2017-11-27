@@ -20,6 +20,7 @@
     },
     "dependencies":
     {
+                            "byline":                       "5.0.0",
                             "cadence":                      "1.0.x",
                             "delta":                        "1.2.x",
                             "extant":                       "1.0.x",
