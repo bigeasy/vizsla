@@ -24,7 +24,6 @@
                             "cadence":                      "1.0.x",
                             "delta":                        "1.2.x",
                             "extant":                       "1.0.x",
-                            "interlocutor":                 "0.5.x",
                             "interrupt":                    "5.0.x",
                             "media-typer":                  "0.3.0",
                             "nop":                          "1.0.0",
@@ -33,6 +32,7 @@
     },
     "devDependencies":
     {
+                            "interlocutor":                 "0.5.x",
                             "connect":                      "3.6.5",
                             "proof":                        "3.0.x"
     },
