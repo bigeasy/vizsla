@@ -32,8 +32,8 @@
     },
     "devDependencies":
     {
-                            "interlocutor":                 "0.5.x",
                             "connect":                      "3.6.5",
+                            "interlocutor":                 "0.5.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "vizsla",
