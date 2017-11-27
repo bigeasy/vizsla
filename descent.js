@@ -11,12 +11,16 @@ var Signal = require('signal')
 var Transport = require('./transport')
 
 var jsonify = require('./jsonify')
+var stringify = require('./stringify')
 
 function Descent (bind, input, cancel, storage, UserAgent) {
     this._UserAgent = UserAgent
     this._merged = merge({}, bind)
     if (this._merged.gateways == null) {
-        this._merged.gateways = [ jsonify({ when: [ 'content-type: application/json' ] }) ]
+        this._merged.gateways = [
+            jsonify({ when: [ 'content-type: application/json' ] }),
+            stringify({ when: [ 'content-type: text/plain' ] })
+        ]
     }
     this.input = input || new stream.PassThrough
     this.cancel = cancel || new Signal
