@@ -1,7 +1,6 @@
 var cadence = require('cadence')
 var stream = require('stream')
 var Signal = require('signal')
-var merge = require('./merge')
 var Descent = require('./descent')
 
 function UserAgent () {

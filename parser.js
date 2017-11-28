@@ -1,8 +1,6 @@
 var cadence = require('cadence')
-var defaultify = require('./defaultify')
 var createSelector = require('./select')
 var coalesce = require('extant')
-var merge = require('./merge')
 
 function Parser (options, merge) {
     this._options = options

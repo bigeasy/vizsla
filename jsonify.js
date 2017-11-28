@@ -3,7 +3,6 @@ var cadence = require('cadence')
 var errorify = require('./errorify')
 
 var coalesce = require('extant')
-var createSelector = require('./select')
 var util = require('util')
 
 var stringify = require('./stringify')

@@ -1,7 +1,4 @@
-var assert = require('assert')
-var url = require('url')
 var cadence = require('cadence')
-var merge = require('./merge')
 var coalesce = require('extant')
 var errorify = require('./errorify')
 var jsonify = require('./jsonify')

@@ -1,5 +1,3 @@
-var coalesce = require('extant')
-
 function createHeaderTest (header) {
     var action = true
     if (header[0] == '-') {

@@ -1,10 +1,8 @@
 var cadence = require('cadence')
 
 var byline = require('byline')
-var errorify = require('./errorify')
 
 var coalesce = require('extant')
-var createSelector = require('./select')
 var util = require('util')
 
 var JsonStream = require('./jsons')
