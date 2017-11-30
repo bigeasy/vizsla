@@ -180,7 +180,7 @@ function prove (async, okay) {
                 parameters: {}
             }
         }, 'refused properties')
-        okay(body, 'Service Unavailable', 'refused message')
+        okay(JSON.parse(body.read().toString()), 'Service Unavailable', 'refused message')
         var fetch = ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             gateways: []
@@ -206,7 +206,7 @@ function prove (async, okay) {
                 parameters: {}
             }
         }, 'cancel properties')
-        okay(body, 'Gateway Timeout', 'cancel body')
+        okay(JSON.parse(body.read().toString()), 'Gateway Timeout', 'cancel body')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             gateways: [],
@@ -232,7 +232,7 @@ function prove (async, okay) {
                 parameters: {}
             }
         }, 'cancel properties')
-        okay(body, 'Gateway Timeout', 'cancel body')
+        okay(JSON.parse(body.read().toString()), 'Gateway Timeout', 'cancel body')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             gateways: [],

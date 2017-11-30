@@ -1,4 +1,4 @@
-require('proof')(3, require('cadence')(prove))
+require('proof')(4, require('cadence')(prove))
 
 function prove (async, okay) {
     var cadence = require('cadence')
@@ -30,6 +30,7 @@ function prove (async, okay) {
                 parameters: {}
             }
         }, 'error')
+        okay(JSON.parse(body.read().toString()), 'Bad Gateway', 'body')
         descent = new Descent([{
             gateways: [ gateway, requestify(null, { statusCode: 404 }).gateways.shift() ]
         }])
