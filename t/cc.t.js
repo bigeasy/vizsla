@@ -40,8 +40,8 @@ function prove (async, okay) {
         }, coalesce(send.timeout, 0))
     })
 
-    var Vizsla = require('..')
-    var ua = new Vizsla
+    var UserAgent = require('..')
+    var ua = new UserAgent
 
     async(function () {
         server.listen(8888, async())
@@ -50,31 +50,51 @@ function prove (async, okay) {
     }], function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: [ cc({ url: '/auth' }), jsonify({}) ]
+            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
-        okay(response.statusCode, 503, 'no password')
+        // TODO How would I know from logs that this is a configuration problem
+        // and not a network problem?
+        okay({
+            statusCode: response.statusCode,
+            body: body
+        }, {
+            statusCode: 503,
+            body: 'Service Unavailable'
+        }, 'no password')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ cc({ url: '/auth' }), jsonify({}) ]
+            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
-        okay(response.statusCode, 503, 'not okay')
+        okay({
+            statusCode: response.statusCode,
+            body: body
+        }, {
+            statusCode: 400,
+            body: 'Bad Request'
+        }, 'not okay')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ cc({ url: '/auth' }), jsonify({}) ]
+            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
-        okay(response.statusCode, 503, 'no token')
+        okay({
+            statusCode: response.statusCode,
+            body: body
+        }, {
+            statusCode: 502,
+            body: 'Bad Gateway'
+        }, 'no token')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ cc({ url: '/auth' }), jsonify({}) ]
+            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         okay(body, {}, 'body')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ cc({ url: '/auth' }), jsonify({}) ]
+            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 401, 'expired')

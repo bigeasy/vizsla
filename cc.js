@@ -28,13 +28,14 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
                     gateways: [ jsonify({ when: [ 'content-type: application/json' ] }), null ]
                 }).response.wait(async())
             }, function (body, response) {
-                if (
-                    !response.okay ||
+                if (!response.okay) {
+                    return [ label.break ].concat(errorify(response.statusCode, {}))
+                } else if (
                     response.headers['content-type'] != 'application/json' ||
                     body.token_type != 'Bearer' ||
                     body.access_token == null
                 ) {
-                    return [ label.break ].concat(errorify(503, {}))
+                    return [ label.break ].concat(errorify(502, {}))
                 }
                 descent.storage.cc[request.identifier] = body.access_token
             })
