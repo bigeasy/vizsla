@@ -20,7 +20,7 @@ function prove (async, okay) {
                     type: 'application',
                     subtype: 'json-stream'
                 }
-            }).gateways.shift() ]
+            }) ]
         }])
         descent.descend(async())
     }, function (body, response) {

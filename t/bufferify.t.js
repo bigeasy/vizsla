@@ -13,7 +13,7 @@ function prove (async, okay) {
 
     async(function () {
         descent = new Descent([{
-            gateways: [ gateway, requestify(new Error('stream'), { statusCode: 200 }).gateways.shift() ]
+            gateways: [ gateway, requestify(new Error('stream'), { statusCode: 200 }) ]
         }])
         descent.descend(async())
     }, function (body, response) {
@@ -32,7 +32,7 @@ function prove (async, okay) {
         }, 'error')
         okay(JSON.parse(body.read().toString()), 'Bad Gateway', 'body')
         descent = new Descent([{
-            gateways: [ gateway, requestify(null, { statusCode: 404 }).gateways.shift() ]
+            gateways: [ gateway, requestify(null, { statusCode: 404 }) ]
         }])
         descent.descend(async())
     }, function (body, response) {

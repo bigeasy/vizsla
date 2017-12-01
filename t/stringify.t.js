@@ -16,7 +16,7 @@ function prove (async, okay) {
             gateways: [ gateway, requestify('x', {
                 statusCode: 200,
                 type: { parameters: {} }
-            }).gateways.shift() ]
+            }) ]
         }])
         descent.descend(async())
     }, function (body, response) {
@@ -25,7 +25,7 @@ function prove (async, okay) {
             gateways: [ gateway, requestify('x', {
                 statusCode: 200,
                 type: { parameters: { charset: 'steve' } }
-            }).gateways.shift() ]
+            }) ]
         }])
         descent.descend(async())
     }, function (body, response) {

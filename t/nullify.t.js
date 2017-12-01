@@ -15,7 +15,7 @@ function prove (async, okay) {
         descent = new Descent([{
             gateways: [ nullify(), requestify('x', {
                 okay: false
-            }).gateways.shift() ]
+            }) ]
         }])
         descent.descend(async())
     }, function (body) {
@@ -23,7 +23,7 @@ function prove (async, okay) {
         descent = new Descent([{
             gateways: [ nullify(), requestify('x', {
                 okay: true
-            }).gateways.shift() ]
+            }) ]
         }])
         descent.descend(async())
     }, function (body) {
