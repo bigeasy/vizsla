@@ -9,7 +9,11 @@
     [
                             "cadence", "http", "https", "rest", "json", "curl"
     ],
-    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "author":
+    {
+                            "name":                         "Alan Gutierrez",
+                            "email":                        "alan@prettyrobots.com"
+    },
     "homepage":             "https://github.com/bigeasy/vizsla",
     "bugs":                 "https://github.com/bigeasy/vizsla/issues",
     "license":              "MIT",
