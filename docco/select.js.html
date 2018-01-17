@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>select.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+
+
+                <a class="source" href="bufferify.js.html">
+                  bufferify.js
+                </a>
+
+
+                <a class="source" href="cc.js.html">
+                  cc.js
+                </a>
+
+
+                <a class="source" href="defaultify.js.html">
+                  defaultify.js
+                </a>
+
+
+                <a class="source" href="descent.js.html">
+                  descent.js
+                </a>
+
+
+                <a class="source" href="errorify.js.html">
+                  errorify.js
+                </a>
+
+
+                <a class="source" href="jsonify.js.html">
+                  jsonify.js
+                </a>
+
+
+                <a class="source" href="jsons.js.html">
+                  jsons.js
+                </a>
+
+
+                <a class="source" href="jsonsify.js.html">
+                  jsonsify.js
+                </a>
+
+
+                <a class="source" href="merge.js.html">
+                  merge.js
+                </a>
+
+
+                <a class="source" href="nullify.js.html">
+                  nullify.js
+                </a>
+
+
+                <a class="source" href="options.js.html">
+                  options.js
+                </a>
+
+
+                <a class="source" href="parser.js.html">
+                  parser.js
+                </a>
+
+
+                <a class="source" href="raiseify.js.html">
+                  raiseify.js
+                </a>
+
+
+                <a class="source" href="select.js.html">
+                  select.js
+                </a>
+
+
+                <a class="source" href="stringify.js.html">
+                  stringify.js
+                </a>
+
+
+                <a class="source" href="transport.js.html">
+                  transport.js
+                </a>
+
+
+                <a class="source" href="vizsla.js.html">
+                  vizsla.js
+                </a>
+
+            </div>
+          </div>
+        </li>
+      </ul>
+
+    <ul class="sections">
+
+          <li id="title">
+              <div class="annotation">
+                  <h1>select.js</h1>
+              </div>
+          </li>
+
+
+
+        <li id="section-1">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createHeaderTest</span> (<span class="hljs-params">header</span>) </span>{
+    <span class="hljs-keyword">var</span> action = <span class="hljs-literal">true</span>
+    <span class="hljs-keyword">if</span> (header[<span class="hljs-number">0</span>] == <span class="hljs-string">'-'</span>) {
+        action = <span class="hljs-literal">false</span>
+        header = header.substring(<span class="hljs-number">1</span>)
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (header[<span class="hljs-number">0</span>] == <span class="hljs-string">'+'</span>) {
+        header = header.substring(<span class="hljs-number">1</span>)
+    }
+    header = header.split(<span class="hljs-regexp">/\s*:\s*/</span>, <span class="hljs-number">2</span>)
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response</span>) </span>{
+        <span class="hljs-keyword">if</span> (header[<span class="hljs-number">0</span>] == <span class="hljs-string">'content-type'</span>) {
+            <span class="hljs-keyword">if</span> (~header[<span class="hljs-number">1</span>].indexOf(<span class="hljs-string">'/'</span>)) {
+                <span class="hljs-keyword">return</span> header[<span class="hljs-number">1</span>] == response.type.type + <span class="hljs-string">'/'</span> + response.type.subtype ? action : <span class="hljs-literal">null</span>
+            }
+            <span class="hljs-keyword">return</span> header[<span class="hljs-number">1</span>] == response.type.type ? action : <span class="hljs-literal">null</span>
+        }
+        <span class="hljs-keyword">return</span> header[<span class="hljs-number">1</span>] == response.headers[header[<span class="hljs-number">0</span>]] ? action : <span class="hljs-literal">null</span>
+    }
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createStatusCodeTest</span> (<span class="hljs-params">statusCode</span>) </span>{
+    <span class="hljs-keyword">if</span> (statusCode == <span class="hljs-number">0</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span> }
+    }
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Math</span>.abs(statusCode) &lt; <span class="hljs-number">10</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response</span>) </span>{
+            <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Math</span>.floor(response.statusCode / <span class="hljs-number">100</span>) == <span class="hljs-built_in">Math</span>.abs(statusCode)) {
+                <span class="hljs-keyword">return</span> statusCode &lt; <span class="hljs-number">0</span> ? <span class="hljs-literal">false</span> : <span class="hljs-literal">true</span>
+            }
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>
+        }
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response</span>) </span>{
+        <span class="hljs-keyword">if</span> (response.statusCode == <span class="hljs-built_in">Math</span>.abs(statusCode)) {
+            <span class="hljs-keyword">return</span> statusCode &lt; <span class="hljs-number">0</span> ? <span class="hljs-literal">false</span> : <span class="hljs-literal">true</span>
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>
+    }
+}
+
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">condition</span>) </span>{
+    <span class="hljs-keyword">var</span> tests = []
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>, I = condition.length; i &lt; I; i++) {
+        <span class="hljs-keyword">switch</span> (<span class="hljs-keyword">typeof</span> condition[i]) {
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'number'</span>:
+            tests.push(createStatusCodeTest(condition[i]))
+            <span class="hljs-keyword">break</span>
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'string'</span>:
+            tests.push(createHeaderTest(condition[i]))
+            <span class="hljs-keyword">break</span>
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'function'</span>:
+            tests.push(condition[i])
+            <span class="hljs-keyword">break</span>
+        }
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">request</span>) </span>{
+        <span class="hljs-keyword">var</span> action = <span class="hljs-literal">false</span>
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>, I = tests.length; i &lt; I; i++) {
+            <span class="hljs-keyword">if</span> (!tests[i](request)) {
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+            }
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+    }
+}
+
+</pre></div></div>
+
+        </li>
+
+    </ul>
+  </div>
+</body>
+</html>
