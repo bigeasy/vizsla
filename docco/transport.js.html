@@ -20,18 +20,33 @@
             <div id="jump_page">
 
 
+                <a class="source" href="bufferify.js.html">
+                  bufferify.js
+                </a>
+
+
                 <a class="source" href="cc.js.html">
                   cc.js
                 </a>
 
 
-                <a class="source" href="converter.js.html">
-                  converter.js
+                <a class="source" href="defaultify.js.html">
+                  defaultify.js
                 </a>
 
 
-                <a class="source" href="default.js.html">
-                  default.js
+                <a class="source" href="descent.js.html">
+                  descent.js
+                </a>
+
+
+                <a class="source" href="errorify.js.html">
+                  errorify.js
+                </a>
+
+
+                <a class="source" href="jsonify.js.html">
+                  jsonify.js
                 </a>
 
 
@@ -40,23 +55,18 @@
                 </a>
 
 
+                <a class="source" href="jsonsify.js.html">
+                  jsonsify.js
+                </a>
+
+
                 <a class="source" href="merge.js.html">
                   merge.js
                 </a>
 
 
-                <a class="source" href="mock.js.html">
-                  mock.js
-                </a>
-
-
-                <a class="source" href="network.js.html">
-                  network.js
-                </a>
-
-
-                <a class="source" href="notes.js.html">
-                  notes.js
+                <a class="source" href="nullify.js.html">
+                  nullify.js
                 </a>
 
 
@@ -65,8 +75,23 @@
                 </a>
 
 
-                <a class="source" href="send.js.html">
-                  send.js
+                <a class="source" href="parser.js.html">
+                  parser.js
+                </a>
+
+
+                <a class="source" href="raiseify.js.html">
+                  raiseify.js
+                </a>
+
+
+                <a class="source" href="select.js.html">
+                  select.js
+                </a>
+
+
+                <a class="source" href="stringify.js.html">
+                  stringify.js
                 </a>
 
 
@@ -104,19 +129,21 @@
             </div>
 
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
-<span class="hljs-keyword">var</span> _stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
 <span class="hljs-keyword">var</span> typer = <span class="hljs-built_in">require</span>(<span class="hljs-string">'media-typer'</span>)
 <span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
-<span class="hljs-keyword">var</span> defaultify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./default'</span>)
-<span class="hljs-keyword">var</span> byline = <span class="hljs-built_in">require</span>(<span class="hljs-string">'byline'</span>)
-<span class="hljs-keyword">var</span> JsonStream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./jsons'</span>)
-<span class="hljs-keyword">var</span> Converter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./converter'</span>)
+<span class="hljs-keyword">var</span> errorify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./errorify'</span>)
+<span class="hljs-keyword">var</span> Signal = <span class="hljs-built_in">require</span>(<span class="hljs-string">'signal'</span>)
+<span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
+<span class="hljs-keyword">var</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'prolific.logger'</span>).createLogger(<span class="hljs-string">'vizsla'</span>)
+<span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
 
+<span class="hljs-keyword">var</span> Instance = <span class="hljs-number">0</span>
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Transport</span> (<span class="hljs-params"></span>) </span>{
 }
 
-Transport.prototype.fetch = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, ua, request, fetch</span>) </span>{
-    request = defaultify(request)
+Transport.prototype.descend = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, descent</span>) </span>{
+    <span class="hljs-keyword">var</span> instance = ++Instance
+    <span class="hljs-keyword">var</span> request = descent.request()
     <span class="hljs-keyword">var</span> sent = {
         <span class="hljs-attr">url</span>: request.url,
         <span class="hljs-attr">options</span>: request.options,
@@ -124,9 +151,24 @@ Transport.prototype.fetch = cadence(<span class="hljs-function"><span class="hlj
         <span class="hljs-attr">when</span>: <span class="hljs-built_in">Date</span>.now(),
         <span class="hljs-attr">duration</span>: <span class="hljs-literal">null</span>
     }
-    <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        <span class="hljs-keyword">async</span>([<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-            ua._transport.send(request, fetch._cancel, <span class="hljs-keyword">async</span>())
+    <span class="hljs-keyword">var</span> timeout = <span class="hljs-literal">null</span>, status = <span class="hljs-string">'requesting'</span>, errors = <span class="hljs-number">0</span>, $response = <span class="hljs-literal">null</span>, caught = <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">var</span> signal = <span class="hljs-keyword">new</span> Signal, wait = <span class="hljs-literal">null</span>
+    <span class="hljs-keyword">var</span> client = request.http.request(request.options)
+    <span class="hljs-keyword">async</span>([<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">var</span> event = delta(<span class="hljs-keyword">async</span>()).ee(client).on(<span class="hljs-string">'response'</span>)
+            descent.cancel.wait(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                client.abort()
+                signal.unlatch(<span class="hljs-string">'ECONNABORTED'</span>, <span class="hljs-string">'aborted'</span>)
+            })
+            <span class="hljs-keyword">if</span> (request.timeout != <span class="hljs-literal">null</span>) {
+                timeout = setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                    timeout = <span class="hljs-literal">null</span>
+                    client.abort()
+                    signal.unlatch(<span class="hljs-string">'ETIMEDOUT'</span>, <span class="hljs-string">'timedout'</span>)
+                }, request.timeout)
+            }
+            wait = signal.wait(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">code, newStatus</span>) </span>{
 </pre></div></div>
 
         </li>
@@ -138,14 +180,18 @@ Transport.prototype.fetch = cadence(<span class="hljs-function"><span class="hlj
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>TODO Make this terminate correctly and pipe up a stream
-correctly.</p>
+              <p>The abort is going to close the socket. If we are waiting on
+a response there is going to be an error. Otherwise, there is
+going to be an <code>&quot;aborted&quot;</code> message on the response.</p>
 
             </div>
 
-            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> ((<span class="hljs-string">'payload'</span> <span class="hljs-keyword">in</span> request)) {
-                request.input.write(request.payload)
-            }
+            <div class="content"><div class='highlight'><pre>                client.once(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{ caught = <span class="hljs-literal">true</span> })
+                descent.input.unpipe()
+                descent.input.resume()
+                event.cancel([ code ])
+                status = newStatus
+            })
 </pre></div></div>
 
         </li>
@@ -157,41 +203,113 @@ correctly.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>TODO Should we close ourselves based on headers or a flag? There
-should be a flag to defeat this behavior, maybe, or else maybe if
-you have an API where you need to pass a body to DELETE you need
-to use <code>http</code> directly to accommodate that. Should be more like
-cURL, defaults and defeats.</p>
+              <p>TODO Make this terminate correctly and pipe up a stream
+correctly.</p>
 
             </div>
 
-            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (
-                (<span class="hljs-string">'payload'</span> <span class="hljs-keyword">in</span> request) ||
-                request.method == <span class="hljs-string">'HEAD'</span> ||
-                request.method == <span class="hljs-string">'DELETE'</span> ||
-                request.method == <span class="hljs-string">'GET'</span>
-            ) {
-                request.input.end()
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (<span class="hljs-string">'payload'</span> <span class="hljs-keyword">in</span> request) {
+                client.end(request.payload)
+            } <span class="hljs-keyword">else</span> {
+                descent.input.pipe(client)
             }
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
-            <span class="hljs-keyword">var</span> body = error.message
-            <span class="hljs-built_in">console</span>.log(error.stack)
-            <span class="hljs-keyword">var</span> response = {
-                <span class="hljs-attr">statusCode</span>: <span class="hljs-number">599</span>,
-                <span class="hljs-attr">duration</span>: <span class="hljs-built_in">Date</span>.now() - sent.when,
-                <span class="hljs-attr">errno</span>: error.code,
-                <span class="hljs-attr">okay</span>: <span class="hljs-literal">false</span>,
-                <span class="hljs-attr">sent</span>: sent,
-                <span class="hljs-attr">cause</span>: error,
-                <span class="hljs-attr">headers</span>: {
-                    <span class="hljs-string">'content-length'</span>: body.length,
-                    <span class="hljs-string">'content-type'</span>: <span class="hljs-string">'text/plain'</span>
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response</span>) </span>{
+            signal.cancel(wait)
+            status = <span class="hljs-string">'responded'</span>
+            $response = response
+            client.once(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
+                signal.notify(error, <span class="hljs-string">'errored'</span>)
+            })
+            signal.wait(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">code, newStatus</span>) </span>{
+</pre></div></div>
+
+        </li>
+
+
+        <li id="section-4">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>   status = newStatus</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre>                $response.unpipe()
+                $response.resume()
+                <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> code == <span class="hljs-string">'string'</span>) {
+                    <span class="hljs-keyword">var</span> error = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'vizsla#cancel'</span>)
+                    error.code = code
+                    body.emit(<span class="hljs-string">'error'</span>, error)
+                } <span class="hljs-keyword">else</span> {
+                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'emit'</span>)
+                    body.emit(<span class="hljs-string">'error'</span>, code)
+                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'emit'</span>)
                 }
+            })
+            $response.once(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                $response.unpipe()
+                $response.resume()
+                response.trailers = $response.trailers
+            })
+            $response.once(<span class="hljs-string">'aborted'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                signal.notify(<span class="hljs-string">'ECONNABORTED'</span>, <span class="hljs-string">'aborted'</span>)
+            })
+            <span class="hljs-keyword">var</span> statusCodeClass = <span class="hljs-built_in">Math</span>.floor($response.statusCode / <span class="hljs-number">100</span>)
+            response = {
+                <span class="hljs-attr">okay</span>: statusCodeClass == <span class="hljs-number">2</span>,
+                <span class="hljs-attr">statusCode</span>: $response.statusCode,
+                <span class="hljs-attr">statusCodeClass</span>: statusCodeClass,
+                <span class="hljs-attr">statusMessage</span>: $response.statusMessage,
+                <span class="hljs-attr">headers</span>: <span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify($response.headers)),
+                <span class="hljs-attr">rawHeaders</span>: <span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(response.rawHeaders)),
+                <span class="hljs-attr">trailers</span>: <span class="hljs-literal">null</span>,
+                <span class="hljs-attr">type</span>: typer.parse(coalesce(response.headers[<span class="hljs-string">'content-type'</span>], <span class="hljs-string">'application/octet-stream'</span>))
             }
-            <span class="hljs-keyword">return</span> [ <span class="hljs-keyword">async</span>.break, <span class="hljs-keyword">new</span> Converter(response.headers, <span class="hljs-keyword">new</span> Buffer(body), <span class="hljs-string">'buffer'</span>), response ]
-        }], <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response, _request</span>) </span>{
-            <span class="hljs-keyword">return</span> [ <span class="hljs-keyword">new</span> Converter(response.headers, response, <span class="hljs-string">'stream'</span>), response ]
+            <span class="hljs-keyword">var</span> body = <span class="hljs-keyword">new</span> stream.PassThrough
+            $response.pipe(body)
+            <span class="hljs-keyword">return</span> [ body, response ]
         })
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
+        signal.cancel(wait)
+        <span class="hljs-keyword">var</span> statusCode = <span class="hljs-keyword">typeof</span> error == <span class="hljs-string">'string'</span> ? <span class="hljs-number">504</span> : <span class="hljs-number">503</span>
+        <span class="hljs-keyword">var</span> code = <span class="hljs-keyword">typeof</span> error == <span class="hljs-string">'string'</span> ? error : coalesce(error.code, <span class="hljs-string">'EIO'</span>)
+        <span class="hljs-keyword">return</span> errorify(statusCode, { <span class="hljs-string">'x-vizsla-errno'</span>: code })
+    }], <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response</span>) </span>{
+</pre></div></div>
+
+        </li>
+
+
+        <li id="section-5">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>TODO Come back and test this when you’ve created a Prolific Test library.</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre>        client.on(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
+            <span class="hljs-keyword">switch</span> (status) {
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'timedout'</span>:
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'aborted'</span>:
+                logger.error(status, { <span class="hljs-attr">errors</span>: ++errors, <span class="hljs-attr">stack</span>: error.stack, <span class="hljs-attr">$options</span>: request.options })
+                <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'requesting'</span>:
+                logger.error(status, { <span class="hljs-attr">errors</span>: ++errors, <span class="hljs-attr">stack</span>: error.stack, <span class="hljs-attr">$options</span>: request.options })
+                <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'responded'</span>:
+                logger.error(status, { <span class="hljs-attr">errors</span>: ++errors, <span class="hljs-attr">stack</span>: error.stack, <span class="hljs-attr">$options</span>: request.options })
+                <span class="hljs-keyword">break</span>
+            }
+        })
+        <span class="hljs-keyword">if</span> (timeout) {
+            clearTimeout(timeout)
+        }
+        <span class="hljs-keyword">return</span> [ body, response ]
     })
 })
 

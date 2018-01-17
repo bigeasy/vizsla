@@ -20,18 +20,33 @@
             <div id="jump_page">
 
 
+                <a class="source" href="bufferify.js.html">
+                  bufferify.js
+                </a>
+
+
                 <a class="source" href="cc.js.html">
                   cc.js
                 </a>
 
 
-                <a class="source" href="converter.js.html">
-                  converter.js
+                <a class="source" href="defaultify.js.html">
+                  defaultify.js
                 </a>
 
 
-                <a class="source" href="default.js.html">
-                  default.js
+                <a class="source" href="descent.js.html">
+                  descent.js
+                </a>
+
+
+                <a class="source" href="errorify.js.html">
+                  errorify.js
+                </a>
+
+
+                <a class="source" href="jsonify.js.html">
+                  jsonify.js
                 </a>
 
 
@@ -40,23 +55,18 @@
                 </a>
 
 
+                <a class="source" href="jsonsify.js.html">
+                  jsonsify.js
+                </a>
+
+
                 <a class="source" href="merge.js.html">
                   merge.js
                 </a>
 
 
-                <a class="source" href="mock.js.html">
-                  mock.js
-                </a>
-
-
-                <a class="source" href="network.js.html">
-                  network.js
-                </a>
-
-
-                <a class="source" href="notes.js.html">
-                  notes.js
+                <a class="source" href="nullify.js.html">
+                  nullify.js
                 </a>
 
 
@@ -65,8 +75,23 @@
                 </a>
 
 
-                <a class="source" href="send.js.html">
-                  send.js
+                <a class="source" href="parser.js.html">
+                  parser.js
+                </a>
+
+
+                <a class="source" href="raiseify.js.html">
+                  raiseify.js
+                </a>
+
+
+                <a class="source" href="select.js.html">
+                  select.js
+                </a>
+
+
+                <a class="source" href="stringify.js.html">
+                  stringify.js
                 </a>
 
 
@@ -115,13 +140,17 @@
     <span class="hljs-keyword">return</span> copy
 }
 
-<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">base, vargs, ua</span>) </span>{
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">base, vargs</span>) </span>{
     <span class="hljs-keyword">var</span> merged = {}
     vargs.unshift(base)
     <span class="hljs-keyword">while</span> (vargs.length != <span class="hljs-number">0</span>) {
         <span class="hljs-keyword">var</span> varg = vargs.shift()
         <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(varg)) {
             vargs.unshift.apply(vargs, varg)
+            <span class="hljs-keyword">continue</span>
+        }
+        <span class="hljs-keyword">if</span> (varg == <span class="hljs-literal">null</span>) {
+            merged = {}
             <span class="hljs-keyword">continue</span>
         }
 </pre></div></div>
@@ -176,16 +205,20 @@
                     merged.headers = {}
                 }
                 <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> header <span class="hljs-keyword">in</span> varg.headers) {
-                    merged.headers[header] = <span class="hljs-built_in">String</span>(varg.headers[header])
+                    <span class="hljs-keyword">if</span> (varg.headers[header] == <span class="hljs-literal">null</span>) {
+                        <span class="hljs-keyword">delete</span> merged.headers[header]
+                    } <span class="hljs-keyword">else</span> {
+                        merged.headers[header] = <span class="hljs-built_in">String</span>(varg.headers[header])
+                    }
                 }
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (name == <span class="hljs-string">'plugins'</span>) {
-                <span class="hljs-keyword">if</span> (merged.plugins == <span class="hljs-literal">null</span>) {
-                    merged.plugins = []
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (name == <span class="hljs-string">'gateways'</span>) {
+                <span class="hljs-keyword">if</span> (merged.gateways == <span class="hljs-literal">null</span>) {
+                    merged.gateways = []
                 }
-                merged.plugins.push.apply(merged.plugins, varg.plugins)
-                <span class="hljs-keyword">var</span> index = merged.plugins.indexOf(<span class="hljs-literal">null</span>)
+                merged.gateways.unshift.apply(merged.gateways, varg.gateways)
+                <span class="hljs-keyword">var</span> index = merged.gateways.indexOf(<span class="hljs-literal">null</span>)
                 <span class="hljs-keyword">if</span> (~index) {
-                    merged.plugins = merged.plugins.slice(index + <span class="hljs-number">1</span>)
+                    merged.gateways = merged.gateways.slice(<span class="hljs-number">0</span>, index)
                 }
             } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (name == <span class="hljs-string">'grant'</span> &amp;&amp; varg.grant == <span class="hljs-string">'cc'</span>) {
                 <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'no more grant property'</span>)

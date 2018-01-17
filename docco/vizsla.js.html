@@ -20,18 +20,33 @@
             <div id="jump_page">
 
 
+                <a class="source" href="bufferify.js.html">
+                  bufferify.js
+                </a>
+
+
                 <a class="source" href="cc.js.html">
                   cc.js
                 </a>
 
 
-                <a class="source" href="converter.js.html">
-                  converter.js
+                <a class="source" href="defaultify.js.html">
+                  defaultify.js
                 </a>
 
 
-                <a class="source" href="default.js.html">
-                  default.js
+                <a class="source" href="descent.js.html">
+                  descent.js
+                </a>
+
+
+                <a class="source" href="errorify.js.html">
+                  errorify.js
+                </a>
+
+
+                <a class="source" href="jsonify.js.html">
+                  jsonify.js
                 </a>
 
 
@@ -40,23 +55,18 @@
                 </a>
 
 
+                <a class="source" href="jsonsify.js.html">
+                  jsonsify.js
+                </a>
+
+
                 <a class="source" href="merge.js.html">
                   merge.js
                 </a>
 
 
-                <a class="source" href="mock.js.html">
-                  mock.js
-                </a>
-
-
-                <a class="source" href="network.js.html">
-                  network.js
-                </a>
-
-
-                <a class="source" href="notes.js.html">
-                  notes.js
+                <a class="source" href="nullify.js.html">
+                  nullify.js
                 </a>
 
 
@@ -65,8 +75,23 @@
                 </a>
 
 
-                <a class="source" href="send.js.html">
-                  send.js
+                <a class="source" href="parser.js.html">
+                  parser.js
+                </a>
+
+
+                <a class="source" href="raiseify.js.html">
+                  raiseify.js
+                </a>
+
+
+                <a class="source" href="select.js.html">
+                  select.js
+                </a>
+
+
+                <a class="source" href="stringify.js.html">
+                  stringify.js
                 </a>
 
 
@@ -105,26 +130,12 @@
 
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
 <span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
-<span class="hljs-keyword">var</span> url = <span class="hljs-built_in">require</span>(<span class="hljs-string">'url'</span>)
-<span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
-<span class="hljs-keyword">var</span> assert = <span class="hljs-built_in">require</span>(<span class="hljs-string">'assert'</span>)
-<span class="hljs-keyword">var</span> noop = <span class="hljs-built_in">require</span>(<span class="hljs-string">'nop'</span>)
 <span class="hljs-keyword">var</span> Signal = <span class="hljs-built_in">require</span>(<span class="hljs-string">'signal'</span>)
-<span class="hljs-keyword">var</span> slice = [].slice
-<span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'vizsla'</span>)
-<span class="hljs-keyword">var</span> Transport = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./transport'</span>)
-<span class="hljs-keyword">var</span> transport = {
-    <span class="hljs-attr">Network</span>: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./network'</span>),
-    <span class="hljs-attr">Mock</span>: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./mock'</span>)
-}
-<span class="hljs-keyword">var</span> ClientCredentials = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./cc'</span>)
-<span class="hljs-keyword">var</span> merge = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./merge'</span>)
-<span class="hljs-keyword">var</span> defaultify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./default'</span>)
+<span class="hljs-keyword">var</span> Descent = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./descent'</span>)
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">UserAgent</span> (<span class="hljs-params">middleware</span>) </span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">UserAgent</span> (<span class="hljs-params"></span>) </span>{
     <span class="hljs-keyword">this</span>._bind = []
     <span class="hljs-keyword">this</span>.storage = {}
-    <span class="hljs-keyword">this</span>._transport = middleware ? <span class="hljs-keyword">new</span> transport.Mock(middleware) : transport.Network
 }
 
 UserAgent.prototype.bind = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
@@ -135,11 +146,11 @@ UserAgent.prototype.bind = <span class="hljs-function"><span class="hljs-keyword
     <span class="hljs-keyword">return</span> ua
 }
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Fetch</span> (<span class="hljs-params">ua, request</span>) </span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Fetch</span> (<span class="hljs-params">cancel</span>) </span>{
     <span class="hljs-keyword">this</span>.input = <span class="hljs-keyword">new</span> stream.PassThrough
     <span class="hljs-keyword">this</span>.request = <span class="hljs-keyword">new</span> Signal
     <span class="hljs-keyword">this</span>.response = <span class="hljs-keyword">new</span> Signal
-    <span class="hljs-keyword">this</span>._cancel = <span class="hljs-keyword">new</span> Signal
+    <span class="hljs-keyword">this</span>._cancel = cancel
 }
 
 Fetch.prototype.cancel = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
@@ -147,80 +158,21 @@ Fetch.prototype.cancel = <span class="hljs-function"><span class="hljs-keyword">
 }
 
 UserAgent.prototype.fetch = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">var</span> vargs = slice.call(<span class="hljs-built_in">arguments</span>)
+    <span class="hljs-keyword">var</span> vargs = <span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>)
     <span class="hljs-keyword">var</span> callback = (<span class="hljs-keyword">typeof</span> vargs[vargs.length - <span class="hljs-number">1</span>] == <span class="hljs-string">'function'</span>) ? vargs.pop() : <span class="hljs-literal">null</span>
 
-    <span class="hljs-keyword">var</span> merged = merge(<span class="hljs-keyword">this</span>._bind, vargs.slice(), <span class="hljs-keyword">this</span>)
-
-    merged.input = <span class="hljs-keyword">new</span> stream.PassThrough
-
-    <span class="hljs-keyword">var</span> fetch = <span class="hljs-keyword">new</span> Fetch
-    merged.input = fetch.input
+    <span class="hljs-keyword">var</span> cancel = <span class="hljs-keyword">new</span> Signal
+    <span class="hljs-keyword">var</span> fetch = <span class="hljs-keyword">new</span> Fetch(cancel)
 
     <span class="hljs-keyword">if</span> (callback != <span class="hljs-literal">null</span>) {
         fetch.response.wait(callback)
     }
 
-    <span class="hljs-keyword">this</span>._fetch(merged, fetch, fetch.response.unlatch.bind(fetch.response))
+    <span class="hljs-keyword">var</span> descent = <span class="hljs-keyword">new</span> Descent(<span class="hljs-keyword">this</span>._bind.concat(vargs), fetch.input, cancel, <span class="hljs-keyword">this</span>.storage, UserAgent)
+    descent.descend(fetch.response.unlatch.bind(fetch.response))
 
     <span class="hljs-keyword">return</span> fetch
 }
-
-UserAgent.prototype._fetch = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, request, fetch</span>) </span>{
-    <span class="hljs-keyword">if</span> (request.plugins == <span class="hljs-literal">null</span>) {
-        request.plugins = []
-    }
-    request.plugins.push(<span class="hljs-keyword">new</span> Transport)
-    <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        request.plugins.shift().fetch(<span class="hljs-keyword">this</span>, request, fetch, <span class="hljs-keyword">async</span>())
-    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">converter, response</span>) </span>{
-        response.okay = <span class="hljs-built_in">Math</span>.floor(response.statusCode / <span class="hljs-number">100</span>) == <span class="hljs-number">2</span>
-        <span class="hljs-keyword">if</span> (!response.okay &amp;&amp; request.raise) {
-                <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-                    converter.parsify(<span class="hljs-keyword">async</span>())
-                }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">okay, parsed, buffer</span>) </span>{
-                    <span class="hljs-keyword">throw</span> interrupt(<span class="hljs-string">'fetch'</span>, {
-                        <span class="hljs-attr">statusCode</span>: response.statusCode,
-                        <span class="hljs-attr">url</span>: request.url,
-                        <span class="hljs-attr">headers</span>: {
-                            <span class="hljs-attr">sent</span>: request.headers,
-                            <span class="hljs-attr">received</span>: response.headers
-                        }
-                    }, {
-                        <span class="hljs-attr">cause</span>: coalesce(response.cause),
-                        <span class="hljs-attr">properties</span>: {
-                            <span class="hljs-attr">body</span>: parsed,
-                            <span class="hljs-attr">response</span>: response,
-                            <span class="hljs-attr">buffer</span>: buffer
-                        }
-                    })
-                })
-        }
-        <span class="hljs-keyword">if</span> (!response.okay) {
-            <span class="hljs-keyword">if</span> (request.nullify) {
-                <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span> ]
-            }
-            <span class="hljs-keyword">if</span> (request.falsify) {
-                <span class="hljs-keyword">return</span> [ <span class="hljs-literal">false</span> ]
-            }
-        }
-        <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-            <span class="hljs-keyword">if</span> (request.response == <span class="hljs-string">'stream'</span>) {
-                <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-                    converter.streamify(<span class="hljs-keyword">async</span>())
-                }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">okay, stream</span>) </span>{
-                    <span class="hljs-keyword">return</span> [ okay, stream, <span class="hljs-literal">null</span> ]
-                })
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (request.response == <span class="hljs-string">'buffer'</span>) {
-                converter.bufferify(<span class="hljs-keyword">async</span>())
-            } <span class="hljs-keyword">else</span> {
-                converter.parsify(<span class="hljs-keyword">async</span>())
-            }
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">okay, parsed, buffer</span>) </span>{
-            <span class="hljs-keyword">return</span> request.nullify || request.falsify ? [ parsed ] : [ parsed, response, buffer ]
-        })
-    })
-})
 
 <span class="hljs-built_in">module</span>.exports = UserAgent
 

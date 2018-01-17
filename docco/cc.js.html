@@ -20,18 +20,33 @@
             <div id="jump_page">
 
 
+                <a class="source" href="bufferify.js.html">
+                  bufferify.js
+                </a>
+
+
                 <a class="source" href="cc.js.html">
                   cc.js
                 </a>
 
 
-                <a class="source" href="converter.js.html">
-                  converter.js
+                <a class="source" href="defaultify.js.html">
+                  defaultify.js
                 </a>
 
 
-                <a class="source" href="default.js.html">
-                  default.js
+                <a class="source" href="descent.js.html">
+                  descent.js
+                </a>
+
+
+                <a class="source" href="errorify.js.html">
+                  errorify.js
+                </a>
+
+
+                <a class="source" href="jsonify.js.html">
+                  jsonify.js
                 </a>
 
 
@@ -40,23 +55,18 @@
                 </a>
 
 
+                <a class="source" href="jsonsify.js.html">
+                  jsonsify.js
+                </a>
+
+
                 <a class="source" href="merge.js.html">
                   merge.js
                 </a>
 
 
-                <a class="source" href="mock.js.html">
-                  mock.js
-                </a>
-
-
-                <a class="source" href="network.js.html">
-                  network.js
-                </a>
-
-
-                <a class="source" href="notes.js.html">
-                  notes.js
+                <a class="source" href="nullify.js.html">
+                  nullify.js
                 </a>
 
 
@@ -65,8 +75,23 @@
                 </a>
 
 
-                <a class="source" href="send.js.html">
-                  send.js
+                <a class="source" href="parser.js.html">
+                  parser.js
+                </a>
+
+
+                <a class="source" href="raiseify.js.html">
+                  raiseify.js
+                </a>
+
+
+                <a class="source" href="select.js.html">
+                  select.js
+                </a>
+
+
+                <a class="source" href="stringify.js.html">
+                  stringify.js
                 </a>
 
 
@@ -103,55 +128,62 @@
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> assert = <span class="hljs-built_in">require</span>(<span class="hljs-string">'assert'</span>)
-<span class="hljs-keyword">var</span> url = <span class="hljs-built_in">require</span>(<span class="hljs-string">'url'</span>)
-<span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
-<span class="hljs-keyword">var</span> merge = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./merge'</span>)
-<span class="hljs-keyword">var</span> defaultify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./default'</span>)
-<span class="hljs-keyword">var</span> Converter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./converter'</span>)
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+<span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
+<span class="hljs-keyword">var</span> errorify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./errorify'</span>)
+<span class="hljs-keyword">var</span> jsonify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./jsonify'</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ClientCredentials</span> (<span class="hljs-params">request</span>) </span>{
-    <span class="hljs-keyword">this</span>._request = request
+    <span class="hljs-keyword">this</span>._request = coalesce(request, { <span class="hljs-attr">url</span>: <span class="hljs-string">'/token'</span> })
 }
 
-ClientCredentials.prototype.fetch = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, ua, request, fetch</span>) </span>{
-    <span class="hljs-keyword">var</span> expanded = defaultify(request)
-    <span class="hljs-keyword">if</span> (ua.storage.cc == <span class="hljs-literal">null</span>) {
-        ua.storage.cc = {}
+ClientCredentials.prototype.descend = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, descent</span>) </span>{
+    <span class="hljs-keyword">if</span> (descent.storage.cc == <span class="hljs-literal">null</span>) {
+        descent.storage.cc = {}
     }
+    <span class="hljs-keyword">var</span> request = descent.request()
     <span class="hljs-keyword">var</span> label = <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        <span class="hljs-keyword">if</span> (ua.storage.cc[expanded.identifier] == <span class="hljs-literal">null</span>) {
+        <span class="hljs-keyword">if</span> (descent.storage.cc[request.identifier] == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">if</span> (request.url.auth == <span class="hljs-literal">null</span>) {
+                <span class="hljs-keyword">return</span> [ label.break ].concat(errorify(<span class="hljs-number">503</span>, {}))
+            }
             <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-                ua.fetch(request, <span class="hljs-keyword">this</span>._request, {
+                descent.fetch(<span class="hljs-keyword">this</span>._request, {
                     <span class="hljs-attr">headers</span>: {
-                        <span class="hljs-attr">authorization</span>: <span class="hljs-string">'Basic '</span> + <span class="hljs-keyword">new</span> Buffer(expanded.url.auth).toString(<span class="hljs-string">'base64'</span>)
+                        <span class="hljs-attr">authorization</span>: <span class="hljs-string">'Basic '</span> + <span class="hljs-keyword">new</span> Buffer(request.url.auth).toString(<span class="hljs-string">'base64'</span>)
                     },
                     <span class="hljs-attr">post</span>: {
                         <span class="hljs-attr">grant_type</span>: <span class="hljs-string">'client_credentials'</span>
                     },
-                    <span class="hljs-attr">url</span>: <span class="hljs-string">'/token'</span>,
-                    <span class="hljs-attr">response</span>: <span class="hljs-string">'parse'</span>,
-                    <span class="hljs-attr">plugins</span>: [ <span class="hljs-literal">null</span> ]
-                }, <span class="hljs-keyword">async</span>())
-            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response, buffer</span>) </span>{
-                <span class="hljs-keyword">if</span> (!response.okay || body.token_type != <span class="hljs-string">'Bearer'</span> || body.access_token == <span class="hljs-literal">null</span>) {
-                    <span class="hljs-keyword">return</span> [ label.break, <span class="hljs-keyword">new</span> Converter(response.headers, buffer, <span class="hljs-string">'buffer'</span>), response ]
+                    <span class="hljs-attr">gateways</span>: [ jsonify({ <span class="hljs-attr">when</span>: [ <span class="hljs-string">'content-type: application/json'</span> ] }), <span class="hljs-literal">null</span> ]
+                }).response.wait(<span class="hljs-keyword">async</span>())
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response</span>) </span>{
+                <span class="hljs-keyword">if</span> (!response.okay) {
+                    <span class="hljs-keyword">return</span> [ label.break ].concat(errorify(response.statusCode, {}))
+                } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (
+                    response.headers[<span class="hljs-string">'content-type'</span>] != <span class="hljs-string">'application/json'</span> ||
+                    body.token_type != <span class="hljs-string">'Bearer'</span> ||
+                    body.access_token == <span class="hljs-literal">null</span>
+                ) {
+                    <span class="hljs-keyword">return</span> [ label.break ].concat(errorify(<span class="hljs-number">502</span>, {}))
                 }
-                ua.storage.cc[expanded.identifier] = body.access_token
+                descent.storage.cc[request.identifier] = body.access_token
             })
         }
     }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        request = merge(request, [{ <span class="hljs-attr">token</span>: ua.storage.cc[expanded.identifier] }])
-        request.plugins.shift().fetch(ua, request, fetch, <span class="hljs-keyword">async</span>())
+        descent.merge([{ <span class="hljs-attr">headers</span>: { <span class="hljs-string">'authorization'</span>: <span class="hljs-string">'Bearer '</span> + descent.storage.cc[request.identifier] } }])
+        descent.descend(<span class="hljs-keyword">async</span>())
     }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response</span>) </span>{
         <span class="hljs-keyword">if</span> (response.statusCode == <span class="hljs-number">401</span>) {
-            <span class="hljs-keyword">delete</span> ua.storage.cc[expanded.identifier]
+            <span class="hljs-keyword">delete</span> descent.storage.cc[request.identifier]
         }
-        <span class="hljs-keyword">return</span> [ label.break ].concat(<span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>))
+        <span class="hljs-keyword">return</span> [ label.break, body, response ]
     })()
 })
 
-<span class="hljs-built_in">module</span>.exports = ClientCredentials
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">options</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ClientCredentials(options)
+}
 
 </pre></div></div>
 
