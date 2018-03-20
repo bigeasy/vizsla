@@ -24,7 +24,7 @@
                             "cadence":                      "1.0.x",
                             "delta":                        "1.2.x",
                             "extant":                       "1.0.x",
-                            "interrupt":                    "5.0.x",
+                            "interrupt":                    "6.1.x",
                             "media-typer":                  "0.3.0",
                             "prolific.logger":              "5.0.x",
                             "signal":                       "3.4.x"
