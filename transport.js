@@ -7,12 +7,10 @@ var coalesce = require('extant')
 var logger = require('prolific.logger').createLogger('vizsla')
 var stream = require('stream')
 
-var Instance = 0
 function Transport () {
 }
 
 Transport.prototype.descend = cadence(function (async, descent) {
-    var instance = ++Instance
     var request = descent.request()
     var sent = {
         url: request.url,
