@@ -18,3 +18,11 @@ This exists because I always have to:
 
 HTTP is not a simple fetch. Even if I'm good about HTTP mime-types, there are
 always proxies and whatnot that I use.
+
+HTTP clients are different from HTTP servers. They have to deal with gateways
+and caching doing rude thing coming back that they don't do going forward. They
+have to implement redirections and authentication. The have to implement
+retries.
+
+Vizsla is supposed to help you build a client appropriate for your application,
+but retries and redirects ought to be a part of your application.
