@@ -72,6 +72,14 @@ Transport.prototype.descend = cadence(function (async, descent) {
             client.once('error', function (error) {
                 signal.notify(error, 'errored')
             })
+            // TODO Likely that the only proper response once the first response
+            // is done is to truncate. It is my believe that streams are bound
+            // to truncate sooner or later and that all applications should have
+            // a strategy for when they do truncate. Rather than raise an error
+            // here, simply terminate the stream. Whatever is handling the
+            // stream then handles it as if it where a truncation. If it is
+            // important that it was as a result of a cancel then maybe cancel
+            // your read explicitly before you cancel the http request.
             signal.wait(function (code, newStatus) {
             //    status = newStatus
                 $response.unpipe()
