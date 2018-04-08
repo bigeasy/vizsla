@@ -81,9 +81,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
                     error.code = code
                     body.emit('error', error)
                 } else {
-                    console.log('emit')
                     body.emit('error', code)
-                    console.log('emit')
                 }
             })
             $response.once('end', function () {
