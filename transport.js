@@ -1,6 +1,5 @@
 var cadence = require('cadence')
 var typer = require('media-typer')
-var delta = require('delta')
 var errorify = require('./errorify')
 var Signal = require('signal')
 var coalesce = require('extant')
@@ -24,7 +23,20 @@ Transport.prototype.descend = cadence(function (async, descent) {
     var client = request.http.request(request.options)
     async([function () {
         async(function () {
-            var event = delta(async()).ee(client).on('response')
+            var xxx = new Signal
+            function responded (response) {
+                xxx.unlatch(null, response)
+            }
+            function errored (error) {
+                xxx.unlatch(error)
+            }
+            client.addListener('error', errored)
+            client.addListener('response', responded)
+            xxx.wait(function () {
+                client.removeListener('error', errored)
+                client.removeListener('response', responded)
+            })
+            xxx.wait(async())
             descent.cancel.wait(function () {
                 client.abort()
                 signal.unlatch('ECONNABORTED', 'aborted')
@@ -43,7 +55,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
                 client.once('error', function () { caught = true })
                 descent.input.unpipe()
                 descent.input.resume()
-                event.cancel([ code ])
+                xxx.unlatch(code)
                 status = newStatus
             })
             // TODO Make this terminate correctly and pipe up a stream
