@@ -1,10 +1,10 @@
 var cadence = require('cadence')
 var interrupt = require('interrupt').createInterrupter('vizsla')
 
-function Nullify () {
+function Raiseify () {
 }
 
-Nullify.prototype.descend = cadence(function (async, descent) {
+Raiseify.prototype.descend = cadence(function (async, descent) {
     async(function () {
         descent.descend(async())
     }, function (body, response) {
@@ -24,5 +24,5 @@ Nullify.prototype.descend = cadence(function (async, descent) {
 })
 
 module.exports = function () {
-    return new Nullify
+    return new Raiseify
 }
