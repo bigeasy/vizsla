@@ -26,3 +26,13 @@ retries.
 
 Vizsla is supposed to help you build a client appropriate for your application,
 but retries and redirects ought to be a part of your application.
+
+As for gateways (a plugin mechanism) there are two things that you do with them,
+negotiate and parse. That is about it. Either you are intercepting an response
+response and retrying, like a redirect, or you are running the response through
+a pipeline.
+
+If instead of an array of gateways we have an array of negotation gateways and
+parsing gateways. This accommodates the common case of setting redirects and
+authentication negotiation at the outset while swapping out different parse
+responses for different requests.
