@@ -89,6 +89,15 @@ Transport.prototype.descend = cadence(function (async, descent) {
             // stream then handles it as if it where a truncation. If it is
             // important that it was as a result of a cancel then maybe cancel
             // your read explicitly before you cancel the http request.
+            // TODO We do run errors through our pass-through, but maybe we
+            // should log them instead? Doesn't seem like such a bad idea to
+            // pass through errors since we might seem them pass through on a
+            // socket error. Not sure, though. Seems like the HTTP client is
+            // capturing those and then sending the error through HTTP client.
+            // The decision to pass them through the pass-through stream is so
+            // that we can have an error-first callback to get the response then
+            // be done with the request object.
+            // TODO Why am I not using Interrupt?
             signal.wait(function (code, newStatus) {
             //    status = newStatus
                 $response.unpipe()
