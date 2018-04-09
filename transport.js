@@ -33,8 +33,17 @@ Transport.prototype.descend = cadence(function (async, descent) {
             client.addListener('error', errored)
             client.addListener('response', responded)
             xxx.wait(function () {
-                client.removeListener('error', errored)
-                client.removeListener('response', responded)
+                if (client != null && typeof client.removeListener == 'function') {
+                    client.removeListener('error', errored)
+                    client.removeListener('response', responded)
+                } else {
+                    console.log('no removeListener')
+                    console.log(typeof client)
+                    console.log(client)
+                    if (client != null && typeof client == 'object') {
+                        console.log(client.constructor.name)
+                    }
+                }
             })
             xxx.wait(async())
             descent.cancel.wait(function () {
