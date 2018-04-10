@@ -139,7 +139,7 @@ function prove (async, okay) {
     }], function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: [],
+            parse: [],
             timeout: 1000
         }, async())
     }, function (body, response) {
