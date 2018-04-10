@@ -1,24 +1,44 @@
 var cadence = require('cadence')
 var createSelector = require('./select')
 var coalesce = require('extant')
+var assert = require('assert')
 
-function Parser (options, merge) {
-    this._options = options
+function Parser (when, merge) {
+    assert(when == null || Array.isArray(when))
+    this._select = createSelector(when)
     this._merge = coalesce(merge, [])
-    this._select = createSelector(coalesce(options.when, []))
 }
 
 Parser.prototype.descend = cadence(function (async, descent) {
     async(function () {
         descent.merge(this._merge.slice())
         descent.descend(async())
-    }, function (body, response) {
-        if (this._select.call(null, response)) {
-            this._parse(body, response, async())
-        } else {
-            return [ body, response ]
+    }, function () {
+        var body = arguments[0]
+        if (body != null) {
+            var response = arguments[1]
+            if (this._select.call(null, response)) {
+                this._parse(body, response, async())
+            }
         }
     })
 })
+
+Parser.prototype.errorify = function (response, context) {
+    return [ null, {
+        statusCode: 502,
+        statusMessage: http.STATUS_CODES[502],
+        headers: {},
+        rawHeaders: [],
+        trailers: null,
+        via: response,
+        type: {
+            type: 'application',
+            subtype: 'json',
+            suffix: null,
+            parameters: {}
+        }
+    } ]
+}
 
 module.exports = Parser

@@ -25,7 +25,7 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
                     post: {
                         grant_type: 'client_credentials'
                     },
-                    gateways: [ jsonify({ when: [ 'content-type: application/json' ] }), null ]
+                    gateways: [ jsonify(), null ]
                 }).response.wait(async())
             }, function (body, response) {
                 if (!response.okay) {

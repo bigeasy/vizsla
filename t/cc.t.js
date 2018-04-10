@@ -50,7 +50,7 @@ function prove (async, okay) {
     }], function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
+            gateways: [ jsonify(), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         // TODO How would I know from logs that this is a configuration problem
@@ -64,7 +64,7 @@ function prove (async, okay) {
         }, 'no password')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
+            gateways: [ jsonify(), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         okay({
@@ -76,7 +76,7 @@ function prove (async, okay) {
         }, 'not okay')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
+            gateways: [ jsonify(), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         okay({
@@ -88,13 +88,13 @@ function prove (async, okay) {
         }, 'no token')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
+            gateways: [ jsonify(), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         okay(body, {}, 'body')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ jsonify({}), cc({ url: '/auth' }) ]
+            gateways: [ jsonify(), cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 401, 'expired')

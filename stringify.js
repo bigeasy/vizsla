@@ -5,8 +5,9 @@ var bufferify = require('./bufferify')
 var coalesce = require('extant')
 var errorify = require('./errorify')
 
-function Stringify (options) {
-    Parser.call(this, options, [{ gateways: [ bufferify({ when: options.when }) ] }])
+function Stringify (when) {
+    when = coalesce(when, [])
+    Parser.call(this, when, [{ gateways: [ bufferify(when) ] }])
 }
 util.inherits(Stringify, Parser)
 

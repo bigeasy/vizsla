@@ -6,7 +6,7 @@ function prove (async, okay) {
     var stringify = require('../stringify')
     var requestify = require('./requestify')
 
-    var gateway = stringify({ when: [ 200 ] })
+    var gateway = stringify([ 200 ])
 
     var Descent = require('../descent')
     var descent

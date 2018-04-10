@@ -9,7 +9,7 @@ function prove (async, okay) {
     var Descent = require('../descent')
     var descent
 
-     var gateway = jsonify({ when: [ 200 ] })
+     var gateway = jsonify([ 200 ])
 
     async(function () {
         descent = new Descent([{

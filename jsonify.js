@@ -9,9 +9,9 @@ var stringify = require('./stringify')
 
 var Parser = require('./parser')
 
-function Jsonify (options) {
-    options.when = [ 'content-type: application/json' ].concat(coalesce(options.when, []))
-    Parser.call(this, options, [{ gateways: [ stringify({ when: options.when }) ] }])
+function Jsonify (when) {
+    when = coalesce(when, [ 'content-type: application/json' ])
+    Parser.call(this, when, [{ gateways: [ stringify(when) ] }])
 }
 util.inherits(Jsonify, Parser)
 

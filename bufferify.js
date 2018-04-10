@@ -3,9 +3,10 @@ var errorify = require('./errorify')
 var delta = require('delta')
 var util = require('util')
 var Parser = require('./parser')
+var coalesce = require('extant')
 
-function Bufferify (options) {
-    Parser.call(this, options, [])
+function Bufferify (when) {
+    Parser.call(this, coalesce(when, []))
 }
 util.inherits(Bufferify, Parser)
 

@@ -7,7 +7,7 @@ function prove (async, okay) {
     var requestify = require('./requestify')
 
     var delta = require('delta')
-    var gateway = jsonsify({ when: [ 200 ] })
+    var gateway = jsonsify([ 200 ])
 
     var Descent = require('../descent')
     var descent

@@ -151,7 +151,7 @@ function prove (async, okay) {
         })
     }, function () {
         ua.fetch({
-            url: 'http://127.0.0.1:8888/endpoint',
+            url: 'http://127.0.0.1:8888/endpoint'
         }, async())
     }, function (body) {
         okay(body, {}, 'default json')
@@ -262,7 +262,7 @@ function prove (async, okay) {
     }, function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: [ bufferify({ when: [ 200 ] }) ]
+            gateways: [ bufferify([ 200 ]) ]
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'buffer status code')

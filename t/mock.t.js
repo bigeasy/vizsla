@@ -25,7 +25,7 @@ function prove (async, assert) {
     var interlocutor = new Interlocutor(require('connect')().use(function (request, response, next) {
         responses.shift()(request, response, next)
     }))
-    var ua = new UserAgent().bind({ http: interlocutor, gateways: [ jsonify({}) ] })
+    var ua = new UserAgent().bind({ http: interlocutor, gateways: [ jsonify() ] })
     async(function () {
         ua.fetch({ url: '/' }, async())
     }, function (body, response, buffer) {

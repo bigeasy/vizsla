@@ -22,8 +22,8 @@ function Descent (bind, input, cancel, storage, UserAgent) {
     }
     if (this._merged.gateways == null) {
         this._merged.gateways = [
-            jsonify({ when: [ 'content-type: application/json' ] }),
-            stringify({ when: [ 'content-type: text/plain' ] })
+            jsonify([ 'content-type: application/json' ]),
+            stringify([ 'content-type: text/plain' ])
         ]
     }
     this.input = input || new stream.PassThrough
