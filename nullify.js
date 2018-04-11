@@ -1,20 +1,18 @@
 var cadence = require('cadence')
 
-function Nullify () {
-}
+var Parser = require('./parser')
+var util = require('util')
+var coalesce = require('extant')
 
-Nullify.prototype.descend = cadence(function (async, descent) {
-    async(function () {
-        descent.descend(async())
-    }, function (body, response) {
-        // TODO Some way to always dump the stream.
-        if (!response.okay) {
-            return [ null ]
-        } else {
-            return [ body ]
-        }
-    })
-})
+function Nullify (when) {
+    Parser.call(this, coalesce(when, [ -2 ]), [])
+}
+util.inherits(Nullify, Parser)
+
+Nullify.prototype._parse = function (body, response, callback) {
+    console.log('called!!!')
+    callback(null, null, response)
+}
 
 module.exports = function () {
     return new Nullify

@@ -9,23 +9,20 @@ function prove (async, okay) {
     var delta = require('delta')
 
     var Descent = require('../descent')
-    var descent
 
     async(function () {
-        descent = new Descent([{
+        new Descent([{
             gateways: [ nullify(), requestify('x', {
-                okay: false
+                statusCodeClass: 4
             }) ]
-        }])
-        descent.descend(async())
+        }]).descend(async())
     }, function (body) {
         okay(body, null, 'nullified')
-        descent = new Descent([{
+        new Descent([{
             gateways: [ nullify(), requestify('x', {
-                okay: true
+                statusCodeClass: 2
             }) ]
-        }])
-        descent.descend(async())
+        }]).descend(async())
     }, function (body) {
         async(function () {
             delta(async()).ee(body).on('data', []).on('end')
