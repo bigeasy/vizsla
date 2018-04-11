@@ -36,3 +36,23 @@ If instead of an array of gateways we have an array of negotation gateways and
 parsing gateways. This accommodates the common case of setting redirects and
 authentication negotiation at the outset while swapping out different parse
 responses for different requests.
+
+Now trying to sort out whether to shoehorn all errors into response reports,
+which would sacrifice stack traces, or to make them all `Error`s which is
+difficult because you don't really consider a 404 to be an `Error`. A connection
+timeout doesn't have a meaningful stack trace. Hmm… That kind of answers it,
+doesn't it?
+
+If there is a stack you can put it in `stack`, which will get it into the
+logging one way or another in case you do have a bonafide exception, but who
+gets those anymore? You don't get out of memory errors ever, you just get
+OOMKilled.
+
+Ah, but still. Even if you do have an OOM error, what good is the stack trace?
+Maybe we go ahead and check the result codes and see what sort of errors are
+actually raised. Maybe the lack of a `code` causes it to get written to standard
+error so that we can debug it. Maybe we log the error with the `trace` level and
+we can turn that one to see the stack trace.
+
+But, I don't imagine that ordinary usage would benefit from a stack trace
+because we're not expecting stack trace based errors.
