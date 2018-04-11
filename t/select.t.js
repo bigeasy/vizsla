@@ -2,15 +2,15 @@ require('proof')(20, prove)
 
 function prove (okay) {
     var createSelector = require('../select')
-    okay(createSelector([ 2 ])({ statusCode: 200 }), 'status code class')
-    okay(!createSelector([ 2 ])({ statusCode: 404 }), 'status code class miss')
+    okay(createSelector([ 2 ])({ statusCodeClass: 2 }), 'status code class')
+    okay(!createSelector([ 2 ])({ statusCodeClass: 4 }), 'status code class miss')
     okay(createSelector([ 200 ])({ statusCode: 200 }), 'status code')
     okay(!createSelector([ 200 ])({ statusCode: 404 }), 'status code miss')
     okay(createSelector([ 0 ])({}), 'always include')
-    okay(!createSelector([ 0, -2 ])({ statusCode: 200 }), 'exclude status code class')
-    okay(createSelector([ 0, -2 ])({ statusCode: 401 }), 'exclude status code class hit')
+    okay(!createSelector([ 0, -2 ])({ statusCodeClass: 2 }), 'exclude status code class')
+    okay(createSelector([ 0, -2 ])({ statusCodeClass: 4 }), 'exclude status code class hit')
     okay(!createSelector([ 0, -200 ])({ statusCode: 200 }), 'exclude status code')
-    okay(createSelector([ 0, -200 ])({ statusCode: 401 }), 'exclude status code hit')
+    okay(createSelector([ 0, -200 ])({ statusCode: 404 }), 'exclude status code hit')
     okay(createSelector([ 'content-type: text/plain' ])({
         type: { type: 'text', subtype: 'plain' }
     }), 'include full content type')

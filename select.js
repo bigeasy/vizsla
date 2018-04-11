@@ -24,7 +24,7 @@ function createStatusCodeTest (statusCode) {
     }
     if (Math.abs(statusCode) < 10) {
         return function (response) {
-            var equal = Math.floor(response.statusCode / 100) == Math.abs(statusCode)
+            var equal = response.statusCodeClass == Math.abs(statusCode)
             return  statusCode < 0 ? !equal : equal
         }
     }
