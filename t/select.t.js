@@ -1,4 +1,4 @@
-require('proof')(18, prove)
+require('proof')(20, prove)
 
 function prove (okay) {
     var createSelector = require('../select')
@@ -8,7 +8,9 @@ function prove (okay) {
     okay(!createSelector([ 200 ])({ statusCode: 404 }), 'status code miss')
     okay(createSelector([ 0 ])({}), 'always include')
     okay(!createSelector([ 0, -2 ])({ statusCode: 200 }), 'exclude status code class')
+    okay(createSelector([ 0, -2 ])({ statusCode: 401 }), 'exclude status code class hit')
     okay(!createSelector([ 0, -200 ])({ statusCode: 200 }), 'exclude status code')
+    okay(createSelector([ 0, -200 ])({ statusCode: 401 }), 'exclude status code hit')
     okay(createSelector([ 'content-type: text/plain' ])({
         type: { type: 'text', subtype: 'plain' }
     }), 'include full content type')

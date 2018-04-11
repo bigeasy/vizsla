@@ -24,17 +24,13 @@ function createStatusCodeTest (statusCode) {
     }
     if (Math.abs(statusCode) < 10) {
         return function (response) {
-            if (Math.floor(response.statusCode / 100) == Math.abs(statusCode)) {
-                return statusCode < 0 ? false : true
-            }
-            return null
+            var equal = Math.floor(response.statusCode / 100) == Math.abs(statusCode)
+            return  statusCode < 0 ? !equal : equal
         }
     }
     return function (response) {
-        if (response.statusCode == Math.abs(statusCode)) {
-            return statusCode < 0 ? false : true
-        }
-        return null
+        var equal = response.statusCode == Math.abs(statusCode)
+        return statusCode < 0 ? !equal : equal
     }
 }
 
