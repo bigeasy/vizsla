@@ -10,7 +10,6 @@ function Nullify (when) {
 util.inherits(Nullify, Parser)
 
 Nullify.prototype._parse = function (body, response, callback) {
-    console.log('called!!!')
     callback(null, null, response)
 }
 
