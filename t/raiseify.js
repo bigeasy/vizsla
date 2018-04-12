@@ -1,4 +1,4 @@
-require('proof')(2, require('cadence')(prove))
+require('proof')(3, require('cadence')(prove))
 
 function prove (async, okay) {
     var cadence = require('cadence')
@@ -8,6 +8,8 @@ function prove (async, okay) {
 
     var delta = require('delta')
 
+    var bufferify = require('../bufferify')
+
     var Descent = require('../descent')
     var descent
 
@@ -16,9 +18,23 @@ function prove (async, okay) {
             gateways: [ raiseify(), requestify('x', {
                 okay: false,
                 statusCode: 500,
+                statusCodeClass: 5,
                 statusMessage: 'Internal Server Error',
                 headers: { 'content-type': 'text/plain' }
-            }).gateways.shift() ]
+            }) ]
+        }])
+        descent.descend(async())
+    }, function (error) {
+        okay(error.statusCode, 500, 'raiseified and resumed')
+    }], [function () {
+        descent = new Descent([{
+            gateways: [ raiseify(), bufferify(), requestify('x', {
+                okay: false,
+                statusCode: 500,
+                statusCodeClass: 5,
+                statusMessage: 'Internal Server Error',
+                headers: { 'content-type': 'text/plain' }
+            }) ]
         }])
         descent.descend(async())
     }, function (error) {
@@ -26,8 +42,9 @@ function prove (async, okay) {
     }], function () {
         descent = new Descent([{
             gateways: [ raiseify(), requestify('x', {
-                okay: true
-            }).gateways.shift() ]
+                statusCode: 200,
+                statusCodeClass: 2
+            }) ]
         }])
         descent.descend(async())
     }, function (body) {
