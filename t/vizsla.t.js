@@ -162,8 +162,7 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response, {
-            via: {},
-            stage: 'parse',
+            stage: 'negotiation',
             statusCode: 503,
             statusMessage: 'Service Unavailable',
             headers: {
@@ -188,16 +187,11 @@ function prove (async, okay) {
         fetch.cancel()
     }, function (body, response) {
         okay(response, {
-            via: {},
-            stage: 'parse',
+            stage: 'negotiation',
             statusCode: 504,
             statusMessage: 'Gateway Timeout',
-            headers: {
-                'x-vizsla-errno': 'ECONNABORTED'
-            },
-            rawHeaders: [
-                'x-vizsla-errno', 'ECONNABORTED'
-            ],
+            headers: { 'x-vizsla-errno': 'ECONNABORTED' },
+            rawHeaders: [ 'x-vizsla-errno', 'ECONNABORTED' ],
             trailers: null,
             type: {
                 type: 'vizsla',
@@ -214,8 +208,7 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response, {
-            via: {},
-            stage: 'parse',
+            stage: 'negotiation',
             statusCode: 504,
             statusMessage: 'Gateway Timeout',
             headers: {

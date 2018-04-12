@@ -5,6 +5,7 @@ var Signal = require('signal')
 var coalesce = require('extant')
 var logger = require('prolific.logger').createLogger('vizsla')
 var stream = require('stream')
+var http = require('http')
 var unlisten = require('./unlisten')
 
 function Transport () {
@@ -130,7 +131,20 @@ Transport.prototype.descend = cadence(function (async, descent) {
         signal.cancel(wait)
         var statusCode = typeof error == 'string' ? 504 : 503
         var code = typeof error == 'string' ? error : coalesce(error.code, 'EIO')
-        return errorify({}, statusCode, { 'x-vizsla-errno': code })
+        return [ null, {
+            stage: 'negotiation',
+            statusCode: statusCode,
+            statusMessage: http.STATUS_CODES[statusCode],
+            headers: { 'x-vizsla-errno': code },
+            rawHeaders: [ 'x-vizsla-errno', code ],
+            trailers: null,
+            type: {
+                type: 'vizsla',
+                subtype: 'null',
+                suffix: null,
+                parameters: {}
+            }
+        } ]
     }], function (body, response) {
         // TODO Come back and test this when you've created a Prolific Test library.
         client.on('error', function (error) {
