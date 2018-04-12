@@ -1,9 +1,10 @@
-require('proof')(2, require('cadence')(prove))
+require('proof')(3, require('cadence')(prove))
 
 function prove (async, okay) {
     var cadence = require('cadence')
 
     var nullify = require('../nullify')
+    var bufferify = require('../bufferify')
     var requestify = require('./requestify')
 
     var delta = require('delta')
@@ -13,6 +14,13 @@ function prove (async, okay) {
     async(function () {
         new Descent([{
             gateways: [ nullify(), requestify('x', {
+                statusCodeClass: 4
+            }) ]
+        }]).descend(async())
+    }, function (body) {
+        okay(body, null, 'nullified and resumed')
+        new Descent([{
+            gateways: [ nullify(), bufferify(), requestify('x', {
                 statusCodeClass: 4
             }) ]
         }]).descend(async())
