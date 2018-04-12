@@ -13,11 +13,8 @@ function Transport () {
 Transport.prototype.descend = cadence(function (async, descent) {
     var request = descent.request()
     var sent = {
-        url: request.url,
-        options: request.options,
-        body: request.payload,
-        when: Date.now(),
-        duration: null
+        url: request.url.href,
+        options: request.options
     }
     var timeout = null, status = 'requesting', errors = 0, $response = null, caught = false
     var signal = new Signal, wait = null
@@ -115,6 +112,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
             })
             var statusCodeClass = Math.floor($response.statusCode / 100)
             response = {
+                sent: sent,
                 okay: statusCodeClass == 2,
                 statusCode: $response.statusCode,
                 statusCodeClass: statusCodeClass,
