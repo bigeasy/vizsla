@@ -22,8 +22,8 @@ function prove (async, okay) {
             via: { statusCode: 200 },
             statusCode: 502,
             statusMessage: 'Bad Gateway',
-            headers: {},
-            rawHeaders: [],
+            headers: { 'content-type': 'vizsla/null' },
+            rawHeaders: [ 'content-type', 'vizsla/null' ],
             trailers: null,
             type: {
                 type: 'vizsla',

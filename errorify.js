@@ -2,6 +2,7 @@ var http = require('http')
 var coalesce = require('extant')
 
 module.exports = function (response, statusCode, headers) {
+    headers['content-type'] = 'vizsla/null'
     var rawHeaders = []
     for (var header in headers) {
         rawHeaders.push(header, headers[header])
