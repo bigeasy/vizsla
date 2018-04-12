@@ -56,3 +56,8 @@ we can turn that one to see the stack trace.
 
 But, I don't imagine that ordinary usage would benefit from a stack trace
 because we're not expecting stack trace based errors.
+
+Errors ought to be messages, we cordon it off into a JSON structure that can be
+stuffed into an exception and thrown if that's what you'd prefer. There is a
+status code and status message, but not always a body. There is a stage which
+can be 'negotiate', 'transport' or 'parse'.

@@ -18,19 +18,21 @@ function prove (async, okay) {
         descent.descend(async())
     }, function (body, response) {
         okay(response, {
+            stage: 'parse',
+            via: { statusCode: 200 },
             statusCode: 502,
             statusMessage: 'Bad Gateway',
-            headers: { 'content-type': 'application/json' },
-            rawHeaders: [ 'content-type', 'application/json' ],
+            headers: {},
+            rawHeaders: [],
             trailers: null,
             type: {
-                type: 'application',
-                subtype: 'json',
+                type: 'vizsla',
+                subtype: 'null',
                 suffix: null,
                 parameters: {}
             }
         }, 'error')
-        okay(JSON.parse(body.read().toString()), 'Bad Gateway', 'body')
+        okay(body, null, 'body')
         descent = new Descent([{
             gateways: [ gateway, requestify(null, { statusCode: 404 }) ]
         }])

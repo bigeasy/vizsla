@@ -15,7 +15,12 @@ Bufferify.prototype._parse = cadence(function (async, body, response) {
         delta(async()).ee(body).on('data', []).on('end')
     }, function (error) {
         // TODO Maybe report stack here.
-        return [ async.break ].concat(errorify(502, {}))
+        // TODO Yes, you could really have an error here. If you do, you're
+        // going to want to log the error or pass it up to be logged. Your idea
+        // was that this would be middleware and that the errors would be
+        // logged. There's not much for one to do about a truncated stream at
+        // the application level with HTTP except to retry.
+        return [ async.break ].concat(errorify(response, 502, {}))
     }], function (chunks) {
         return [ Buffer.concat(chunks), response ]
     })

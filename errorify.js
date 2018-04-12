@@ -1,25 +1,22 @@
 var http = require('http')
-var stream = require('stream')
 var coalesce = require('extant')
 
-module.exports = function (statusCode, headers) {
-    var description = coalesce(http.STATUS_CODES[statusCode], 'Unknown')
-    var body = new stream.PassThrough
-    body.end(JSON.stringify(description))
-    headers['content-type'] = 'application/json'
+module.exports = function (response, statusCode, headers) {
     var rawHeaders = []
     for (var header in headers) {
         rawHeaders.push(header, headers[header])
     }
-    return [ body, {
+    return [ null, {
+        via: response,
+        stage: 'parse',
         statusCode: statusCode,
-        statusMessage: description,
+        statusMessage: coalesce(http.STATUS_CODES[statusCode], 'Unknown'),
         headers: headers,
         rawHeaders: rawHeaders,
         trailers: null,
         type: {
-            type: 'application',
-            subtype: 'json',
+            type: 'vizsla',
+            subtype: 'null',
             suffix: null,
             parameters: {}
         }

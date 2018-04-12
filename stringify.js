@@ -15,7 +15,7 @@ Stringify.prototype._parse = cadence(function (async, body, response) {
     try {
         return [ body.toString(coalesce(response.type.parameters.charset, 'utf8')), response ]
     } catch (error) {
-        return errorify(502, {})
+        return errorify(response, 502, {})
     }
 })
 

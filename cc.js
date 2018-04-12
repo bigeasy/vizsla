@@ -15,7 +15,7 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
     var label = async(function () {
         if (descent.storage.cc[request.identifier] == null) {
             if (request.url.auth == null) {
-                return [ label.break ].concat(errorify(503, {}))
+                return [ label.break ].concat(errorify({}, 503, {}))
             }
             async(function () {
                 descent.fetch(this._request, {
@@ -29,13 +29,14 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
                 }).response.wait(async())
             }, function (body, response) {
                 if (!response.okay) {
-                    return [ label.break ].concat(errorify(response.statusCode, {}))
+                    body.resume()
+                    return [ label.break ].concat(null, response)
                 } else if (
                     response.headers['content-type'] != 'application/json' ||
                     body.token_type != 'Bearer' ||
                     body.access_token == null
                 ) {
-                    return [ label.break ].concat(errorify(502, {}))
+                    return [ label.break ].concat(errorify(response, 502, {}))
                 }
                 descent.storage.cc[request.identifier] = body.access_token
             })

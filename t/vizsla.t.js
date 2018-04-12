@@ -162,25 +162,25 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response, {
+            via: {},
+            stage: 'parse',
             statusCode: 503,
             statusMessage: 'Service Unavailable',
             headers: {
-                'x-vizsla-errno': 'ECONNREFUSED',
-                'content-type': 'application/json'
+                'x-vizsla-errno': 'ECONNREFUSED'
             },
             rawHeaders: [
-                'x-vizsla-errno', 'ECONNREFUSED',
-                'content-type', 'application/json'
+                'x-vizsla-errno', 'ECONNREFUSED'
             ],
             trailers: null,
             type: {
-                type: 'application',
-                subtype: 'json',
+                type: 'vizsla',
+                subtype: 'null',
                 suffix: null,
                 parameters: {}
             }
         }, 'refused properties')
-        okay(JSON.parse(body.read().toString()), 'Service Unavailable', 'refused message')
+        okay(body, null, 'refused message')
         var fetch = ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             gateways: []
@@ -188,25 +188,25 @@ function prove (async, okay) {
         fetch.cancel()
     }, function (body, response) {
         okay(response, {
+            via: {},
+            stage: 'parse',
             statusCode: 504,
             statusMessage: 'Gateway Timeout',
             headers: {
-                'x-vizsla-errno': 'ECONNABORTED',
-                'content-type': 'application/json'
+                'x-vizsla-errno': 'ECONNABORTED'
             },
             rawHeaders: [
-                'x-vizsla-errno', 'ECONNABORTED',
-                'content-type', 'application/json'
+                'x-vizsla-errno', 'ECONNABORTED'
             ],
             trailers: null,
             type: {
-                type: 'application',
-                subtype: 'json',
+                type: 'vizsla',
+                subtype: 'null',
                 suffix: null,
                 parameters: {}
             }
         }, 'cancel properties')
-        okay(JSON.parse(body.read().toString()), 'Gateway Timeout', 'cancel body')
+        okay(body, null, 'cancel body')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             gateways: [],
@@ -214,25 +214,25 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response, {
+            via: {},
+            stage: 'parse',
             statusCode: 504,
             statusMessage: 'Gateway Timeout',
             headers: {
-                'x-vizsla-errno': 'ETIMEDOUT',
-                'content-type': 'application/json'
+                'x-vizsla-errno': 'ETIMEDOUT'
             },
             rawHeaders: [
-                'x-vizsla-errno', 'ETIMEDOUT',
-                'content-type', 'application/json'
+                'x-vizsla-errno', 'ETIMEDOUT'
             ],
             trailers: null,
             type: {
-                type: 'application',
-                subtype: 'json',
+                type: 'vizsla',
+                subtype: 'null',
                 suffix: null,
                 parameters: {}
             }
-        }, 'cancel properties')
-        okay(JSON.parse(body.read().toString()), 'Gateway Timeout', 'cancel body')
+        }, 'timeout properties')
+        okay(body, null, 'timeout body')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             gateways: [],

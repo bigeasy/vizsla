@@ -19,7 +19,7 @@ Jsonify.prototype._parse = cadence(function (async, body, response) {
     try {
         return [ JSON.parse(body.toString()), response ]
     } catch (e) {
-        return  errorify(502, {})
+        return  errorify(response, 502, {})
     }
 })
 

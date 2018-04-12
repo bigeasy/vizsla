@@ -60,7 +60,7 @@ function prove (async, okay) {
             body: body
         }, {
             statusCode: 503,
-            body: 'Service Unavailable'
+            body: null
         }, 'no password')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
@@ -72,7 +72,7 @@ function prove (async, okay) {
             body: body
         }, {
             statusCode: 400,
-            body: 'Bad Request'
+            body: null
         }, 'not okay')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
@@ -84,7 +84,7 @@ function prove (async, okay) {
             body: body
         }, {
             statusCode: 502,
-            body: 'Bad Gateway'
+            body: null
         }, 'no token')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
