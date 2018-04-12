@@ -24,21 +24,4 @@ Parser.prototype.descend = cadence(function (async, descent) {
     })
 })
 
-Parser.prototype.errorify = function (response, context) {
-    return [ null, {
-        statusCode: 502,
-        statusMessage: http.STATUS_CODES[502],
-        headers: {},
-        rawHeaders: [],
-        trailers: null,
-        via: response,
-        type: {
-            type: 'application',
-            subtype: 'json',
-            suffix: null,
-            parameters: {}
-        }
-    } ]
-}
-
 module.exports = Parser
