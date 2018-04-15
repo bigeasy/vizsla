@@ -1,21 +1,25 @@
 var cadence = require('cadence')
 var interrupt = require('interrupt').createInterrupter('vizsla')
-var Parser = require('./parser')
-var util = require('util')
+var Selector = require('./select')
 var coalesce = require('extant')
 var stream = require('stream')
 
 function Raiseify (when) {
-    Parser.call(this, coalesce(when, [ -2 ]), [])
+    this._select = Selector(coalesce(when, [ -2 ]))
 }
-util.inherits(Raiseify, Parser)
 
-Raiseify.prototype._parse = function (body, response, callback) {
-    if (body instanceof stream.Readable) {
-        body.resume()
-    }
-    callback(interrupt('error', response))
-}
+Raiseify.prototype.descend = cadence(function (async, descent) {
+    async(function () {
+        descent.descend(async())
+    }, function (body, response) {
+        if (this._select.call(null, response)) {
+            if (body instanceof stream.Readable) {
+                body.resume()
+            }
+            throw interrupt('error', response)
+        }
+    })
+})
 
 module.exports = function () {
     return new Raiseify
