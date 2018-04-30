@@ -36,13 +36,15 @@ module.exports = function (base, vargs) {
             continue
         }
         for (var name in varg) {
-            if (name == 'url') {
+            switch (name) {
+            case 'url':
                 if (merged.url == null) {
                     merged.url = varg.url
                 } else {
                     merged.url = url.resolve(merged.url, varg.url)
                 }
-            } else if (name == 'headers') {
+                break
+            case 'headers':
                 if (merged.headers == null) {
                     merged.headers = {}
                 }
@@ -53,7 +55,8 @@ module.exports = function (base, vargs) {
                         merged.headers[header] = String(varg.headers[header])
                     }
                 }
-            } else if (name == 'gateways') {
+                break
+            case 'gateways':
                 if (merged.gateways == null) {
                     merged.gateways = []
                 }
@@ -62,15 +65,21 @@ module.exports = function (base, vargs) {
                 if (~index) {
                     merged.gateways = merged.gateways.slice(0, index)
                 }
-            } else if (name == 'grant' && varg.grant == 'cc') {
+                break
+            case 'grant':
                 throw new Error('no more grant property')
-            } else if (name == 'put' || name == 'post') {
+                break
+            case 'put':
+            case 'post':
                 merged.payload = varg[name]
                 merged.method = name.toUpperCase()
-            } else if (name == 'body') {
+                break
+            case 'body':
                 merged.payload = varg.body
-            } else {
+                break
+            default:
                 merged[name] = varg[name]
+                break
             }
         }
     }
