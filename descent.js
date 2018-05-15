@@ -22,8 +22,17 @@ function Descent (bind, input, cancel, storage, UserAgent) {
     if (this._merged.negotiate != null || this._merged.parse != null) {
         this._merged.gateways = coalesce(this._merged.parse, []).concat(coalesce(this._merged.negotiate, []))
     }
+    if ('_negotiate' in this._merged) {
+        this._merged.gateways = this._merged._negotiate
+        if (!('_parse' in this._merged)) {
+            this._merged._parse = []
+        }
+    }
     if ('_parse' in this._merged) {
-        this._merged.gateways = [ parse(this._merged._parse) ]
+        if (this._merged.gateways == null) {
+            this._merged.gateways = []
+        }
+        this._merged.gateways.push(parse(this._merged._parse))
     }
     if (this._merged.gateways == null) {
         this._merged.gateways = [

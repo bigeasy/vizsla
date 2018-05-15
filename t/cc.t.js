@@ -50,7 +50,8 @@ function prove (async, okay) {
     }], function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: [ jsonify(), cc({ url: '/auth' }) ]
+            _parse: 'json',
+            _negotiate: [ cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         // TODO How would I know from logs that this is a configuration problem
