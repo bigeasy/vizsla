@@ -68,7 +68,6 @@ module.exports = function (base, vargs) {
                 break
             case 'grant':
                 throw new Error('no more grant property')
-                break
             case 'put':
             case 'post':
                 merged.payload = varg[name]
