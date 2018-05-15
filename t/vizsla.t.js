@@ -1,4 +1,4 @@
-require('proof')(25, require('cadence')(prove))
+require('proof')(26, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -63,6 +63,12 @@ function prove (async, okay) {
     }, {
         statusCode: 200,
         body: new Buffer('x')
+    }, {
+        statusCode: 200,
+        body: new Buffer('{}'),
+        headers: {
+            'content-type': 'application/json'
+        }
     }, {
         statusCode: 200,
         body: new Buffer('{}'),
@@ -165,6 +171,12 @@ function prove (async, okay) {
         }, async())
     }, function (body) {
         okay(body, {}, 'default json')
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            _parse: 'json'
+        }, async())
+    }, function (body) {
+        okay(body, {}, 'explicit json')
     }, function () {
         ua.fetch({
             url: 'http://127.0.0.1:8889/endpoint',
