@@ -13,12 +13,17 @@ var Transport = require('./transport')
 var jsonify = require('./jsonify')
 var stringify = require('./stringify')
 
+var parse = require('./parse')
+
 function Descent (bind, input, cancel, storage, UserAgent) {
     this._UserAgent = UserAgent
     this._merged = merge({}, bind)
     // TODO Probably belongs in merged.
     if (this._merged.negotiate != null || this._merged.parse != null) {
         this._merged.gateways = coalesce(this._merged.parse, []).concat(coalesce(this._merged.negotiate, []))
+    }
+    if ('_parse' in this._merged) {
+        this._merged.gateways = [ parse(this._merged._parse) ]
     }
     if (this._merged.gateways == null) {
         this._merged.gateways = [

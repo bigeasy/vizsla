@@ -1,4 +1,4 @@
-require('proof')(24, require('cadence')(prove))
+require('proof')(25, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -58,6 +58,9 @@ function prove (async, okay) {
     util.inherits(PseudoResponse, stream.PassThrough)
 
     var responses = [{
+        statusCode: 200,
+        body: new Buffer('x')
+    }, {
         statusCode: 200,
         body: new Buffer('x')
     }, {
@@ -137,6 +140,13 @@ function prove (async, okay) {
     }, [function () {
         server.close(async())
     }], function () {
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            _parse: null,
+            timeout: 1000
+        }, async())
+    }, function (body, response) {
+        okay(response.statusCode, 200, 'null parse ok')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: [],
