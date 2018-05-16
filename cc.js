@@ -12,7 +12,7 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
         descent.storage.cc = {}
     }
     var request = descent.request()
-    var label = async(function () {
+    async(function () {
         if (descent.storage.cc[request.identifier] == null) {
             if (request.url.auth == null) {
                 throw 503
@@ -25,18 +25,16 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
                     post: {
                         grant_type: 'client_credentials'
                     },
-                    gateways: [ jsonify(), null ]
+                    _parse: 'json'
                 }).response.wait(async())
             }, function (body, response) {
                 if (!response.okay) {
-                    body.resume()
-                    return [ label.break ].concat(null, response)
+                    throw { statusCode: 502, response: response, stage: 'negotiation' }
                 } else if (
-                    response.headers['content-type'] != 'application/json' ||
                     body.token_type != 'Bearer' ||
                     body.access_token == null
                 ) {
-                    return [ label.break ].concat(errorify(response, 502, {}))
+                    throw { statusCode: 502, response: response, stage: 'negotiation' }
                 }
                 descent.storage.cc[request.identifier] = body.access_token
             })
@@ -48,8 +46,8 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
         if (response.statusCode == 401) {
             delete descent.storage.cc[request.identifier]
         }
-        return [ label.break, body, response ]
-    })()
+        return [ body, response ]
+    })
 })
 
 module.exports = function (options) {

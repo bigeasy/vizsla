@@ -32,7 +32,7 @@ function Descent (bind, input, cancel, storage, UserAgent) {
         if (this._merged.gateways == null) {
             this._merged.gateways = []
         }
-        this._merged.gateways.push(parse(this._merged._parse))
+        this._merged.gateways.unshift(parse(this._merged._parse))
     }
     if (this._merged.gateways == null) {
         this._merged.gateways = [
@@ -81,7 +81,8 @@ Descent.prototype.attempt = cadence(function (async) {
             }
             return [ null, {
                 statusCode: coalesce(error.statusCode, 503),
-                headers: { 'content-type': 'application/json' }
+                headers: { 'content-type': 'application/json' },
+                response: coalesce(error.response)
             } ]
         }
     }])

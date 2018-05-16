@@ -50,7 +50,6 @@ function prove (async, okay) {
     }], function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _parse: 'json',
             _negotiate: [ cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
@@ -65,19 +64,23 @@ function prove (async, okay) {
         }, 'no password')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ jsonify(), cc({ url: '/auth' }) ]
+            _negotiate: [ cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         okay({
             statusCode: response.statusCode,
+            response: {
+                statusCode: response.response.statusCode
+            },
             body: body
         }, {
-            statusCode: 400,
+            statusCode: 502,
+            response: { statusCode: 400 },
             body: null
         }, 'not okay')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ jsonify(), cc({ url: '/auth' }) ]
+            _negotiate: [  cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         okay({
@@ -89,13 +92,14 @@ function prove (async, okay) {
         }, 'no token')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ jsonify(), cc({ url: '/auth' }) ]
+            _negotiate: [ cc({ url: '/auth' }) ],
+            _parse: 'json'
         }, async())
     }, function (body, response) {
         okay(body, {}, 'body')
         ua.fetch({
             url: 'http://a:z@127.0.0.1:8888/endpoint',
-            gateways: [ jsonify(), cc({ url: '/auth' }) ]
+            _negotiate: [ cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 401, 'expired')
