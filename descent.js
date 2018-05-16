@@ -60,12 +60,16 @@ Descent.prototype.fetch = function () {
 }
 
 Descent.prototype.descend = cadence(function (async) {
+    if (this._merged.gateways.length != 0) {
+        this._merged.gateways.shift().descend(this, async())
+    } else {
+        new Transport().descend(this, async())
+    }
+})
+
+Descent.prototype.attempt = cadence(function (async) {
     async([function () {
-        if (this._merged.gateways.length != 0) {
-            this._merged.gateways.shift().descend(this, async())
-        } else {
-            new Transport().descend(this, async())
-        }
+        this.descend(async())
     }, function (error) {
         if (error instanceof Error) {
         } else {

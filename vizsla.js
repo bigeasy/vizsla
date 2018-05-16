@@ -39,7 +39,7 @@ UserAgent.prototype.fetch = function () {
     }
 
     var descent = new Descent(this._bind.concat(vargs), fetch.input, cancel, this.storage, UserAgent)
-    descent.descend(fetch.response.unlatch.bind(fetch.response))
+    descent.attempt(fetch.response.unlatch.bind(fetch.response))
 
     return fetch
 }
