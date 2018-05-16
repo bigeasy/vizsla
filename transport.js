@@ -68,6 +68,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
                 descent.input.pipe(client)
             }
         }, function (response) {
+            descent.response
             signal.cancel(wait)
             status = 'responded'
             $response = response

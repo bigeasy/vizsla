@@ -60,11 +60,27 @@ Descent.prototype.fetch = function () {
 }
 
 Descent.prototype.descend = cadence(function (async) {
-    if (this._merged.gateways.length != 0) {
-        this._merged.gateways.shift().descend(this, async())
-    } else {
-        new Transport().descend(this, async())
-    }
+    async([function () {
+        if (this._merged.gateways.length != 0) {
+            this._merged.gateways.shift().descend(this, async())
+        } else {
+            new Transport().descend(this, async())
+        }
+    }, function (error) {
+        if (error instanceof Error) {
+        } else {
+            if (typeof error == 'number') {
+                error = { statusCode: error }
+            }
+            if (this.response) {
+                this.response.resume()
+            }
+            return [ null, {
+                statusCode: coalesce(error.statusCode, 503),
+                headers: { 'content-type': 'application/json' }
+            } ]
+        }
+    }])
 })
 
 module.exports = Descent

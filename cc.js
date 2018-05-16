@@ -15,7 +15,7 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
     var label = async(function () {
         if (descent.storage.cc[request.identifier] == null) {
             if (request.url.auth == null) {
-                return [ label.break ].concat(errorify({}, 503, {}))
+                throw 503
             }
             async(function () {
                 descent.fetch(this._request, {
