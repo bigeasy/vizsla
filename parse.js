@@ -5,7 +5,8 @@ var PARSERS = {
     json: require('./json'),
     text: require('./text'),
     buffer: require('./buffer'),
-    jsons: require('./jsons')
+    jsons: require('./jsons'),
+    stream: require('./stream')
 }
 
 function Parse (parsers) {
@@ -48,6 +49,8 @@ Parse.prototype.descend = cadence(function (async, descent) {
             var options = parsers.shift()
             if (typeof options == 'string') {
                 parser = PARSERS[options]()
+            } else {
+                parser = options
             }
             if (parser != null && !select(parser.options, response)) {
                 parser = null

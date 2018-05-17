@@ -1,4 +1,4 @@
-require('proof')(29, require('cadence')(prove))
+require('proof')(30, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -56,6 +56,9 @@ function prove (async, okay) {
     util.inherits(PseudoResponse, stream.PassThrough)
 
     var responses = [{
+        statusCode: 200,
+        body: new Buffer('x')
+    }, {
         statusCode: 200,
         body: new Buffer('x')
     }, {
@@ -179,6 +182,17 @@ function prove (async, okay) {
     }, function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
+            parse: 'stream'
+        }, async())
+    }, function (body, response) {
+        async(function () {
+            delta(async()).ee(body).on('data', []).on('end')
+        }, function (chunks) {
+            okay(Buffer.concat(chunks).toString(), 'x', 'parse stream')
+        })
+    }, function () {
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
             parse: 'json'
         }, async())
     }, function (body, response) {
@@ -191,7 +205,7 @@ function prove (async, okay) {
         }, 'explicit json')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            parse: 'json',
+            parse: [ Vizsla.json() ],
             nullify: true
         }, async())
     }, function () {

@@ -8,6 +8,12 @@ function UserAgent () {
     this.storage = {}
 }
 
+UserAgent.json = require('./json')
+UserAgent.text = require('./text')
+UserAgent.buffer = require('./buffer')
+UserAgent.jsons = require('./jsons')
+UserAgent.stream = require('./stream')
+
 UserAgent.prototype.bind = function () {
     var ua = new UserAgent
     ua._transport = this._transport
