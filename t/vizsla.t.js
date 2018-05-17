@@ -205,7 +205,7 @@ function prove (async, okay) {
         }, 'explicit json')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            parse: [ Vizsla.json([ 200 ]) ],
+            parse: [ Vizsla.json(200) ],
             nullify: true
         }, async())
     }, function () {

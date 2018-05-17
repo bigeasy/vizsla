@@ -6,10 +6,9 @@ function StreamParser (options) {
 }
 
 StreamParser.prototype.parse = function (body, response, callback) {
-    console.log('did call', typeof body.resume)
     callback(null, body)
 }
 
 module.exports = function (options) {
-    return new StreamParser(options || [ 2 ])
+    return new StreamParser(Array.prototype.slice.call(arguments))
 }

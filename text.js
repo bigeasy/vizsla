@@ -14,6 +14,6 @@ TextParser.prototype.parse = cadence(function (async, body, response) {
     })
 })
 
-module.exports = function (options) {
-    return new TextParser(options || [ 2 ])
+module.exports = function () {
+    return new TextParser(Array.prototype.slice.call(arguments))
 }

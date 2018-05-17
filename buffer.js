@@ -14,5 +14,5 @@ BufferParser.prototype.parse = cadence(function (async, body, response) {
 })
 
 module.exports = function (options) {
-    return new BufferParser(options || [ 2 ])
+    return new BufferParser(Array.prototype.slice.call(arguments))
 }

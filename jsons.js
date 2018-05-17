@@ -25,5 +25,5 @@ StreamingJsonParser.prototype.parse = cadence(function (async, body, response) {
 })
 
 module.exports = function (options) {
-    return new StreamingJsonParser(options || [ 2, 'content-type: application/json-stream' ])
+    return new StreamingJsonParser(Array.prototype.slice.call(arguments))
 }

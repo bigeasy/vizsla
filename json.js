@@ -14,5 +14,5 @@ JsonParser.prototype.parse = cadence(function (async, body, response) {
 })
 
 module.exports = function (options) {
-    return new JsonParser(options || [ 2, 'content-type: application/json' ])
+    return new JsonParser(Array.prototype.slice.call(arguments))
 }
