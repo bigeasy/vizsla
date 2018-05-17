@@ -61,3 +61,29 @@ Errors ought to be messages, we cordon it off into a JSON structure that can be
 stuffed into an exception and thrown if that's what you'd prefer. There is a
 status code and status message, but not always a body. There is a stage which
 can be 'negotiate', 'transport' or 'parse'.
+
+## Lastest Thoughts
+
+Separate between negotiate and parse. Negotiate handles redirections or other
+negotiations like client credentials. Really the only two negotitations that
+I've encountered so far.
+
+Parse is a separate step. Specify a parser or parsers based on conditions.
+Because this library is meant for IPC we do not have complicated mime-type
+parser resolution. You're going to know the types that will be returned. You're
+going to know which parsers are needed based on the headers. If they don't match
+it is an error. If you need to do a lot figuring to do determine what to do with
+the body, then tell Vizsla so skip parsing and sort that out yourself with the
+status code, headers and stream returned.
+
+How you want to deal with errors is another step. You can raise them as
+exceptions, or get them back, or decided to just go by whether the body is null.
+
+A parse error will get reported as a 503 and the status of the actual network
+request will be a nested error. Negotiation will not nest. You can only make one
+call at a time. The status of successful negotation is discarded. Failed
+negotitaion is returned as an error. If you really need to inspect the body of a
+failed negotiation maybe just do that outside a negotiation extension.
+
+Parsers and negotiation are now overridden instead of extened when you merge
+properties.
