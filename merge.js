@@ -57,6 +57,9 @@ module.exports = function (base, vargs) {
                 }
                 break
             case 'gateways':
+                Error.stackTraceLimit = 34
+                console.log(new Error().stack)
+                process.exit()
                 if (merged.gateways == null) {
                     merged.gateways = []
                 }

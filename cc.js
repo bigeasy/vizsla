@@ -1,7 +1,5 @@
 var cadence = require('cadence')
 var coalesce = require('extant')
-var errorify = require('./errorify')
-var jsonify = require('./jsonify')
 
 function ClientCredentials (request) {
     this._request = coalesce(request, { url: '/token' })

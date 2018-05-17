@@ -1,6 +1,5 @@
 var cadence = require('cadence')
 var typer = require('media-typer')
-var errorify = require('./errorify')
 var Signal = require('signal')
 var coalesce = require('extant')
 var logger = require('prolific.logger').createLogger('vizsla')
@@ -27,6 +26,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
                 xxx.unlatch(null, response)
             }
             function errored (error) {
+                console.log('client errored!!!!!', error.message)
                 xxx.unlatch(error)
             }
             client.addListener('error', errored)
@@ -73,6 +73,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
             status = 'responded'
             $response = response
             client.once('error', function (error) {
+                console.log('client error!!!!!', error.message)
                 signal.notify(error, 'errored')
             })
             // TODO Likely that the only proper response once the first response
@@ -96,6 +97,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
             //    status = newStatus
                 $response.unpipe()
                 $response.resume()
+                console.log('WAIT!!')
                 if (typeof code == 'string') {
                     var error = new Error('vizsla#cancel')
                     error.code = code
@@ -130,21 +132,17 @@ Transport.prototype.descend = cadence(function (async, descent) {
         })
     }, function (error) {
         signal.cancel(wait)
+        console.log('!?ERROR', error.message)
         var statusCode = typeof error == 'string' ? 504 : 503
         var code = typeof error == 'string' ? error : coalesce(error.code, 'EIO')
-        return [ null, {
+        return [ null,  {
             stage: 'negotiation',
             statusCode: statusCode,
             statusMessage: http.STATUS_CODES[statusCode],
-            headers: { 'x-vizsla-errno': code },
-            rawHeaders: [ 'x-vizsla-errno', code ],
+            code: code,
             trailers: null,
-            type: {
-                type: 'vizsla',
-                subtype: 'null',
-                suffix: null,
-                parameters: {}
-            }
+            // TODO type, subType, suffix, parameters: {}
+            type: null
         } ]
     }], function (body, response) {
         // TODO Come back and test this when you've created a Prolific Test library.
@@ -164,6 +162,9 @@ Transport.prototype.descend = cadence(function (async, descent) {
         })
         if (timeout) {
             clearTimeout(timeout)
+        }
+        if (body == null) {
+            throw response
         }
         return [ body, response ]
     })

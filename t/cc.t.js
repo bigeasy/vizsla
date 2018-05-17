@@ -5,7 +5,6 @@ function prove (async, okay) {
     var util = require('util')
     var stream = require('stream')
     var cc = require('../cc')
-    var jsonify = require('../jsonify')
     var coalesce = require('extant')
 
     var responses = [{

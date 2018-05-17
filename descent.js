@@ -1,6 +1,8 @@
 var cadence = require('cadence')
 var coalesce = require('extant')
 
+var interrupt = require('interrupt').createInterrupter('vizsla')
+
 var merge = require('./merge')
 var options = require('./options')
 var defaults = require('./defaultify')
@@ -10,35 +12,18 @@ var Signal = require('signal')
 
 var Transport = require('./transport')
 
-var jsonify = require('./jsonify')
-var stringify = require('./stringify')
-
 var parse = require('./parse')
 
 function Descent (bind, input, cancel, storage, UserAgent) {
     this._UserAgent = UserAgent
     this._merged = merge({}, bind)
-    // TODO Probably belongs in merged.
-    if (this._merged.negotiate != null || this._merged.parse != null) {
-        this._merged.gateways = coalesce(this._merged.parse, []).concat(coalesce(this._merged.negotiate, []))
-    }
     if ('_negotiate' in this._merged) {
-        this._merged.gateways = this._merged._negotiate
-        if (!('_parse' in this._merged)) {
-            this._merged._parse = []
-        }
+        this._gateways = this._merged._negotiate
+    } else {
+        this._gateways = []
     }
     if ('_parse' in this._merged) {
-        if (this._merged.gateways == null) {
-            this._merged.gateways = []
-        }
-        this._merged.gateways.unshift(parse(this._merged._parse))
-    }
-    if (this._merged.gateways == null) {
-        this._merged.gateways = [
-            jsonify([ 'content-type: application/json' ]),
-            stringify([ 'content-type: text/plain' ])
-        ]
+        this._gateways.unshift(parse(this._merged._parse))
     }
     this.input = input || new stream.PassThrough
     this.cancel = cancel || new Signal
@@ -60,32 +45,42 @@ Descent.prototype.fetch = function () {
 }
 
 Descent.prototype.descend = cadence(function (async) {
-    if (this._merged.gateways.length != 0) {
-        this._merged.gateways.shift().descend(this, async())
+    if (this._gateways.length != 0) {
+        this._gateways.shift().descend(this, async())
     } else {
         new Transport().descend(this, async())
     }
 })
 
 Descent.prototype.attempt = cadence(function (async) {
-    async([function () {
-        this.descend(async())
-    }, function (error) {
-        if (error instanceof Error) {
-        } else {
-            if (typeof error == 'number') {
-                error = { statusCode: error }
+    async(function () {
+        async([function () {
+            this.descend(async())
+        }, function (error) {
+            if (error instanceof Error) {
+                console.log(error.stack)
+            } else {
+                if (typeof error == 'number') {
+                    error = { statusCode: error }
+                }
+                if (this.response) {
+                    this.response.resume()
+                }
+                error.statusCode = coalesce(error.statusCode, 503)
+                error.headers = coalesce(error.headers, {})
+                error.rawHeaders = coalesce(error.rawHeaders, [])
+                error.type = null
+                if (this._merged.raise) {
+                    throw interrupt('error', error)
+                }
+                return [ null, error ]
             }
-            if (this.response) {
-                this.response.resume()
-            }
-            return [ null, {
-                statusCode: coalesce(error.statusCode, 503),
-                headers: { 'content-type': 'application/json' },
-                response: coalesce(error.response)
-            } ]
+        }])
+    }, function (body) {
+        if (this._merged.nullify) {
+            return [ body ]
         }
-    }])
+    })
 })
 
 module.exports = Descent

@@ -1,4 +1,4 @@
-require('proof')(26, require('cadence')(prove))
+require('proof')(29, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -9,8 +9,6 @@ function prove (async, okay) {
 
     var coalesce = require('extant')
     var delta = require('delta')
-
-    var bufferify = require('../bufferify')
 
     function PseudoRequest (options) {
         stream.PassThrough.call(this)
@@ -77,8 +75,23 @@ function prove (async, okay) {
         }
     }, {
         statusCode: 200,
+        body: new Buffer('{}\n'),
+        headers: {
+            'content-type': 'application/json-stream'
+        }
+    }, {
+        statusCode: 200,
+        body: new Buffer('hello, world'),
+        headers: {
+            'content-type': 'text/plain'
+        }
+    }, {
+        statusCode: 200,
         body: new Buffer('x'),
         timeout: 1000
+    }, {
+        statusCode: 404,
+        body: new Buffer('x')
     }, {
         statusCode: 200,
         body: new Buffer('x'),
@@ -154,9 +167,7 @@ function prove (async, okay) {
     }, function (body, response) {
         okay(response.statusCode, 200, 'null parse ok')
         ua.fetch({
-            url: 'http://127.0.0.1:8888/endpoint',
-            parse: [],
-            timeout: 1000
+            url: 'http://127.0.0.1:8888/endpoint'
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'minimal ok')
@@ -167,44 +178,59 @@ function prove (async, okay) {
         })
     }, function () {
         ua.fetch({
-            url: 'http://127.0.0.1:8888/endpoint'
-        }, async())
-    }, function (body) {
-        okay(body, {}, 'default json')
-        ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             _parse: 'json'
         }, async())
+    }, function (body, response) {
+        okay({
+            body: body,
+            response: !! response
+        }, {
+            body: {},
+            response: true
+        }, 'explicit json')
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            _parse: 'json',
+            nullify: true
+        }, async())
+    }, function () {
+        okay(arguments.length, 1, 'nullify')
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            _parse: 'jsons'
+        }, async())
     }, function (body) {
-        okay(body, {}, 'explicit json')
+        async(function () {
+            delta(async()).ee(body).on('data', []).on('end')
+        }, function (jsons) {
+            okay(jsons, [{}], 'jsons')
+        })
     }, function () {
         ua.fetch({
-            url: 'http://127.0.0.1:8889/endpoint',
-            gateways: []
+            url: 'http://127.0.0.1:8888/endpoint',
+            _parse: 'text'
+        }, async())
+    }, function (body) {
+        okay(body, 'hello, world', 'explicit text')
+        ua.fetch({
+            url: 'http://127.0.0.1:8889/endpoint'
         }, async())
     }, function (body, response) {
         okay(response, {
             stage: 'negotiation',
             statusCode: 503,
             statusMessage: 'Service Unavailable',
-            headers: {
-                'x-vizsla-errno': 'ECONNREFUSED'
-            },
-            rawHeaders: [
-                'x-vizsla-errno', 'ECONNREFUSED'
-            ],
+            code: 'ECONNREFUSED',
+            headers: {},
+            rawHeaders: [],
             trailers: null,
-            type: {
-                type: 'vizsla',
-                subtype: 'null',
-                suffix: null,
-                parameters: {}
-            }
+            type: null
         }, 'refused properties')
         okay(body, null, 'refused message')
         var fetch = ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: []
+            _negotiate: []
         }, async())
         fetch.cancel()
     }, function (body, response) {
@@ -212,20 +238,15 @@ function prove (async, okay) {
             stage: 'negotiation',
             statusCode: 504,
             statusMessage: 'Gateway Timeout',
-            headers: { 'x-vizsla-errno': 'ECONNABORTED' },
-            rawHeaders: [ 'x-vizsla-errno', 'ECONNABORTED' ],
+            code: 'ECONNABORTED',
+            headers: {},
+            rawHeaders: [],
             trailers: null,
-            type: {
-                type: 'vizsla',
-                subtype: 'null',
-                suffix: null,
-                parameters: {}
-            }
+            type: null,
         }, 'cancel properties')
         okay(body, null, 'cancel body')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: [],
             timeout: 250
         }, async())
     }, function (body, response) {
@@ -233,24 +254,26 @@ function prove (async, okay) {
             stage: 'negotiation',
             statusCode: 504,
             statusMessage: 'Gateway Timeout',
-            headers: {
-                'x-vizsla-errno': 'ETIMEDOUT'
-            },
-            rawHeaders: [
-                'x-vizsla-errno', 'ETIMEDOUT'
-            ],
+            headers: {},
+            rawHeaders: {},
+            code: 'ETIMEDOUT',
             trailers: null,
-            type: {
-                type: 'vizsla',
-                subtype: 'null',
-                suffix: null,
-                parameters: {}
-            }
+            type: null,
         }, 'timeout properties')
         okay(body, null, 'timeout body')
+    }, [function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: [],
+            _parse: 'json',
+            raise: true
+        }, async())
+    }, function (error) {
+        okay(error.statusCode, 404, 'raise')
+    }], function (body, response) {
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            _negotiate: [],
+            _parse: null,
             post: {}
         }, async())
     }, function (body, response) {
@@ -263,7 +286,6 @@ function prove (async, okay) {
     }, function () {
         var fetch = ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: [],
             method: 'POST'
         }, async())
         fetch.input.end('{}')
@@ -277,7 +299,7 @@ function prove (async, okay) {
     }, function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            gateways: [ bufferify([ 200 ]) ]
+            _parse: 'buffer'
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'buffer status code')
@@ -287,7 +309,8 @@ function prove (async, okay) {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             http: pseudo,
-            gateways: []
+            _negotiate: [],
+            _parse: null
         }, async())
     }, [function (body, response) {
         delta(async()).ee(body).on('end')
@@ -297,14 +320,14 @@ function prove (async, okay) {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             http: pseudo,
-            gateways: [],
-            psot: {}
+            _negotiate: [],
+            _parse: null,
+            post: {}
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 503, 'error')
         var fetch = ua.fetch({
-            url: 'http://127.0.0.1:8888/endpoint',
-            gateways: []
+            url: 'http://127.0.0.1:8888/endpoint'
         })
         fetch.response.wait(async())
     }, function (body, response) {
@@ -313,8 +336,7 @@ function prove (async, okay) {
         async(function () {
             extra = true
             fetch = ua.fetch({
-                url: 'http://127.0.0.1:8888/endpoint',
-                gateways: [ null ]
+                url: 'http://127.0.0.1:8888/endpoint'
             }, async())
         }, [function (body, response) {
             body.resume()
@@ -327,8 +349,7 @@ function prove (async, okay) {
         var fetch
         async(function () {
             fetch = ua.fetch({
-                url: 'http://127.0.0.1:8888/endpoint',
-                gateways: [ null ]
+                url: 'http://127.0.0.1:8888/endpoint'
             }, async())
         }, [function (body, response) {
             body.resume()

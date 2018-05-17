@@ -3,7 +3,6 @@ require('proof')(5, require('cadence')(prove))
 function prove (async, assert) {
     var Interlocutor = require('interlocutor')
     var UserAgent = require('..')
-    var jsonify = require('../jsonify')
     var responses = [
         function (request, response, next) {
             response.writeHead(200, 'ignore', { key: 'value' })
@@ -25,7 +24,7 @@ function prove (async, assert) {
     var interlocutor = new Interlocutor(require('connect')().use(function (request, response, next) {
         responses.shift()(request, response, next)
     }))
-    var ua = new UserAgent().bind({ http: interlocutor, gateways: [ jsonify() ] })
+    var ua = new UserAgent().bind({ http: interlocutor, _parse: 'json' })
     async(function () {
         ua.fetch({ url: '/' }, async())
     }, function (body, response, buffer) {
