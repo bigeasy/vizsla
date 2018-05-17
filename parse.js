@@ -14,7 +14,7 @@ function Parse (parsers) {
 
 function select (options, response) {
     var selected = true
-    for (var i = 1, I = options.length; selected && i < I; i++) {
+    for (var i = 0, I = options.length; selected && i < I; i++) {
         switch (typeof options[i]) {
         case 'number':
             if (options[i] < 10) {
