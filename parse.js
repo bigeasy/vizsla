@@ -2,10 +2,10 @@ var cadence = require('cadence')
 var delta = require('delta')
 
 var PARSERS = {
-    json: require('./parser/json'),
-    text: require('./parser/text'),
-    buffer: require('./parser/buffer'),
-    jsons: require('./parser/jsons')
+    json: require('./json'),
+    text: require('./text'),
+    buffer: require('./buffer'),
+    jsons: require('./jsons')
 }
 
 function Parse (parsers) {
