@@ -66,9 +66,6 @@ module.exports = function (base, vargs) {
             case 'body':
                 merged.payload = varg.body
                 break
-            case '_parse':
-            case '_negotiate':
-                throw new Error
             default:
                 merged[name] = varg[name]
                 break
