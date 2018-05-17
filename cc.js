@@ -18,7 +18,7 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
             async(function () {
                 descent.fetch(this._request, {
                     headers: {
-                        authorization: 'Basic ' + new Buffer(request.url.auth).toString('base64')
+                        authorization: 'Basic ' + Buffer.from(request.url.auth).toString('base64')
                     },
                     post: {
                         grant_type: 'client_credentials'

@@ -14,7 +14,7 @@ module.exports = function (request, extended) {
     }
     if (('payload' in request) && !Buffer.isBuffer(request.payload)) {
         request = merge(request, [{ headers: { 'content-type': 'application/json' } }])
-        request.payload = new Buffer(JSON.stringify(request.payload))
+        request.payload = Buffer.from(JSON.stringify(request.payload))
     }
     // TODO Not right, really. Needs to be converted into an array.
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
@@ -58,7 +58,7 @@ module.exports = function (request, extended) {
         // `http` directly to accommodate that. Should be more like cURL,
         // defaults and defeats.
         if (!('payload' in expanded) && /^HEAD|DELETE|GET$/.test(expanded.method)) {
-            expanded.payload = new Buffer(0)
+            expanded.payload = Buffer.alloc(0)
         }
     }
     return expanded
