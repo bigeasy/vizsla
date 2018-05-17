@@ -43,7 +43,7 @@ Parse.prototype.descend = cadence(function (async, descent) {
         if (this._parsers === null) {
             return
         }
-        var parsers = typeof this._parsers == 'string' ? [ this._parsers ] : this._parsers
+        var parsers = Array.isArray(this._parsers) ? this._parsers : [ this._parsers ]
         var parser = null
         while (parser == null && parsers.length != 0) {
             var options = parsers.shift()
