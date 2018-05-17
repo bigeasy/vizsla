@@ -6,7 +6,8 @@ var PARSERS = {
     text: require('./text'),
     buffer: require('./buffer'),
     jsons: require('./jsons'),
-    stream: require('./stream')
+    stream: require('./stream'),
+    dump: require('./dump')
 }
 
 var OPTIONS = {
@@ -14,7 +15,8 @@ var OPTIONS = {
     text: [ 2 ],
     buffer: [ 2 ],
     jsons: [ 2, 'content-type: application/json-stream' ],
-    stream: [ 2 ]
+    stream: [ 2 ],
+    dump: [ 2 ]
 }
 
 function Parse (parsers) {
