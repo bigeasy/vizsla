@@ -63,11 +63,8 @@ Parse.prototype.descend = cadence(function (async, descent) {
             } else {
                 parser = options
             }
-            console.log(parser.options)
             if (parser != null && !select(parser.options, response)) {
                 parser = null
-            } else {
-                console.log('selected')
             }
         }
         if (parser == null) {
