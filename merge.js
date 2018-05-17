@@ -56,19 +56,6 @@ module.exports = function (base, vargs) {
                     }
                 }
                 break
-            case 'gateways':
-                Error.stackTraceLimit = 34
-                console.log(new Error().stack)
-                process.exit()
-                if (merged.gateways == null) {
-                    merged.gateways = []
-                }
-                merged.gateways.unshift.apply(merged.gateways, varg.gateways)
-                var index = merged.gateways.indexOf(null)
-                if (~index) {
-                    merged.gateways = merged.gateways.slice(0, index)
-                }
-                break
             case 'grant':
                 throw new Error('no more grant property')
             case 'put':

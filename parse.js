@@ -39,7 +39,6 @@ Parse.prototype.descend = cadence(function (async, descent) {
     async(function () {
         descent.descend(async())
     }, function (body, response) {
-        console.log(this._parsers)
         if (this._parsers === null) {
             return
         }
@@ -54,7 +53,6 @@ Parse.prototype.descend = cadence(function (async, descent) {
                 parser = null
             }
         }
-        console.log(!!parser)
         if (parser == null) {
             if (body != null) {
                 body.resume()
@@ -64,7 +62,6 @@ Parse.prototype.descend = cadence(function (async, descent) {
         async([function () {
             parser.parse(body, response, async())
         }, function (error) {
-            console.log("parsing!!", error.stack)
             body.resume()
             return [ null, response ]
         }], function (body) {
