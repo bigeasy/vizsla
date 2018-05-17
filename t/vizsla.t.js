@@ -161,7 +161,7 @@ function prove (async, okay) {
     }], function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _parse: null,
+            parse: null,
             timeout: 1000
         }, async())
     }, function (body, response) {
@@ -179,7 +179,7 @@ function prove (async, okay) {
     }, function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _parse: 'json'
+            parse: 'json'
         }, async())
     }, function (body, response) {
         okay({
@@ -191,14 +191,14 @@ function prove (async, okay) {
         }, 'explicit json')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _parse: 'json',
+            parse: 'json',
             nullify: true
         }, async())
     }, function () {
         okay(arguments.length, 1, 'nullify')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _parse: 'jsons'
+            parse: 'jsons'
         }, async())
     }, function (body) {
         async(function () {
@@ -209,7 +209,7 @@ function prove (async, okay) {
     }, function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _parse: 'text'
+            parse: 'text'
         }, async())
     }, function (body) {
         okay(body, 'hello, world', 'explicit text')
@@ -230,7 +230,7 @@ function prove (async, okay) {
         okay(body, null, 'refused message')
         var fetch = ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _negotiate: []
+            negotiate: []
         }, async())
         fetch.cancel()
     }, function (body, response) {
@@ -264,7 +264,7 @@ function prove (async, okay) {
     }, [function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _parse: 'json',
+            parse: 'json',
             raise: true
         }, async())
     }, function (error) {
@@ -272,8 +272,8 @@ function prove (async, okay) {
     }], function (body, response) {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _negotiate: [],
-            _parse: null,
+            negotiate: [],
+            parse: null,
             post: {}
         }, async())
     }, function (body, response) {
@@ -299,7 +299,7 @@ function prove (async, okay) {
     }, function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            _parse: 'buffer'
+            parse: 'buffer'
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'buffer status code')
@@ -309,8 +309,8 @@ function prove (async, okay) {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             http: pseudo,
-            _negotiate: [],
-            _parse: null
+            negotiate: [],
+            parse: null
         }, async())
     }, [function (body, response) {
         delta(async()).ee(body).on('end')
@@ -320,8 +320,8 @@ function prove (async, okay) {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             http: pseudo,
-            _negotiate: [],
-            _parse: null,
+            negotiate: [],
+            parse: null,
             post: {}
         }, async())
     }, function (body, response) {

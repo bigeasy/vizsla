@@ -23,7 +23,7 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
                     post: {
                         grant_type: 'client_credentials'
                     },
-                    _parse: 'json'
+                    parse: 'json'
                 }).response.wait(async())
             }, function (body, response) {
                 if (!response.okay) {

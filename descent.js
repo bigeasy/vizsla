@@ -17,13 +17,13 @@ var parse = require('./parse')
 function Descent (bind, input, cancel, storage, UserAgent) {
     this._UserAgent = UserAgent
     this._merged = merge({}, bind)
-    if ('_negotiate' in this._merged) {
-        this._gateways = this._merged._negotiate
+    if ('negotiate' in this._merged) {
+        this._gateways = this._merged.negotiate
     } else {
         this._gateways = []
     }
-    if ('_parse' in this._merged) {
-        this._gateways.unshift(parse(this._merged._parse))
+    if ('parse' in this._merged) {
+        this._gateways.unshift(parse(this._merged.parse))
     }
     this.input = input || new stream.PassThrough
     this.cancel = cancel || new Signal
