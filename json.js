@@ -9,7 +9,7 @@ JsonParser.prototype.parse = cadence(function (async, body, response) {
     async(function () {
         delta(async()).ee(body).on('data', []).on('end')
     }, function (chunks) {
-        return JSON.parse(Buffer.concat(chunks).toString('utf8'))
+        return [ JSON.parse(Buffer.concat(chunks).toString('utf8')) ]
     })
 })
 

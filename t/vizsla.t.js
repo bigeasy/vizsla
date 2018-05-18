@@ -69,13 +69,13 @@ function prove (async, okay) {
         body: new Buffer('x')
     }, {
         statusCode: 200,
-        body: new Buffer('{}'),
+        body: new Buffer('[]'),
         headers: {
             'content-type': 'application/json'
         }
     }, {
         statusCode: 200,
-        body: new Buffer('{}'),
+        body: new Buffer('[]'),
         headers: {
             'content-type': 'application/json'
         }
@@ -213,11 +213,13 @@ function prove (async, okay) {
     }, function (body, response) {
         okay({
             body: body,
+            isArray: Array.isArray(body),
             response: !! response
         }, {
             body: {},
+            isArray: true,
             response: true
-        }, 'explicit json')
+        }, 'json')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: [ Vizsla.json(200) ],
