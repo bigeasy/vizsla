@@ -44,3 +44,13 @@ server.listen(8888, function () {
     })
     request.end()
 })
+
+// got response
+// hello, world
+//
+// aborting
+// abort
+// client aborted
+// end 1019
+// client close
+// response ending

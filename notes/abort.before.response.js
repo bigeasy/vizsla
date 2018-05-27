@@ -20,10 +20,10 @@ server.listen(8888, function () {
         console.log(error.stack)
     })
     request.on('abort', function () {
-        console.log('abort')
+        console.log('abort', arguments)
     })
     request.on('aborted', function () {
-        console.log('aborted')
+        console.log('aborted', arguments)
     })
     request.on('response', function (response) {
         console.log('got response')
@@ -37,3 +37,14 @@ server.listen(8888, function () {
     })
     request.end()
 })
+
+// aborting
+// abort {}
+// error
+// Error: socket hang up
+//     at createHangUpError (_http_client.js:213:15)
+//     at Socket.socketCloseListener (_http_client.js:245:23)
+//     at emitOne (events.js:82:20)
+//     at Socket.emit (events.js:169:7)
+//     at TCP._onclose (net.js:490:12)
+// sent

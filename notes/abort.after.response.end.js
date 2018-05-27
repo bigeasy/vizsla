@@ -13,10 +13,10 @@ server.listen(8888, function () {
         console.log(error.stack)
     })
     request.on('abort', function () {
-        console.log('abort')
+        console.log('abort', arguments)
     })
     request.on('aborted', function () {
-        console.log('aborted')
+        console.log('aborted', arguments)
     })
     request.on('response', function (response) {
         console.log('got response')
@@ -31,3 +31,9 @@ server.listen(8888, function () {
     })
     request.end()
 })
+
+// got response
+// hello, world
+//
+// end 28
+// abort {}
