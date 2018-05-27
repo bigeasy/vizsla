@@ -14,8 +14,8 @@ var Transport = require('./transport')
 
 var parse = require('./parse')
 
-function Descent (bind, input, cancel, storage, UserAgent) {
-    this._UserAgent = UserAgent
+function Descent (ua, bind, input, cancel) {
+    this.ua = ua
     this._merged = merge({}, bind)
     if ('negotiate' in this._merged) {
         this._gateways = this._merged.negotiate
@@ -27,7 +27,6 @@ function Descent (bind, input, cancel, storage, UserAgent) {
     }
     this.input = input || new stream.PassThrough
     this.cancel = cancel || new Signal
-    this.storage = storage
 }
 
 Descent.prototype.merge = function (vargs) {
@@ -41,7 +40,7 @@ Descent.prototype.request = function () {
 }
 
 Descent.prototype.fetch = function () {
-    return new (this._UserAgent)().fetch(this._merged, Array.prototype.slice.call(arguments))
+    return this.ua.fetch(this._merged, Array.prototype.slice.call(arguments))
 }
 
 Descent.prototype.descend = cadence(function (async) {
