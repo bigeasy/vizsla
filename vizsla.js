@@ -24,6 +24,11 @@ UserAgent.prototype.bind = function () {
     return ua
 }
 
+UserAgent.prototype.destroy = function () {
+    this.destroyed = true
+    this._transport.cancel.unlatch()
+}
+
 function Fetch (cancel) {
     this.input = new stream.PassThrough
     this.request = new Signal
