@@ -9,23 +9,23 @@ function prove (async, okay) {
 
     var responses = [{
         statusCode: 400,
-        body: new Buffer('x')
+        body: Buffer.from('x')
     }, {
         statusCode: 200,
         headers: { 'content-type': 'application/json' },
-        body: new Buffer('{"token_type":"Bearer"}')
+        body: Buffer.from('{"token_type":"Bearer"}')
     }, {
         statusCode: 200,
         headers: { 'content-type': 'application/json' },
-        body: new Buffer('{"token_type":"Bearer","access_token":"x"}')
+        body: Buffer.from('{"token_type":"Bearer","access_token":"x"}')
     }, {
         statusCode: 200,
         headers: { 'content-type': 'application/json' },
-        body: new Buffer('{}'),
+        body: Buffer.from('{}'),
         expect: 'Bearer x'
     }, {
         statusCode: 401,
-        body: new Buffer('x')
+        body: Buffer.from('x')
     }]
     var server = http.createServer(function (request, response) {
         var send = responses.shift()

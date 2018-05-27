@@ -57,65 +57,65 @@ function prove (async, okay) {
 
     var responses = [{
         statusCode: 200,
-        body: new Buffer('x')
+        body: Buffer.from('x')
     }, {
         statusCode: 200,
-        body: new Buffer('x')
+        body: Buffer.from('x')
     }, {
         statusCode: 200,
-        body: new Buffer('x')
+        body: Buffer.from('x')
     }, {
         statusCode: 200,
-        body: new Buffer('x')
+        body: Buffer.from('x')
     }, {
         statusCode: 200,
-        body: new Buffer('[]'),
+        body: Buffer.from('[]'),
         headers: {
             'content-type': 'application/json'
         }
     }, {
         statusCode: 200,
-        body: new Buffer('[]'),
+        body: Buffer.from('[]'),
         headers: {
             'content-type': 'application/json'
         }
     }, {
         statusCode: 200,
-        body: new Buffer('{}\n'),
+        body: Buffer.from('{}\n'),
         headers: {
             'content-type': 'application/json-stream'
         }
     }, {
         statusCode: 200,
-        body: new Buffer('hello, world'),
+        body: Buffer.from('hello, world'),
         headers: {
             'content-type': 'text/plain'
         }
     }, {
         statusCode: 200,
-        body: new Buffer('x'),
+        body: Buffer.from('x'),
         timeout: 1000
     }, {
         statusCode: 404,
-        body: new Buffer('x')
+        body: Buffer.from('x')
     }, {
         statusCode: 200,
-        body: new Buffer('x'),
+        body: Buffer.from('x'),
         expect: {},
         timeout: 0
     }, {
         statusCode: 200,
         expect: {},
-        body: new Buffer('x')
+        body: Buffer.from('x')
     }, {
         statusCode: 200,
-        body: new Buffer('z')
+        body: Buffer.from('z')
     }, {
         statusCode: 200,
-        body: new Buffer('x')
+        body: Buffer.from('x')
     }, {
         statusCode: 200,
-        body: new Buffer('a'),
+        body: Buffer.from('a'),
         timeout: 250
     }, {
         statusCode: 200,
