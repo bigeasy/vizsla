@@ -2,10 +2,12 @@ var cadence = require('cadence')
 var stream = require('stream')
 var Signal = require('signal')
 var Descent = require('./descent')
+var Transport = require('./transport')
 
 function UserAgent () {
     this._bind = []
     this.storage = {}
+    this._transport = new Transport
 }
 
 UserAgent.json = require('./json')

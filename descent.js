@@ -47,7 +47,7 @@ Descent.prototype.descend = cadence(function (async) {
     if (this._gateways.length != 0) {
         this._gateways.shift().descend(this, async())
     } else {
-        new Transport().descend(this, async())
+        this.ua._transport.descend(this, async())
     }
 })
 
