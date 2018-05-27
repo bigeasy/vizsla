@@ -8,14 +8,31 @@ var http = require('http')
 var unlisten = require('./unlisten')
 
 function Transport () {
+    this.cancel = new Signal
 }
 
+// TODO You need to consider whether you would like to use 503 with a retry
+// after header to implement back-pressure. This distinquishes between an
+// overloaded server and one that has shutdown.
+
 Transport.prototype.descend = cadence(function (async, descent) {
+    if (this.cancel.open != null) {
+        return [ null, {
+            stage: 'negotiation',
+            statusCode: 503,
+            statusMessage: http.STATUS_CODES[503],
+            code: 'ECONNABORTED',
+            trailers: null,
+            // TODO type, subType, suffix, parameters: {}
+            type: null
+        } ]
+    }
     var request = descent.request()
     var sent = {
         url: request.url.href,
         options: request.options
     }
+    var cancel = this.cancel.wait(descent.cancel, 'unlatch')
     var timeout = null, status = 'requesting', errors = 0, $response = null, caught = false
     var signal = new Signal, wait = null
     var client = request.http.request(request.options)
@@ -40,6 +57,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
             xxx.wait(async())
             descent.cancel.wait(function () {
                 client.abort()
+                console.log(client)
                 signal.unlatch('ECONNABORTED', 'aborted')
             })
             if (request.timeout != null) {
@@ -72,8 +90,10 @@ Transport.prototype.descend = cadence(function (async, descent) {
             status = 'responded'
             $response = response
             client.once('error', function (error) {
+                console.log('errorred!!!')
+                this.cancel.cancel(cancel)
                 signal.notify(error, 'errored')
-            })
+            }.bind(this))
             // TODO Likely that the only proper response once the first response
             // is done is to truncate. It is my believe that streams are bound
             // to truncate sooner or later and that all applications should have
@@ -104,10 +124,12 @@ Transport.prototype.descend = cadence(function (async, descent) {
                 }
             })
             $response.once('end', function () {
+                console.log('ended!!!!')
+                this.cancel.cancel(cancel)
                 $response.unpipe()
                 $response.resume()
                 response.trailers = $response.trailers
-            })
+            }.bind(this))
             $response.once('aborted', function () {
                 signal.notify('ECONNABORTED', 'aborted')
             })
@@ -128,6 +150,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
             return [ body, response ]
         })
     }, function (error) {
+        this.cancel.cancel(cancel)
         signal.cancel(wait)
         var statusCode = typeof error == 'string' ? 504 : 503
         var code = typeof error == 'string' ? error : coalesce(error.code, 'EIO')
