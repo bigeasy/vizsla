@@ -1,4 +1,4 @@
-require('proof')(31, require('cadence')(prove))
+require('proof')(33, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -120,6 +120,10 @@ function prove (async, okay) {
     }, {
         statusCode: 200,
         cancel: true
+    }, {
+        statusCode: 200,
+        body: Buffer.from('------'),
+        timeout: 250
     }]
     var server = http.createServer(function (request, response) {
         var send = responses.shift()
@@ -337,6 +341,7 @@ function prove (async, okay) {
         okay(Buffer.isBuffer(body), 'buffer is buffer')
         okay(body.toString(), 'z', 'buffer body')
     }, function () {
+        console.log('started!!!')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             http: pseudo,
@@ -389,6 +394,23 @@ function prove (async, okay) {
         }, function (error) {
             okay(error.code, 'ECONNABORTED', 'abort response at server')
         }])
+    } , function () {
+        async(function () {
+            ua.fetch({
+                url: 'http://127.0.0.1:8888/endpoint',
+            }, async())
+            ua.destroy()
+        }, function (body, response) {
+            okay(response.code, 'ECONNABORTED', 'destroy and cancel')
+        })
+    } , function () {
+        async(function () {
+            ua.fetch({
+                url: 'http://127.0.0.1:8888/endpoint',
+            }, async())
+        }, function (body, response) {
+            okay(response.code, 'ECONNABORTED', 'after destruction')
+        })
     } , function () {
         okay(true, 'done')
     })

@@ -32,6 +32,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
         url: request.url.href,
         options: request.options
     }
+    var cancel = this.cancel.wait(descent.cancel, 'unlatch')
     var timeout = null, status = 'requesting', errors = 0, $response = null, caught = false
     var signal = new Signal, wait = null
     var client = request.http.request(request.options)
@@ -56,6 +57,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
             xxx.wait(async())
             descent.cancel.wait(function () {
                 client.abort()
+                console.log(client)
                 signal.unlatch('ECONNABORTED', 'aborted')
             })
             if (request.timeout != null) {
@@ -88,8 +90,10 @@ Transport.prototype.descend = cadence(function (async, descent) {
             status = 'responded'
             $response = response
             client.once('error', function (error) {
+                console.log('errorred!!!')
+                this.cancel.cancel(cancel)
                 signal.notify(error, 'errored')
-            })
+            }.bind(this))
             // TODO Likely that the only proper response once the first response
             // is done is to truncate. It is my believe that streams are bound
             // to truncate sooner or later and that all applications should have
@@ -120,10 +124,12 @@ Transport.prototype.descend = cadence(function (async, descent) {
                 }
             })
             $response.once('end', function () {
+                console.log('ended!!!!')
+                this.cancel.cancel(cancel)
                 $response.unpipe()
                 $response.resume()
                 response.trailers = $response.trailers
-            })
+            }.bind(this))
             $response.once('aborted', function () {
                 signal.notify('ECONNABORTED', 'aborted')
             })
@@ -144,6 +150,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
             return [ body, response ]
         })
     }, function (error) {
+        this.cancel.cancel(cancel)
         signal.cancel(wait)
         var statusCode = typeof error == 'string' ? 504 : 503
         var code = typeof error == 'string' ? error : coalesce(error.code, 'EIO')
