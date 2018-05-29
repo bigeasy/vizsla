@@ -57,7 +57,6 @@ Transport.prototype.descend = cadence(function (async, descent) {
             xxx.wait(async())
             descent.cancel.wait(function () {
                 client.abort()
-                console.log(client)
                 signal.unlatch('ECONNABORTED', 'aborted')
             })
             if (request.timeout != null) {
@@ -90,7 +89,6 @@ Transport.prototype.descend = cadence(function (async, descent) {
             status = 'responded'
             $response = response
             client.once('error', function (error) {
-                console.log('errorred!!!')
                 this.cancel.cancel(cancel)
                 signal.notify(error, 'errored')
             }.bind(this))
@@ -124,7 +122,6 @@ Transport.prototype.descend = cadence(function (async, descent) {
                 }
             })
             $response.once('end', function () {
-                console.log('ended!!!!')
                 this.cancel.cancel(cancel)
                 $response.unpipe()
                 $response.resume()
