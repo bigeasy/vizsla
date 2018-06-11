@@ -27,7 +27,7 @@
                             "interrupt":                    "6.2.x",
                             "media-typer":                  "0.3.0",
                             "prolific.logger":              "6.0.x",
-                            "signal":                       "3.4.x"
+                            "signal":                       "4.0.x"
     },
     "devDependencies":
     {
