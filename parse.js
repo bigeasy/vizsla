@@ -75,12 +75,9 @@ Parse.prototype.descend = cadence(function (async, descent) {
             }
             throw response
         }
-        async([function () {
+        async(function () {
             parser.parse(body, response, async())
-        }, function (error) {
-            body.resume()
-            return [ null, response ]
-        }], function (body) {
+        }, function (body) {
             return [ body, response ]
         })
     })

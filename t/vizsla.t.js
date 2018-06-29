@@ -1,4 +1,4 @@
-require('proof')(33, require('cadence')(prove))
+require('proof')(34, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -76,6 +76,12 @@ function prove (async, okay) {
     }, {
         statusCode: 200,
         body: Buffer.from('[]'),
+        headers: {
+            'content-type': 'application/json'
+        }
+    }, {
+        statusCode: 200,
+        body: Buffer.from('{'),
         headers: {
             'content-type': 'application/json'
         }
@@ -220,7 +226,7 @@ function prove (async, okay) {
             isArray: Array.isArray(body),
             response: !! response
         }, {
-            body: {},
+            body: [],
             isArray: true,
             response: true
         }, 'json')
@@ -231,6 +237,20 @@ function prove (async, okay) {
         }, async())
     }, function () {
         okay(arguments.length, 1, 'nullify')
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            parse: 'json'
+        }, async())
+    }, function (body, response) {
+        okay({
+            body: body,
+            response: response.statusCode,
+            cause: /JSON/.test(response.cause.message)
+        }, {
+            body: null,
+            response: 503,
+            cause: true
+        }, 'bad json')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'jsons'

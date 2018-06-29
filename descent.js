@@ -57,23 +57,23 @@ Descent.prototype.attempt = cadence(function (async) {
             this.descend(async())
         }, function (error) {
             if (error instanceof Error) {
-                console.log(error.stack)
-            } else {
-                if (typeof error == 'number') {
-                    error = { statusCode: error }
-                }
-                if (this.response) {
-                    this.response.resume()
-                }
-                error.statusCode = coalesce(error.statusCode, 503)
-                error.headers = coalesce(error.headers, {})
-                error.rawHeaders = coalesce(error.rawHeaders, [])
-                error.type = null
-                if (this._merged.raise) {
-                    throw interrupt('error', error)
-                }
-                return [ null, error ]
+                error = { cause: error }
+            } else if (typeof error == 'number') {
+                error = { statusCode: error }
             }
+            if (this.response) {
+                this.response.resume()
+            }
+            error.statusCode = coalesce(error.statusCode, 503)
+            error.headers = coalesce(error.headers, {})
+            error.rawHeaders = coalesce(error.rawHeaders, [])
+            // Wasn't I going to have some sort of exploded type, but all
+            // the values where going to be null?
+            error.type = null
+            if (this._merged.raise) {
+                throw interrupt('error', error)
+            }
+            return [ null, error ]
         }])
     }, function (body) {
         if (this._merged.nullify) {
