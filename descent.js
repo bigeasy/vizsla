@@ -25,8 +25,8 @@ function Descent (ua, bind, input, cancel) {
     if ('parse' in this._merged) {
         this._gateways.unshift(parse(this._merged.parse))
     }
-    this.input = input || new stream.PassThrough
-    this.cancel = cancel || new Signal
+    this.input = input
+    this.cancel = cancel
 }
 
 Descent.prototype.merge = function (vargs) {
