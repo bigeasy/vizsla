@@ -55,82 +55,7 @@ function prove (async, okay) {
     }
     util.inherits(PseudoResponse, stream.PassThrough)
 
-    var responses = [{
-        statusCode: 200,
-        body: Buffer.from('x')
-    }, {
-        statusCode: 200,
-        body: Buffer.from('x')
-    }, {
-        statusCode: 200,
-        body: Buffer.from('x')
-    }, {
-        statusCode: 200,
-        body: Buffer.from('x')
-    }, {
-        statusCode: 200,
-        body: Buffer.from('[]'),
-        headers: {
-            'content-type': 'application/json'
-        }
-    }, {
-        statusCode: 200,
-        body: Buffer.from('[]'),
-        headers: {
-            'content-type': 'application/json'
-        }
-    }, {
-        statusCode: 200,
-        body: Buffer.from('{'),
-        headers: {
-            'content-type': 'application/json'
-        }
-    }, {
-        statusCode: 200,
-        body: Buffer.from('{}\n'),
-        headers: {
-            'content-type': 'application/json-stream'
-        }
-    }, {
-        statusCode: 200,
-        body: Buffer.from('hello, world'),
-        headers: {
-            'content-type': 'text/plain'
-        }
-    }, {
-        statusCode: 200,
-        body: Buffer.from('x'),
-        timeout: 1000
-    }, {
-        statusCode: 404,
-        body: Buffer.from('x')
-    }, {
-        statusCode: 200,
-        body: Buffer.from('x'),
-        expect: {},
-        timeout: 0
-    }, {
-        statusCode: 200,
-        expect: {},
-        body: Buffer.from('x')
-    }, {
-        statusCode: 200,
-        body: Buffer.from('z')
-    }, {
-        statusCode: 200,
-        body: Buffer.from('x')
-    }, {
-        statusCode: 200,
-        body: Buffer.from('a'),
-        timeout: 250
-    }, {
-        statusCode: 200,
-        cancel: true
-    }, {
-        statusCode: 200,
-        body: Buffer.from('------'),
-        timeout: 250
-    }]
+    var responses = []
     var server = http.createServer(function (request, response) {
         var send = responses.shift()
         if (send.expect) {
@@ -175,6 +100,10 @@ function prove (async, okay) {
     }, [function () {
         server.close(async())
     }], function () {
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('x')
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: null,
@@ -182,6 +111,10 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'null parse ok')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('x')
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint'
         }, async())
@@ -193,6 +126,11 @@ function prove (async, okay) {
             okay(Buffer.concat(chunks).toString(), 'x', 'minimal ok body')
         })
     }, function () {
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('x'),
+            name: 'steve'
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'stream'
@@ -204,6 +142,13 @@ function prove (async, okay) {
             okay(Buffer.concat(chunks).toString(), 'x', 'parse stream')
         })
     }, function () {
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('[]'),
+            headers: {
+                'content-type': 'application/json'
+            }
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'dump'
@@ -216,6 +161,13 @@ function prove (async, okay) {
             body: null,
             statusCode: 200
         }, 'dump')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('[]'),
+            headers: {
+                'content-type': 'application/json'
+            }
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'json'
@@ -230,13 +182,27 @@ function prove (async, okay) {
             isArray: true,
             response: true
         }, 'json')
+        responses.unshift({
+            statusCode: 500,
+            body: Buffer.from('['),
+            headers: {
+                'content-type': 'application/json'
+            }
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            parse: [ Vizsla.json(200) ],
+            parse: 'json',
             nullify: true
         }, async())
     }, function () {
         okay(arguments.length, 1, 'nullify')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('['),
+            headers: {
+                'content-type': 'application/json'
+            }
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'json'
@@ -251,6 +217,13 @@ function prove (async, okay) {
             response: 503,
             cause: true
         }, 'bad json')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('{}\n'),
+            headers: {
+                'content-type': 'application/json-stream'
+            }
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'jsons'
@@ -262,6 +235,13 @@ function prove (async, okay) {
             okay(jsons, [{}], 'jsons')
         })
     }, function () {
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('hello, world'),
+            headers: {
+                'content-type': 'text/plain'
+            }
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'text'
@@ -282,12 +262,17 @@ function prove (async, okay) {
             trailers: null,
             type: null
         }, 'refused properties')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('x'),
+            timeout: 1000
+        })
         okay(body, null, 'refused message')
         var fetch = ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             negotiate: []
         }, async())
-        fetch.cancel()
+        setTimeout(function () { fetch.cancel() }, 250)
     }, function (body, response) {
         okay(response, {
             stage: 'negotiation',
@@ -300,6 +285,11 @@ function prove (async, okay) {
             type: null,
         }, 'cancel properties')
         okay(body, null, 'cancel body')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('x'),
+            timeout: 1000
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             timeout: 250
@@ -317,6 +307,10 @@ function prove (async, okay) {
         }, 'timeout properties')
         okay(body, null, 'timeout body')
     }, [function () {
+        responses.unshift({
+            statusCode: 404,
+            body: Buffer.from('x')
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'json',
@@ -325,6 +319,12 @@ function prove (async, okay) {
     }, function (error) {
         okay(error.statusCode, 404, 'raise')
     }], function (body, response) {
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('x'),
+            expect: {},
+            timeout: 0
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             negotiate: [],
@@ -333,6 +333,11 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'post')
+        responses.unshift({
+            statusCode: 200,
+            expect: {},
+            body: Buffer.from('x')
+        })
         async(function () {
             delta(async()).ee(body).on('data', []).on('end')
         }, function (chunks) {
@@ -352,6 +357,10 @@ function prove (async, okay) {
             okay(Buffer.concat(chunks).toString(), 'x', 'stream body ok')
         })
     }, function () {
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('z')
+        })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'buffer'
@@ -361,7 +370,6 @@ function prove (async, okay) {
         okay(Buffer.isBuffer(body), 'buffer is buffer')
         okay(body.toString(), 'z', 'buffer body')
     }, function () {
-        console.log('started!!!')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             http: pseudo,
@@ -382,12 +390,21 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 503, 'error')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('x')
+        })
         var fetch = ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint'
         })
         fetch.response.wait(async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'fetch signal')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('a'),
+            timeout: 250
+        })
         var fetch
         async(function () {
             extra = true
@@ -403,6 +420,10 @@ function prove (async, okay) {
         }])
     } , function () {
         var fetch
+        responses.unshift({
+            statusCode: 200,
+            cancel: true
+        })
         async(function () {
             fetch = ua.fetch({
                 url: 'http://127.0.0.1:8888/endpoint'
@@ -415,11 +436,16 @@ function prove (async, okay) {
             okay(error.code, 'ECONNABORTED', 'abort response at server')
         }])
     } , function () {
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('x'),
+            timeout: 250
+        })
         async(function () {
             ua.fetch({
                 url: 'http://127.0.0.1:8888/endpoint',
             }, async())
-            ua.destroy()
+            setTimeout(function () { ua.destroy() }, 50)
         }, function (body, response) {
             okay(response.code, 'ECONNABORTED', 'destroy and cancel')
         })

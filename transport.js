@@ -11,6 +11,8 @@ function Transport () {
     this.cancel = new Signal
 }
 
+// TODO Does cancel also cancel negotiation?
+
 // TODO You need to consider whether you would like to use 503 with a retry
 // after header to implement back-pressure. This distinquishes between an
 // overloaded server and one that has shutdown.
