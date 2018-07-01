@@ -70,9 +70,6 @@ Parse.prototype.descend = cadence(function (async, descent) {
             }
         }
         if (parser == null) {
-            if (body != null) {
-                body.resume()
-            }
             throw response
         }
         async(function () {
