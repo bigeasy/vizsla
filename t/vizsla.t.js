@@ -1,4 +1,4 @@
-require('proof')(34, require('cadence')(prove))
+require('proof')(35, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -170,7 +170,7 @@ function prove (async, okay) {
         })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            parse: 'json'
+            parse: [ Vizsla.json(200) ]
         }, async())
     }, function (body, response) {
         okay({
@@ -182,6 +182,27 @@ function prove (async, okay) {
             isArray: true,
             response: true
         }, 'json')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('[]'),
+            headers: {
+                'content-type': 'application/json'
+            }
+        })
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            parse: Vizsla.json(200)
+        }, async())
+    }, function (body, response) {
+        okay({
+            body: body,
+            isArray: Array.isArray(body),
+            response: !! response
+        }, {
+            body: [],
+            isArray: true,
+            response: true
+        }, 'constructed parser')
         responses.unshift({
             statusCode: 500,
             body: Buffer.from('['),
