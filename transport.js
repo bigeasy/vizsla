@@ -84,10 +84,9 @@ Transport.prototype.descend = cadence(function (async, descent) {
                 descent.input.pipe(client)
             }
         }, function (response) {
-            descent.response
             signal.cancel(wait)
             status = 'responded'
-            $response = response
+            descent.response = $response = response
             client.once('error', function (error) {
                 this.cancel.cancel(cancel)
                 signal.notify(error, 'errored')
