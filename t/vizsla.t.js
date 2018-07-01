@@ -1,4 +1,4 @@
-require('proof')(36, require('cadence')(prove))
+require('proof')(37, require('cadence')(prove))
 
 function prove (async, okay) {
     var http = require('http')
@@ -224,6 +224,23 @@ function prove (async, okay) {
             isArray: true,
             response: true
         }, 'array of parsers')
+        responses.unshift({
+            statusCode: 200,
+            body: Buffer.from('x')
+        })
+        ua.fetch({
+            url: 'http://127.0.0.1:8888/endpoint',
+            parse: [ { options: [{}] } ]
+        }, async())
+    }, function (body, response) {
+        // TODO Wrong! Should be 503.
+        okay({
+            body: body,
+            statusCode: response.statusCode
+        }, {
+            body: null,
+            statusCode: 200
+        }, 'bad parser options')
         responses.unshift({
             statusCode: 500,
             body: Buffer.from('['),
