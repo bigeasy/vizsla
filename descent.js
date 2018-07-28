@@ -2,6 +2,7 @@ var cadence = require('cadence')
 var coalesce = require('extant')
 
 var interrupt = require('interrupt').createInterrupter('vizsla')
+var logger = require('prolific.logger').createLogger('vizsla')
 
 var merge = require('./merge')
 var options = require('./options')
@@ -47,7 +48,11 @@ Descent.prototype.descend = cadence(function (async) {
     if (this._gateways.length != 0) {
         this._gateways.shift().descend(this, async())
     } else {
-        this.ua._transport.descend(this, async())
+        async(function () {
+            this.ua._transport.descend(this, async())
+        }, function (body, response) {
+            logger.debug('transported', { body: !!body, $response: response })
+        })
     }
 })
 
@@ -73,6 +78,7 @@ Descent.prototype.attempt = cadence(function (async) {
             if (this._merged.raise) {
                 throw interrupt('error', error)
             }
+            logger.debug('error', { error: error })
             return [ null, error ]
         }])
     }, function (body) {

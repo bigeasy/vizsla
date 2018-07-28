@@ -1,6 +1,8 @@
 var cadence = require('cadence')
 var delta = require('delta')
 
+var logger = require('prolific.logger').createLogger('vizsla')
+
 function JsonParser (options) {
     this.options = options
 }

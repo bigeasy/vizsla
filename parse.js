@@ -1,6 +1,8 @@
 var cadence = require('cadence')
 var delta = require('delta')
 
+var logger = require('prolific.logger').createLogger('vizsla')
+
 var PARSERS = {
     json: require('./json'),
     text: require('./text'),
@@ -69,6 +71,7 @@ Parse.prototype.descend = cadence(function (async, descent) {
                 parser = null
             }
         }
+        logger.debug('parser', { parser: !! parser })
         if (parser == null) {
             // TODO WRONG! Should throw a 503.
             throw response
@@ -76,6 +79,7 @@ Parse.prototype.descend = cadence(function (async, descent) {
         async(function () {
             parser.parse(body, response, async())
         }, function (body) {
+            logger.debug('parsed', { body: body ? body.toString() : '<null>' })
             return [ body, response ]
         })
     })
