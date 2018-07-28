@@ -38,9 +38,13 @@ function select (options, response) {
             break
         case 'string':
             var headers = options[i].split('\n')
-            for (var j = 0, J = headers.length; j < J; j++) {
+            for (var j = 0, J = headers.length; selected && j < J; j++) {
                 var pair = headers[j].split(/:\s*/, 2)
-                selected = pair.length == 2 && response.headers[pair[0]] == pair[1]
+                if (pair[0] == 'content-type') {
+                    selected = response.type.type + '/' + response.type.subtype == pair[1]
+                } else {
+                    selected = response.headers[pair[0]] == pair[1]
+                }
             }
             break
         default:

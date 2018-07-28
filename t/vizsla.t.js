@@ -165,12 +165,13 @@ function prove (async, okay) {
             statusCode: 200,
             body: Buffer.from('[]'),
             headers: {
-                'content-type': 'application/json'
+                'content-type': 'application/json',
+                'x-hunky-dory': 'yes'
             }
         })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            parse: [ Vizsla.json(200) ]
+            parse: [ Vizsla.json(200, 'x-hunky-dory: yes\ncontent-type: application/json') ]
         }, async())
     }, function (body, response) {
         okay({
