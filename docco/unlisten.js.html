@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>options.js</title>
+  <title>unlisten.js</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -103,7 +103,7 @@
 
           <li id="title">
               <div class="annotation">
-                  <h1>options.js</h1>
+                  <h1>unlisten.js</h1>
               </div>
           </li>
 
@@ -115,22 +115,25 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
+              <p>This ugliness is extracted for the sake of unit testing and sanity checking
+but it is a kudge to catch a bug that won’t reproduce.</p>
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> HTTP_PROPERTIES =
-    <span class="hljs-regexp">/^host|hostname|family|port|socketPath|method|path|headers|auth|agent$/</span>
-<span class="hljs-keyword">var</span> HTTPS_PROPERTIES =
-    <span class="hljs-regexp">/^pfx|key|passphrase|cert|ca|ciphers|rejectUnauthorized|secureProtocol|servername$/</span>
-
-<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">request</span>) </span>{
-    <span class="hljs-keyword">var</span> options = {}
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> name <span class="hljs-keyword">in</span> request) {
-        <span class="hljs-keyword">if</span> (HTTP_PROPERTIES.test(name) || HTTPS_PROPERTIES.test(name)) {
-            options[name] = request[name]
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">ee, listeners</span>) </span>{
+    <span class="hljs-keyword">if</span> (ee != <span class="hljs-literal">null</span> &amp;&amp; <span class="hljs-keyword">typeof</span> ee.removeListener == <span class="hljs-string">'function'</span>) {
+        listeners.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">listener</span>) </span>{
+            ee.removeListener(listener.name, listener.f)
+        })
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'no removeListener'</span>)
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">typeof</span> ee)
+        <span class="hljs-built_in">console</span>.log(ee)
+        <span class="hljs-keyword">if</span> (ee != <span class="hljs-literal">null</span> &amp;&amp; <span class="hljs-keyword">typeof</span> ee == <span class="hljs-string">'object'</span>) {
+            <span class="hljs-built_in">console</span>.log(ee.constructor.name)
         }
     }
-    <span class="hljs-keyword">return</span> options
 }</pre></div></div>
 
         </li>

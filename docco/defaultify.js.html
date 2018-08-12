@@ -20,8 +20,8 @@
             <div id="jump_page">
 
 
-                <a class="source" href="bufferify.js.html">
-                  bufferify.js
+                <a class="source" href="buffer.js.html">
+                  buffer.js
                 </a>
 
 
@@ -40,13 +40,13 @@
                 </a>
 
 
-                <a class="source" href="errorify.js.html">
-                  errorify.js
+                <a class="source" href="dump.js.html">
+                  dump.js
                 </a>
 
 
-                <a class="source" href="jsonify.js.html">
-                  jsonify.js
+                <a class="source" href="json.js.html">
+                  json.js
                 </a>
 
 
@@ -55,18 +55,8 @@
                 </a>
 
 
-                <a class="source" href="jsonsify.js.html">
-                  jsonsify.js
-                </a>
-
-
                 <a class="source" href="merge.js.html">
                   merge.js
-                </a>
-
-
-                <a class="source" href="nullify.js.html">
-                  nullify.js
                 </a>
 
 
@@ -75,28 +65,28 @@
                 </a>
 
 
-                <a class="source" href="parser.js.html">
-                  parser.js
+                <a class="source" href="parse.js.html">
+                  parse.js
                 </a>
 
 
-                <a class="source" href="raiseify.js.html">
-                  raiseify.js
+                <a class="source" href="stream.js.html">
+                  stream.js
                 </a>
 
 
-                <a class="source" href="select.js.html">
-                  select.js
-                </a>
-
-
-                <a class="source" href="stringify.js.html">
-                  stringify.js
+                <a class="source" href="text.js.html">
+                  text.js
                 </a>
 
 
                 <a class="source" href="transport.js.html">
                   transport.js
+                </a>
+
+
+                <a class="source" href="unlisten.js.html">
+                  unlisten.js
                 </a>
 
 
@@ -144,9 +134,8 @@
     }
     <span class="hljs-keyword">if</span> ((<span class="hljs-string">'payload'</span> <span class="hljs-keyword">in</span> request) &amp;&amp; !Buffer.isBuffer(request.payload)) {
         request = merge(request, [{ <span class="hljs-attr">headers</span>: { <span class="hljs-string">'content-type'</span>: <span class="hljs-string">'application/json'</span> } }])
-        request.payload = <span class="hljs-keyword">new</span> Buffer(<span class="hljs-built_in">JSON</span>.stringify(request.payload))
-    }
-</pre></div></div>
+        request.payload = Buffer.from(<span class="hljs-built_in">JSON</span>.stringify(request.payload))
+    }</pre></div></div>
 
         </li>
 
@@ -195,8 +184,7 @@ TODO Do you want to rename <code>payload</code> to <code>buffer</code>? Meh.</p>
         expanded.plugins = []
     }
     expanded.http = request.http || (expanded.url.protocol == <span class="hljs-string">'https:'</span> ? https : http)
-    <span class="hljs-keyword">if</span> (extended) {
-</pre></div></div>
+    <span class="hljs-keyword">if</span> (extended) {</pre></div></div>
 
         </li>
 
@@ -216,13 +204,11 @@ defaults and defeats.</p>
             </div>
 
             <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (!(<span class="hljs-string">'payload'</span> <span class="hljs-keyword">in</span> expanded) &amp;&amp; <span class="hljs-regexp">/^HEAD|DELETE|GET$/</span>.test(expanded.method)) {
-            expanded.payload = <span class="hljs-keyword">new</span> Buffer(<span class="hljs-number">0</span>)
+            expanded.payload = Buffer.alloc(<span class="hljs-number">0</span>)
         }
     }
     <span class="hljs-keyword">return</span> expanded
-}
-
-</pre></div></div>
+}</pre></div></div>
 
         </li>
 

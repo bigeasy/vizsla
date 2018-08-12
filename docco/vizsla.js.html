@@ -20,8 +20,8 @@
             <div id="jump_page">
 
 
-                <a class="source" href="bufferify.js.html">
-                  bufferify.js
+                <a class="source" href="buffer.js.html">
+                  buffer.js
                 </a>
 
 
@@ -40,13 +40,13 @@
                 </a>
 
 
-                <a class="source" href="errorify.js.html">
-                  errorify.js
+                <a class="source" href="dump.js.html">
+                  dump.js
                 </a>
 
 
-                <a class="source" href="jsonify.js.html">
-                  jsonify.js
+                <a class="source" href="json.js.html">
+                  json.js
                 </a>
 
 
@@ -55,18 +55,8 @@
                 </a>
 
 
-                <a class="source" href="jsonsify.js.html">
-                  jsonsify.js
-                </a>
-
-
                 <a class="source" href="merge.js.html">
                   merge.js
-                </a>
-
-
-                <a class="source" href="nullify.js.html">
-                  nullify.js
                 </a>
 
 
@@ -75,28 +65,28 @@
                 </a>
 
 
-                <a class="source" href="parser.js.html">
-                  parser.js
+                <a class="source" href="parse.js.html">
+                  parse.js
                 </a>
 
 
-                <a class="source" href="raiseify.js.html">
-                  raiseify.js
+                <a class="source" href="stream.js.html">
+                  stream.js
                 </a>
 
 
-                <a class="source" href="select.js.html">
-                  select.js
-                </a>
-
-
-                <a class="source" href="stringify.js.html">
-                  stringify.js
+                <a class="source" href="text.js.html">
+                  text.js
                 </a>
 
 
                 <a class="source" href="transport.js.html">
                   transport.js
+                </a>
+
+
+                <a class="source" href="unlisten.js.html">
+                  unlisten.js
                 </a>
 
 
@@ -132,11 +122,19 @@
 <span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
 <span class="hljs-keyword">var</span> Signal = <span class="hljs-built_in">require</span>(<span class="hljs-string">'signal'</span>)
 <span class="hljs-keyword">var</span> Descent = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./descent'</span>)
+<span class="hljs-keyword">var</span> Transport = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./transport'</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">UserAgent</span> (<span class="hljs-params"></span>) </span>{
     <span class="hljs-keyword">this</span>._bind = []
     <span class="hljs-keyword">this</span>.storage = {}
+    <span class="hljs-keyword">this</span>._transport = <span class="hljs-keyword">new</span> Transport
 }
+
+UserAgent.json = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./json'</span>)
+UserAgent.text = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./text'</span>)
+UserAgent.buffer = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./buffer'</span>)
+UserAgent.jsons = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./jsons'</span>)
+UserAgent.stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./stream'</span>)
 
 UserAgent.prototype.bind = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
     <span class="hljs-keyword">var</span> ua = <span class="hljs-keyword">new</span> UserAgent
@@ -144,6 +142,11 @@ UserAgent.prototype.bind = <span class="hljs-function"><span class="hljs-keyword
     ua._bind = <span class="hljs-keyword">this</span>._bind.concat(<span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>))
     ua.storage = <span class="hljs-keyword">this</span>.storage
     <span class="hljs-keyword">return</span> ua
+}
+
+UserAgent.prototype.destroy = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>.destroyed = <span class="hljs-literal">true</span>
+    <span class="hljs-keyword">this</span>._transport.cancel.unlatch()
 }
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Fetch</span> (<span class="hljs-params">cancel</span>) </span>{
@@ -168,15 +171,13 @@ UserAgent.prototype.fetch = <span class="hljs-function"><span class="hljs-keywor
         fetch.response.wait(callback)
     }
 
-    <span class="hljs-keyword">var</span> descent = <span class="hljs-keyword">new</span> Descent(<span class="hljs-keyword">this</span>._bind.concat(vargs), fetch.input, cancel, <span class="hljs-keyword">this</span>.storage, UserAgent)
-    descent.descend(fetch.response.unlatch.bind(fetch.response))
+    <span class="hljs-keyword">var</span> descent = <span class="hljs-keyword">new</span> Descent(<span class="hljs-keyword">this</span>, <span class="hljs-keyword">this</span>._bind.concat(vargs), fetch.input, cancel)
+    descent.attempt(fetch.response.unlatch.bind(fetch.response))
 
     <span class="hljs-keyword">return</span> fetch
 }
 
-<span class="hljs-built_in">module</span>.exports = UserAgent
-
-</pre></div></div>
+<span class="hljs-built_in">module</span>.exports = UserAgent</pre></div></div>
 
         </li>
 

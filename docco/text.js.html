@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>nullify.js</title>
+  <title>text.js</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -20,8 +20,8 @@
             <div id="jump_page">
 
 
-                <a class="source" href="bufferify.js.html">
-                  bufferify.js
+                <a class="source" href="buffer.js.html">
+                  buffer.js
                 </a>
 
 
@@ -40,13 +40,13 @@
                 </a>
 
 
-                <a class="source" href="errorify.js.html">
-                  errorify.js
+                <a class="source" href="dump.js.html">
+                  dump.js
                 </a>
 
 
-                <a class="source" href="jsonify.js.html">
-                  jsonify.js
+                <a class="source" href="json.js.html">
+                  json.js
                 </a>
 
 
@@ -55,18 +55,8 @@
                 </a>
 
 
-                <a class="source" href="jsonsify.js.html">
-                  jsonsify.js
-                </a>
-
-
                 <a class="source" href="merge.js.html">
                   merge.js
-                </a>
-
-
-                <a class="source" href="nullify.js.html">
-                  nullify.js
                 </a>
 
 
@@ -75,28 +65,28 @@
                 </a>
 
 
-                <a class="source" href="parser.js.html">
-                  parser.js
+                <a class="source" href="parse.js.html">
+                  parse.js
                 </a>
 
 
-                <a class="source" href="raiseify.js.html">
-                  raiseify.js
+                <a class="source" href="stream.js.html">
+                  stream.js
                 </a>
 
 
-                <a class="source" href="select.js.html">
-                  select.js
-                </a>
-
-
-                <a class="source" href="stringify.js.html">
-                  stringify.js
+                <a class="source" href="text.js.html">
+                  text.js
                 </a>
 
 
                 <a class="source" href="transport.js.html">
                   transport.js
+                </a>
+
+
+                <a class="source" href="unlisten.js.html">
+                  unlisten.js
                 </a>
 
 
@@ -113,7 +103,7 @@
 
           <li id="title">
               <div class="annotation">
-                  <h1>nullify.js</h1>
+                  <h1>text.js</h1>
               </div>
           </li>
 
@@ -129,15 +119,16 @@
             </div>
 
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Nullify</span> (<span class="hljs-params"></span>) </span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">TextParser</span> (<span class="hljs-params">options</span>) </span>{
+    <span class="hljs-keyword">this</span>.options = options
 }
 
-Nullify.prototype.descend = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, descent</span>) </span>{
+TextParser.prototype.parse = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, body, response</span>) </span>{
     <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        descent.descend(<span class="hljs-keyword">async</span>())
-    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response</span>) </span>{
-</pre></div></div>
+        delta(<span class="hljs-keyword">async</span>()).ee(body).on(<span class="hljs-string">'data'</span>, []).on(<span class="hljs-string">'end'</span>)
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunks</span>) </span>{</pre></div></div>
 
         </li>
 
@@ -148,23 +139,17 @@ Nullify.prototype.descend = cadence(<span class="hljs-function"><span class="hlj
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>TODO Some way to always dump the stream.</p>
+              <p>TODO Use charset type parameter.</p>
 
             </div>
 
-            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (!response.okay) {
-            <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span> ]
-        } <span class="hljs-keyword">else</span> {
-            <span class="hljs-keyword">return</span> [ body ]
-        }
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> Buffer.concat(chunks).toString(<span class="hljs-string">'utf8'</span>)
     })
 })
 
 <span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Nullify
-}
-
-</pre></div></div>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> TextParser(<span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>))
+}</pre></div></div>
 
         </li>
 

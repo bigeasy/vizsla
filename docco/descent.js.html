@@ -20,8 +20,8 @@
             <div id="jump_page">
 
 
-                <a class="source" href="bufferify.js.html">
-                  bufferify.js
+                <a class="source" href="buffer.js.html">
+                  buffer.js
                 </a>
 
 
@@ -40,13 +40,13 @@
                 </a>
 
 
-                <a class="source" href="errorify.js.html">
-                  errorify.js
+                <a class="source" href="dump.js.html">
+                  dump.js
                 </a>
 
 
-                <a class="source" href="jsonify.js.html">
-                  jsonify.js
+                <a class="source" href="json.js.html">
+                  json.js
                 </a>
 
 
@@ -55,18 +55,8 @@
                 </a>
 
 
-                <a class="source" href="jsonsify.js.html">
-                  jsonsify.js
-                </a>
-
-
                 <a class="source" href="merge.js.html">
                   merge.js
-                </a>
-
-
-                <a class="source" href="nullify.js.html">
-                  nullify.js
                 </a>
 
 
@@ -75,28 +65,28 @@
                 </a>
 
 
-                <a class="source" href="parser.js.html">
-                  parser.js
+                <a class="source" href="parse.js.html">
+                  parse.js
                 </a>
 
 
-                <a class="source" href="raiseify.js.html">
-                  raiseify.js
+                <a class="source" href="stream.js.html">
+                  stream.js
                 </a>
 
 
-                <a class="source" href="select.js.html">
-                  select.js
-                </a>
-
-
-                <a class="source" href="stringify.js.html">
-                  stringify.js
+                <a class="source" href="text.js.html">
+                  text.js
                 </a>
 
 
                 <a class="source" href="transport.js.html">
                   transport.js
+                </a>
+
+
+                <a class="source" href="unlisten.js.html">
+                  unlisten.js
                 </a>
 
 
@@ -131,6 +121,9 @@
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
 <span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
 
+<span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'vizsla'</span>)
+<span class="hljs-keyword">var</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'prolific.logger'</span>).createLogger(<span class="hljs-string">'vizsla'</span>)
+
 <span class="hljs-keyword">var</span> merge = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./merge'</span>)
 <span class="hljs-keyword">var</span> options = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./options'</span>)
 <span class="hljs-keyword">var</span> defaults = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./defaultify'</span>)
@@ -140,21 +133,21 @@
 
 <span class="hljs-keyword">var</span> Transport = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./transport'</span>)
 
-<span class="hljs-keyword">var</span> jsonify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./jsonify'</span>)
-<span class="hljs-keyword">var</span> stringify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./stringify'</span>)
+<span class="hljs-keyword">var</span> parse = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./parse'</span>)
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Descent</span> (<span class="hljs-params">bind, input, cancel, storage, UserAgent</span>) </span>{
-    <span class="hljs-keyword">this</span>._UserAgent = UserAgent
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Descent</span> (<span class="hljs-params">ua, bind, input, cancel</span>) </span>{
+    <span class="hljs-keyword">this</span>.ua = ua
     <span class="hljs-keyword">this</span>._merged = merge({}, bind)
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._merged.gateways == <span class="hljs-literal">null</span>) {
-        <span class="hljs-keyword">this</span>._merged.gateways = [
-            jsonify({ <span class="hljs-attr">when</span>: [ <span class="hljs-string">'content-type: application/json'</span> ] }),
-            stringify({ <span class="hljs-attr">when</span>: [ <span class="hljs-string">'content-type: text/plain'</span> ] })
-        ]
+    <span class="hljs-keyword">if</span> (<span class="hljs-string">'negotiate'</span> <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>._merged) {
+        <span class="hljs-keyword">this</span>._gateways = <span class="hljs-keyword">this</span>._merged.negotiate
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">this</span>._gateways = []
     }
-    <span class="hljs-keyword">this</span>.input = input || <span class="hljs-keyword">new</span> stream.PassThrough
-    <span class="hljs-keyword">this</span>.cancel = cancel || <span class="hljs-keyword">new</span> Signal
-    <span class="hljs-keyword">this</span>.storage = storage
+    <span class="hljs-keyword">if</span> (<span class="hljs-string">'parse'</span> <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>._merged) {
+        <span class="hljs-keyword">this</span>._gateways.unshift(parse(<span class="hljs-keyword">this</span>._merged.parse))
+    }
+    <span class="hljs-keyword">this</span>.input = input
+    <span class="hljs-keyword">this</span>.cancel = cancel
 }
 
 Descent.prototype.merge = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">vargs</span>) </span>{
@@ -168,20 +161,67 @@ Descent.prototype.request = <span class="hljs-function"><span class="hljs-keywor
 }
 
 Descent.prototype.fetch = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> (<span class="hljs-keyword">this</span>._UserAgent)().fetch(<span class="hljs-keyword">this</span>._merged, <span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>))
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.ua.fetch(<span class="hljs-keyword">this</span>._merged, <span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>))
 }
 
 Descent.prototype.descend = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async</span>) </span>{
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._merged.gateways.length != <span class="hljs-number">0</span>) {
-        <span class="hljs-keyword">this</span>._merged.gateways.shift().descend(<span class="hljs-keyword">this</span>, <span class="hljs-keyword">async</span>())
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._gateways.length != <span class="hljs-number">0</span>) {
+        <span class="hljs-keyword">this</span>._gateways.shift().descend(<span class="hljs-keyword">this</span>, <span class="hljs-keyword">async</span>())
     } <span class="hljs-keyword">else</span> {
-        <span class="hljs-keyword">new</span> Transport().descend(<span class="hljs-keyword">this</span>, <span class="hljs-keyword">async</span>())
+        <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">this</span>.ua._transport.descend(<span class="hljs-keyword">this</span>, <span class="hljs-keyword">async</span>())
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response</span>) </span>{
+            logger.debug(<span class="hljs-string">'transported'</span>, { <span class="hljs-attr">body</span>: !!body, <span class="hljs-attr">$response</span>: response })
+        })
     }
 })
 
-<span class="hljs-built_in">module</span>.exports = Descent
+Descent.prototype.attempt = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async</span>) </span>{
+    <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">async</span>([<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">this</span>.descend(<span class="hljs-keyword">async</span>())
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
+            <span class="hljs-keyword">if</span> (error <span class="hljs-keyword">instanceof</span> <span class="hljs-built_in">Error</span>) {
+                error = { <span class="hljs-attr">cause</span>: error }
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> error == <span class="hljs-string">'number'</span>) {
+                error = { <span class="hljs-attr">statusCode</span>: error }
+            }
+            <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.response) {
+                <span class="hljs-keyword">this</span>.response.resume()
+            }
+            error.statusCode = coalesce(error.statusCode, <span class="hljs-number">503</span>)
+            error.headers = coalesce(error.headers, {})
+            error.rawHeaders = coalesce(error.rawHeaders, [])</pre></div></div>
 
-</pre></div></div>
+        </li>
+
+
+        <li id="section-2">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Wasn’t I going to have some sort of exploded type, but all
+the values where going to be null?</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre>            error.type = <span class="hljs-literal">null</span>
+            <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._merged.raise) {
+                <span class="hljs-keyword">throw</span> interrupt(<span class="hljs-string">'error'</span>, error)
+            }
+            logger.debug(<span class="hljs-string">'error'</span>, { <span class="hljs-attr">error</span>: error })
+            <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span>, error ]
+        }])
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body</span>) </span>{
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._merged.nullify) {
+            <span class="hljs-keyword">return</span> [ body ]
+        }
+    })
+})
+
+<span class="hljs-built_in">module</span>.exports = Descent</pre></div></div>
 
         </li>
 

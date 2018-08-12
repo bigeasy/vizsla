@@ -20,8 +20,8 @@
             <div id="jump_page">
 
 
-                <a class="source" href="bufferify.js.html">
-                  bufferify.js
+                <a class="source" href="buffer.js.html">
+                  buffer.js
                 </a>
 
 
@@ -40,13 +40,13 @@
                 </a>
 
 
-                <a class="source" href="errorify.js.html">
-                  errorify.js
+                <a class="source" href="dump.js.html">
+                  dump.js
                 </a>
 
 
-                <a class="source" href="jsonify.js.html">
-                  jsonify.js
+                <a class="source" href="json.js.html">
+                  json.js
                 </a>
 
 
@@ -55,18 +55,8 @@
                 </a>
 
 
-                <a class="source" href="jsonsify.js.html">
-                  jsonsify.js
-                </a>
-
-
                 <a class="source" href="merge.js.html">
                   merge.js
-                </a>
-
-
-                <a class="source" href="nullify.js.html">
-                  nullify.js
                 </a>
 
 
@@ -75,28 +65,28 @@
                 </a>
 
 
-                <a class="source" href="parser.js.html">
-                  parser.js
+                <a class="source" href="parse.js.html">
+                  parse.js
                 </a>
 
 
-                <a class="source" href="raiseify.js.html">
-                  raiseify.js
+                <a class="source" href="stream.js.html">
+                  stream.js
                 </a>
 
 
-                <a class="source" href="select.js.html">
-                  select.js
-                </a>
-
-
-                <a class="source" href="stringify.js.html">
-                  stringify.js
+                <a class="source" href="text.js.html">
+                  text.js
                 </a>
 
 
                 <a class="source" href="transport.js.html">
                   transport.js
+                </a>
+
+
+                <a class="source" href="unlisten.js.html">
+                  unlisten.js
                 </a>
 
 
@@ -152,8 +142,7 @@
         <span class="hljs-keyword">if</span> (varg == <span class="hljs-literal">null</span>) {
             merged = {}
             <span class="hljs-keyword">continue</span>
-        }
-</pre></div></div>
+        }</pre></div></div>
 
         </li>
 
@@ -172,8 +161,7 @@
             vargs.unshift(copy(varg, <span class="hljs-string">'socketPath'</span>))
             vargs.unshift({ <span class="hljs-attr">url</span>: <span class="hljs-string">'http://'</span> + <span class="hljs-built_in">encodeURIComponent</span>(varg.socketPath) + <span class="hljs-string">'@unix'</span>  })
             <span class="hljs-keyword">continue</span>
-        }
-</pre></div></div>
+        }</pre></div></div>
 
         </li>
 
@@ -194,13 +182,15 @@
             <span class="hljs-keyword">continue</span>
         }
         <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> name <span class="hljs-keyword">in</span> varg) {
-            <span class="hljs-keyword">if</span> (name == <span class="hljs-string">'url'</span>) {
+            <span class="hljs-keyword">switch</span> (name) {
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'url'</span>:
                 <span class="hljs-keyword">if</span> (merged.url == <span class="hljs-literal">null</span>) {
                     merged.url = varg.url
                 } <span class="hljs-keyword">else</span> {
                     merged.url = url.resolve(merged.url, varg.url)
                 }
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (name == <span class="hljs-string">'headers'</span>) {
+                <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'headers'</span>:
                 <span class="hljs-keyword">if</span> (merged.headers == <span class="hljs-literal">null</span>) {
                     merged.headers = {}
                 }
@@ -211,31 +201,25 @@
                         merged.headers[header] = <span class="hljs-built_in">String</span>(varg.headers[header])
                     }
                 }
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (name == <span class="hljs-string">'gateways'</span>) {
-                <span class="hljs-keyword">if</span> (merged.gateways == <span class="hljs-literal">null</span>) {
-                    merged.gateways = []
-                }
-                merged.gateways.unshift.apply(merged.gateways, varg.gateways)
-                <span class="hljs-keyword">var</span> index = merged.gateways.indexOf(<span class="hljs-literal">null</span>)
-                <span class="hljs-keyword">if</span> (~index) {
-                    merged.gateways = merged.gateways.slice(<span class="hljs-number">0</span>, index)
-                }
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (name == <span class="hljs-string">'grant'</span> &amp;&amp; varg.grant == <span class="hljs-string">'cc'</span>) {
+                <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'grant'</span>:
                 <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'no more grant property'</span>)
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (name == <span class="hljs-string">'put'</span> || name == <span class="hljs-string">'post'</span>) {
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'put'</span>:
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'post'</span>:
                 merged.payload = varg[name]
                 merged.method = name.toUpperCase()
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (name == <span class="hljs-string">'body'</span>) {
+                <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'body'</span>:
                 merged.payload = varg.body
-            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-keyword">break</span>
+            <span class="hljs-keyword">default</span>:
                 merged[name] = varg[name]
+                <span class="hljs-keyword">break</span>
             }
         }
     }
     <span class="hljs-keyword">return</span> merged
-}
-
-</pre></div></div>
+}</pre></div></div>
 
         </li>
 

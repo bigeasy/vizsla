@@ -20,8 +20,8 @@
             <div id="jump_page">
 
 
-                <a class="source" href="bufferify.js.html">
-                  bufferify.js
+                <a class="source" href="buffer.js.html">
+                  buffer.js
                 </a>
 
 
@@ -40,13 +40,13 @@
                 </a>
 
 
-                <a class="source" href="errorify.js.html">
-                  errorify.js
+                <a class="source" href="dump.js.html">
+                  dump.js
                 </a>
 
 
-                <a class="source" href="jsonify.js.html">
-                  jsonify.js
+                <a class="source" href="json.js.html">
+                  json.js
                 </a>
 
 
@@ -55,18 +55,8 @@
                 </a>
 
 
-                <a class="source" href="jsonsify.js.html">
-                  jsonsify.js
-                </a>
-
-
                 <a class="source" href="merge.js.html">
                   merge.js
-                </a>
-
-
-                <a class="source" href="nullify.js.html">
-                  nullify.js
                 </a>
 
 
@@ -75,28 +65,28 @@
                 </a>
 
 
-                <a class="source" href="parser.js.html">
-                  parser.js
+                <a class="source" href="parse.js.html">
+                  parse.js
                 </a>
 
 
-                <a class="source" href="raiseify.js.html">
-                  raiseify.js
+                <a class="source" href="stream.js.html">
+                  stream.js
                 </a>
 
 
-                <a class="source" href="select.js.html">
-                  select.js
-                </a>
-
-
-                <a class="source" href="stringify.js.html">
-                  stringify.js
+                <a class="source" href="text.js.html">
+                  text.js
                 </a>
 
 
                 <a class="source" href="transport.js.html">
                   transport.js
+                </a>
+
+
+                <a class="source" href="unlisten.js.html">
+                  unlisten.js
                 </a>
 
 
@@ -130,33 +120,99 @@
 
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
 <span class="hljs-keyword">var</span> typer = <span class="hljs-built_in">require</span>(<span class="hljs-string">'media-typer'</span>)
-<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
-<span class="hljs-keyword">var</span> errorify = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./errorify'</span>)
 <span class="hljs-keyword">var</span> Signal = <span class="hljs-built_in">require</span>(<span class="hljs-string">'signal'</span>)
 <span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
 <span class="hljs-keyword">var</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'prolific.logger'</span>).createLogger(<span class="hljs-string">'vizsla'</span>)
 <span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
+<span class="hljs-keyword">var</span> http = <span class="hljs-built_in">require</span>(<span class="hljs-string">'http'</span>)
+<span class="hljs-keyword">var</span> unlisten = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./unlisten'</span>)
 
-<span class="hljs-keyword">var</span> Instance = <span class="hljs-number">0</span>
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Transport</span> (<span class="hljs-params"></span>) </span>{
-}
+    <span class="hljs-keyword">this</span>.cancel = <span class="hljs-keyword">new</span> Signal
+}</pre></div></div>
 
+        </li>
+
+
+        <li id="section-2">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>TODO Does cancel also cancel negotiation?</p>
+
+            </div>
+
+        </li>
+
+
+        <li id="section-3">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>TODO You need to consider whether you would like to use 503 with a retry
+after header to implement back-pressure. This distinquishes between an
+overloaded server and one that has shutdown.</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre>
 Transport.prototype.descend = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, descent</span>) </span>{
-    <span class="hljs-keyword">var</span> instance = ++Instance
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.cancel.open != <span class="hljs-literal">null</span>) {
+        <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span>, {
+            <span class="hljs-attr">stage</span>: <span class="hljs-string">'negotiation'</span>,
+            <span class="hljs-attr">statusCode</span>: <span class="hljs-number">503</span>,
+            <span class="hljs-attr">statusMessage</span>: http.STATUS_CODES[<span class="hljs-number">503</span>],
+            <span class="hljs-attr">code</span>: <span class="hljs-string">'ECONNABORTED'</span>,
+            <span class="hljs-attr">trailers</span>: <span class="hljs-literal">null</span>,</pre></div></div>
+
+        </li>
+
+
+        <li id="section-4">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>TODO type, subType, suffix, parameters: {}</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre>            type: <span class="hljs-literal">null</span>
+        } ]
+    }
     <span class="hljs-keyword">var</span> request = descent.request()
     <span class="hljs-keyword">var</span> sent = {
-        <span class="hljs-attr">url</span>: request.url,
-        <span class="hljs-attr">options</span>: request.options,
-        <span class="hljs-attr">body</span>: request.payload,
-        <span class="hljs-attr">when</span>: <span class="hljs-built_in">Date</span>.now(),
-        <span class="hljs-attr">duration</span>: <span class="hljs-literal">null</span>
+        <span class="hljs-attr">url</span>: request.url.href,
+        <span class="hljs-attr">options</span>: request.options
     }
+    <span class="hljs-keyword">var</span> cancel = <span class="hljs-keyword">this</span>.cancel.wait(descent.cancel, <span class="hljs-string">'unlatch'</span>)
     <span class="hljs-keyword">var</span> timeout = <span class="hljs-literal">null</span>, status = <span class="hljs-string">'requesting'</span>, errors = <span class="hljs-number">0</span>, $response = <span class="hljs-literal">null</span>, caught = <span class="hljs-literal">false</span>
     <span class="hljs-keyword">var</span> signal = <span class="hljs-keyword">new</span> Signal, wait = <span class="hljs-literal">null</span>
     <span class="hljs-keyword">var</span> client = request.http.request(request.options)
     <span class="hljs-keyword">async</span>([<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
         <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-            <span class="hljs-keyword">var</span> event = delta(<span class="hljs-keyword">async</span>()).ee(client).on(<span class="hljs-string">'response'</span>)
+            <span class="hljs-keyword">var</span> xxx = <span class="hljs-keyword">new</span> Signal
+            <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">responded</span> (<span class="hljs-params">response</span>) </span>{
+                xxx.unlatch(<span class="hljs-literal">null</span>, response)
+            }
+            <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errored</span> (<span class="hljs-params">error</span>) </span>{
+                xxx.unlatch(error)
+            }
+            client.addListener(<span class="hljs-string">'error'</span>, errored)
+            client.addListener(<span class="hljs-string">'response'</span>, responded)
+            xxx.wait(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                unlisten(client, [{
+                    <span class="hljs-attr">name</span>: <span class="hljs-string">'error'</span>, <span class="hljs-attr">f</span>: errored
+                }, {
+                    <span class="hljs-attr">name</span>: <span class="hljs-string">'response'</span>, <span class="hljs-attr">f</span>: responded
+                }])
+            })
+            xxx.wait(<span class="hljs-keyword">async</span>())
             descent.cancel.wait(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
                 client.abort()
                 signal.unlatch(<span class="hljs-string">'ECONNABORTED'</span>, <span class="hljs-string">'aborted'</span>)
@@ -168,17 +224,16 @@ Transport.prototype.descend = cadence(<span class="hljs-function"><span class="h
                     signal.unlatch(<span class="hljs-string">'ETIMEDOUT'</span>, <span class="hljs-string">'timedout'</span>)
                 }, request.timeout)
             }
-            wait = signal.wait(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">code, newStatus</span>) </span>{
-</pre></div></div>
+            wait = signal.wait(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">code, newStatus</span>) </span>{</pre></div></div>
 
         </li>
 
 
-        <li id="section-2">
+        <li id="section-5">
             <div class="annotation">
 
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>The abort is going to close the socket. If we are waiting on
 a response there is going to be an error. Otherwise, there is
@@ -189,19 +244,18 @@ going to be an <code>&quot;aborted&quot;</code> message on the response.</p>
             <div class="content"><div class='highlight'><pre>                client.once(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{ caught = <span class="hljs-literal">true</span> })
                 descent.input.unpipe()
                 descent.input.resume()
-                event.cancel([ code ])
+                xxx.unlatch(code)
                 status = newStatus
-            })
-</pre></div></div>
+            })</pre></div></div>
 
         </li>
 
 
-        <li id="section-3">
+        <li id="section-6">
             <div class="annotation">
 
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>TODO Make this terminate correctly and pipe up a stream
 correctly.</p>
@@ -216,21 +270,51 @@ correctly.</p>
         }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response</span>) </span>{
             signal.cancel(wait)
             status = <span class="hljs-string">'responded'</span>
-            $response = response
+            descent.response = $response = response
             client.once(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
+                <span class="hljs-keyword">this</span>.cancel.cancel(cancel)
                 signal.notify(error, <span class="hljs-string">'errored'</span>)
-            })
-            signal.wait(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">code, newStatus</span>) </span>{
-</pre></div></div>
+            }.bind(<span class="hljs-keyword">this</span>))</pre></div></div>
 
         </li>
 
 
-        <li id="section-4">
+        <li id="section-7">
             <div class="annotation">
 
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>TODO Likely that the only proper response once the first response
+is done is to truncate. It is my believe that streams are bound
+to truncate sooner or later and that all applications should have
+a strategy for when they do truncate. Rather than raise an error
+here, simply terminate the stream. Whatever is handling the
+stream then handles it as if it where a truncation. If it is
+important that it was as a result of a cancel then maybe cancel
+your read explicitly before you cancel the http request.
+TODO We do run errors through our pass-through, but maybe we
+should log them instead? Doesn’t seem like such a bad idea to
+pass through errors since we might seem them pass through on a
+socket error. Not sure, though. Seems like the HTTP client is
+capturing those and then sending the error through HTTP client.
+The decision to pass them through the pass-through stream is so
+that we can have an error-first callback to get the response then
+be done with the request object.
+TODO Why am I not using Interrupt?</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre>            signal.wait(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">code, newStatus</span>) </span>{</pre></div></div>
+
+        </li>
+
+
+        <li id="section-8">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>   status = newStatus</p>
 
@@ -243,21 +327,21 @@ correctly.</p>
                     error.code = code
                     body.emit(<span class="hljs-string">'error'</span>, error)
                 } <span class="hljs-keyword">else</span> {
-                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'emit'</span>)
                     body.emit(<span class="hljs-string">'error'</span>, code)
-                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'emit'</span>)
                 }
             })
             $response.once(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                <span class="hljs-keyword">this</span>.cancel.cancel(cancel)
                 $response.unpipe()
                 $response.resume()
                 response.trailers = $response.trailers
-            })
+            }.bind(<span class="hljs-keyword">this</span>))
             $response.once(<span class="hljs-string">'aborted'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
                 signal.notify(<span class="hljs-string">'ECONNABORTED'</span>, <span class="hljs-string">'aborted'</span>)
             })
             <span class="hljs-keyword">var</span> statusCodeClass = <span class="hljs-built_in">Math</span>.floor($response.statusCode / <span class="hljs-number">100</span>)
             response = {
+                <span class="hljs-attr">sent</span>: sent,
                 <span class="hljs-attr">okay</span>: statusCodeClass == <span class="hljs-number">2</span>,
                 <span class="hljs-attr">statusCode</span>: $response.statusCode,
                 <span class="hljs-attr">statusCodeClass</span>: statusCodeClass,
@@ -272,21 +356,42 @@ correctly.</p>
             <span class="hljs-keyword">return</span> [ body, response ]
         })
     }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
+        <span class="hljs-keyword">this</span>.cancel.cancel(cancel)
         signal.cancel(wait)
         <span class="hljs-keyword">var</span> statusCode = <span class="hljs-keyword">typeof</span> error == <span class="hljs-string">'string'</span> ? <span class="hljs-number">504</span> : <span class="hljs-number">503</span>
         <span class="hljs-keyword">var</span> code = <span class="hljs-keyword">typeof</span> error == <span class="hljs-string">'string'</span> ? error : coalesce(error.code, <span class="hljs-string">'EIO'</span>)
-        <span class="hljs-keyword">return</span> errorify(statusCode, { <span class="hljs-string">'x-vizsla-errno'</span>: code })
-    }], <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response</span>) </span>{
-</pre></div></div>
+        <span class="hljs-keyword">return</span> [ <span class="hljs-literal">null</span>,  {
+            <span class="hljs-attr">stage</span>: <span class="hljs-string">'negotiation'</span>,
+            <span class="hljs-attr">statusCode</span>: statusCode,
+            <span class="hljs-attr">statusMessage</span>: http.STATUS_CODES[statusCode],
+            <span class="hljs-attr">code</span>: code,
+            <span class="hljs-attr">trailers</span>: <span class="hljs-literal">null</span>,</pre></div></div>
 
         </li>
 
 
-        <li id="section-5">
+        <li id="section-9">
             <div class="annotation">
 
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>TODO type, subType, suffix, parameters: {}</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre>            type: <span class="hljs-literal">null</span>
+        } ]
+    }], <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">body, response</span>) </span>{</pre></div></div>
+
+        </li>
+
+
+        <li id="section-10">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>TODO Come back and test this when you’ve created a Prolific Test library.</p>
 
@@ -309,13 +414,14 @@ correctly.</p>
         <span class="hljs-keyword">if</span> (timeout) {
             clearTimeout(timeout)
         }
+        <span class="hljs-keyword">if</span> (body == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">throw</span> response
+        }
         <span class="hljs-keyword">return</span> [ body, response ]
     })
 })
 
-<span class="hljs-built_in">module</span>.exports = Transport
-
-</pre></div></div>
+<span class="hljs-built_in">module</span>.exports = Transport</pre></div></div>
 
         </li>
 
