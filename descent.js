@@ -1,7 +1,7 @@
 var cadence = require('cadence')
 var coalesce = require('extant')
 
-var interrupt = require('interrupt').createInterrupter('vizsla')
+var Interrupt = require('interrupt').createInterrupter('vizsla')
 var logger = require('prolific.logger').createLogger('vizsla')
 
 var merge = require('./merge')
@@ -76,7 +76,7 @@ Descent.prototype.attempt = cadence(function (async) {
             // the values where going to be null?
             error.type = null
             if (this._merged.raise) {
-                throw interrupt('error', error)
+                throw new Interrupt('error', error)
             }
             logger.debug('error', { error: error })
             return [ null, error ]

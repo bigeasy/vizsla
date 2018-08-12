@@ -377,6 +377,7 @@ function prove (async, okay) {
             raise: true
         }, async())
     }, function (error) {
+        console.log(error.stack)
         okay(error.statusCode, 404, 'raise')
     }], function (body, response) {
         responses.unshift({
