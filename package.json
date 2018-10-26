@@ -26,7 +26,7 @@
                             "extant":                       "1.0.x",
                             "interrupt":                    "6.3.x",
                             "media-typer":                  "1.0.1",
-                            "prolific.logger":              "8.1.x",
+                            "prolific.logger":              "8.2.x",
                             "signal":                       "4.0.x"
     },
     "devDependencies":
