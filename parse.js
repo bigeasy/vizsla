@@ -41,7 +41,7 @@ function select (options, response) {
             for (var j = 0, J = headers.length; selected && j < J; j++) {
                 var pair = headers[j].split(/:\s*/, 2)
                 if (pair[0] == 'content-type') {
-                    selected = response.type.type + '/' + response.type.subtype == pair[1]
+                    selected = response.type.type == pair[1]
                 } else {
                     selected = response.headers[pair[0]] == pair[1]
                 }
