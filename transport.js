@@ -148,6 +148,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
             return [ body, response ]
         })
     }, function (error) {
+        console.log(error.stack)
         this.cancel.cancel(cancel)
         signal.cancel(wait)
         var statusCode = typeof error == 'string' ? 504 : 503
