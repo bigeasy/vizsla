@@ -519,6 +519,6 @@ function prove (async, okay) {
             okay(response.code, 'ECONNABORTED', 'after destruction')
         })
     } , function () {
-        okay(true, 'done')
+        okay('done')
     })
 }

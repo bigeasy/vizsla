@@ -16,7 +16,7 @@ function prove (okay) {
     try {
         merge({ plugins: {} }, [{ grant: 'cc' }], { storage: {} })
     } catch (error) {
-        okay(true, 'cc depricated')
+        okay('cc depricated')
     }
     okay(merge({ put: {} }, []), { method: 'PUT', payload: {} }, 'put')
     okay(merge({ body: {} }, []), { payload: {} }, 'body')
