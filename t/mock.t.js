@@ -1,13 +1,13 @@
 require('proof')(5, require('cadence')(prove))
 
-function prove (async, assert) {
+function prove (async, okay) {
     var Interlocutor = require('interlocutor')
     var UserAgent = require('..')
     var responses = [
         function (request, response, next) {
             response.writeHead(200, 'ignore', { key: 'value' })
             response.end('foo')
-            assert(response.getHeader('key'), 'value', 'get header')
+            okay(response.getHeader('key'), 'value', 'get header')
         },
         function (request, response, next) {
             response.writeHead(200)
@@ -28,15 +28,15 @@ function prove (async, assert) {
     async(function () {
         ua.fetch({ url: '/' }, async())
     }, function (body, response, buffer) {
-        assert(response.headers, { key: 'value' }, 'headers')
+        okay(response.headers, { key: 'value' }, 'headers')
         ua.fetch({ url: '/' }, async())
     }, function (body, response, buffer) {
-        assert(response.headers, {}, 'no headers')
+        okay(response.headers, {}, 'no headers')
         ua.fetch({ url: '/' }, async())
     }, function (body, response, buffer) {
-        assert(response.statusCode, 404, 'not found')
+        okay(response.statusCode, 404, 'not found')
         ua.fetch({ url: '/' }, async())
     }, function (body, response) {
-        assert(response.statusCode, 500, 'huge error')
+        okay(response.statusCode, 500, 'huge error')
     })
 }
