@@ -1,6 +1,6 @@
 {
     "name":                 "vizsla",
-    "version":              "12.16.0",
+    "version":              "12.17.0",
     "description":
 
       "An error-first callback friendly user agent.",
