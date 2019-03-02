@@ -33,7 +33,7 @@
     {
                             "connect":                      "3.6.6",
                             "interlocutor":                 "0.7.x",
-                            "proof":                        "5.0.x"
+                            "proof":                        "7.0.x"
     },
     "main":                 "vizsla",
     "scripts":
