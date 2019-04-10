@@ -26,10 +26,10 @@ function prove (async, okay) {
     }))
     var ua = new UserAgent().bind({ http: interlocutor, parse: 'json' })
     async(function () {
-        ua.fetch({ url: '/' }, async())
+        ua.fetch({ url: '/', parse: 'text' }, async())
     }, function (body, response, buffer) {
         okay(response.headers, { key: 'value' }, 'headers')
-        ua.fetch({ url: '/' }, async())
+        ua.fetch({ url: '/', parse: 'text' }, async())
     }, function (body, response, buffer) {
         okay(response.headers, {}, 'no headers')
         ua.fetch({ url: '/' }, async())

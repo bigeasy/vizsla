@@ -13,7 +13,7 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
     async(function () {
         if (descent.ua.storage.cc[request.identifier] == null) {
             if (request.url.auth == null) {
-                throw 503
+                throw 502
             }
             async(function () {
                 descent.fetch(this._request, {

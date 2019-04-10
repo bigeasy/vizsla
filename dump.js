@@ -1,7 +1,6 @@
 var cadence = require('cadence')
 
-function DumpParser (options) {
-    this.options = options
+function DumpParser () {
 }
 
 DumpParser.prototype.parse = cadence(function (async, body) {
@@ -10,5 +9,5 @@ DumpParser.prototype.parse = cadence(function (async, body) {
 })
 
 module.exports = function (options) {
-    return new DumpParser(Array.prototype.slice.call(arguments))
+    return new DumpParser()
 }

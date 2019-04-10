@@ -61,10 +61,10 @@ Descent.prototype.attempt = cadence(function (async) {
         async([function () {
             this.descend(async())
         }, function (error) {
-            if (error instanceof Error) {
-                error = { cause: error }
-            } else if (typeof error == 'number') {
+            if (typeof error == 'number') {
                 error = { statusCode: error }
+            } else if (! error.statusCode) {
+                throw error
             }
             if (this.response) {
                 this.response.resume()
@@ -75,14 +75,21 @@ Descent.prototype.attempt = cadence(function (async) {
             // Wasn't I going to have some sort of exploded type, but all
             // the values where going to be null?
             error.type = null
+            // TODO Maybe don't raise, instead flatten.
             if (this._merged.raise) {
-                throw new Interrupt('error', error)
+                throw error
             }
             logger.debug('error', { error: error })
             return [ null, error ]
         }])
-    }, function (body) {
-        if (this._merged.nullify) {
+    }, function (body, response) {
+        if (this._merged.raise && !response.okay) {
+            throw new Interrupt('vizsla#error', {
+                statusCode: response.statusCode,
+                headers: response.headers,
+                code: response.code
+            })
+        } else if (this._merged.nullify) {
             return [ body ]
         }
     })

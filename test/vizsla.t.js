@@ -171,7 +171,14 @@ function prove (async, okay) {
         })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            parse: [ Vizsla.json(200, 'x-hunky-dory: yes\ncontent-type: application/json') ]
+            parse: {
+                statusCode: 200,
+                headers: {
+                    'x-hunky-dory': /^yes$/,
+                    'content-type': 'application/json'
+                },
+                parser: 'json'
+            }
         }, async())
     }, function (body, response) {
         okay({
@@ -192,7 +199,10 @@ function prove (async, okay) {
         })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            parse: Vizsla.json(200)
+            parse: {
+                statusCode: 200,
+                parser: 'json'
+            }
         }, async())
     }, function (body, response) {
         okay({
@@ -229,25 +239,17 @@ function prove (async, okay) {
             statusCode: 200,
             body: Buffer.from('x')
         })
+    }, [function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
-            parse: [ { options: [{}] } ]
+            parse: 'fred'
         }, async())
-    }, function (body, response) {
-        // TODO Wrong! Should be 503.
-        okay({
-            body: body,
-            statusCode: response.statusCode
-        }, {
-            body: null,
-            statusCode: 200
-        }, 'bad parser options')
+    }, function (error) {
+        okay(/^vizsla#unknown:parser$/m.test(error.message), 'unknown parser')
+    }], function () {
         responses.unshift({
             statusCode: 500,
-            body: Buffer.from('['),
-            headers: {
-                'content-type': 'application/json'
-            }
+            body: Buffer.from('x')
         })
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
@@ -271,11 +273,11 @@ function prove (async, okay) {
         okay({
             body: body,
             response: response.statusCode,
-            cause: /JSON/.test(response.cause.message)
+            code: 'EVPARSE'
         }, {
             body: null,
-            response: 503,
-            cause: true
+            response: 502,
+            code: 'EVPARSE'
         }, 'bad json')
         responses.unshift({
             statusCode: 200,
@@ -322,12 +324,12 @@ function prove (async, okay) {
             trailers: null,
             type: null
         }, 'refused properties')
+        okay(body, null, 'refused message')
         responses.unshift({
             statusCode: 200,
             body: Buffer.from('x'),
             timeout: 1000
         })
-        okay(body, null, 'refused message')
         var fetch = ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             negotiate: []
@@ -371,6 +373,7 @@ function prove (async, okay) {
             statusCode: 404,
             body: Buffer.from('x')
         })
+        console.log('here')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'json',

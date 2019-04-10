@@ -1,89 +1,114 @@
 var cadence = require('cadence')
 var delta = require('delta')
+var path = require('path')
 
+var Interrupt = require('interrupt').createInterrupter('vizsla')
 var logger = require('prolific.logger').createLogger('vizsla')
 
 var PARSERS = {
-    json: require('./json'),
-    text: require('./text'),
-    buffer: require('./buffer'),
-    jsons: require('./jsons'),
-    stream: require('./stream'),
-    dump: require('./dump')
+    json: null,
+    text: null,
+    buffer: null,
+    jsons: null,
+    stream: null,
+    dump: null
 }
 
-var OPTIONS = {
-    json: [ 2, 'content-type: application/json' ],
-    text: [ 2 ],
-    buffer: [ 2 ],
-    jsons: [ 2, 'content-type: application/json-stream' ],
-    stream: [ 2 ],
-    dump: [ 2 ]
+var SELECTORS = {
+    json: {
+        statusCode: 2,
+        headers: {
+            'content-type': 'application/json'
+        },
+        parser: 'json'
+    },
+    text: {
+        statusCode: 2,
+        parser: 'text'
+    },
+    buffer: {
+        statusCode: 2,
+        parser: 'buffer'
+    },
+    jsons: {
+        statusCode: 2,
+        headers: {
+            'content-type': 'application/json-stream'
+        },
+        parser: 'jsons'
+    },
+    stream: {
+        statusCode: 2,
+        parser: 'stream'
+    },
+    dump: {
+        statusCode: 2,
+        parser: 'dump'
+    }
 }
 
 function Parse (parsers) {
-    this._parsers = parsers
-}
-
-function select (options, response) {
-    var selected = true
-    for (var i = 0, I = options.length; selected && i < I; i++) {
-        switch (typeof options[i]) {
-        case 'number':
-            if (options[i] < 10) {
-                selected = options[i] == Math.floor(response.statusCode / 100)
-            } else {
-                selected = options[i] == response.statusCode
-            }
-            break
-        case 'string':
-            var headers = options[i].split('\n')
-            for (var j = 0, J = headers.length; selected && j < J; j++) {
-                var pair = headers[j].split(/:\s*/, 2)
-                if (pair[0] == 'content-type') {
-                    selected = response.type.type == pair[1]
-                } else {
-                    selected = response.headers[pair[0]] == pair[1]
-                }
-            }
-            break
-        default:
-            selected = false
-            break
-        }
-    }
-    return selected
+    this._parsers = parsers || []
 }
 
 Parse.prototype.descend = cadence(function (async, descent) {
     async(function () {
         descent.descend(async())
     }, function (body, response) {
-        if (this._parsers === null) {
-            return
-        }
-        var parsers = Array.isArray(this._parsers) ? this._parsers : [ this._parsers ]
-        var parser = null
-        while (parser == null && parsers.length != 0) {
-            var options = parsers.shift()
-            if (typeof options == 'string') {
-                parser = PARSERS[options].apply(null, OPTIONS[options])
-            } else {
-                parser = options
+        var parsers = [].concat(this._parsers, {}), parser = null
+        for (var i = 0, I = parsers.length; parser == null && i < I; i++) {
+            var selector = parsers[i]
+            var selected = true
+            if (typeof selector == 'string') {
+                Interrupt.assert(SELECTORS[selector], 'unknown:parser', {
+                    selector: selector,
+                    parse: this._parsers
+                })
+                selector = SELECTORS[selector]
             }
-            if (parser != null && !select(parser.options, response)) {
-                parser = null
+            if (selector.statusCode) {
+                if (selector.statusCode < 10) {
+                    selected = selector.statusCode == Math.floor(response.statusCode / 100)
+                } else {
+                    selected = selector.statusCode == response.statusCode
+                }
             }
-        }
-        logger.debug('parser', { parser: !! parser })
-        if (parser == null) {
-            // TODO WRONG! Should throw a 503.
-            throw response
+            if (selected && selector.headers) {
+                for (var header in selector.headers) {
+                    var test = selector.headers[header]
+                    var value = response.headers[header]
+                    if (value == null) {
+                        selected = false
+                    } else {
+                        if (header == 'content-type') {
+                            value = response.type.type
+                        }
+                        if (typeof test == 'string') {
+                            selected = value == test
+                        } else {
+                            selected = test.test(value)
+                        }
+                    }
+                    if (!selected) {
+                        break
+                    }
+                }
+            }
+            if (selected) {
+                selected = selector.parser || 'stream'
+                if (typeof selected == 'string') {
+                    parser = PARSERS[selected]
+                    if (parser == null) {
+                        parser = PARSERS[selected] = require(path.join(__dirname, selected))()
+                    }
+                } else {
+                    parser = selected
+                }
+            }
         }
         async(function () {
             parser.parse(body, response, async())
         }, function (body) {
-            logger.debug('parsed', { body: body ? body.toString() : '<null>' })
             return [ body, response ]
         })
     })

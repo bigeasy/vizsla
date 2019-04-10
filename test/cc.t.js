@@ -58,7 +58,7 @@ function prove (async, okay) {
             statusCode: response.statusCode,
             body: body
         }, {
-            statusCode: 503,
+            statusCode: 502,
             body: null
         }, 'no password')
         ua.fetch({
