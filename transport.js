@@ -6,6 +6,7 @@ var logger = require('prolific.logger').createLogger('vizsla')
 var stream = require('stream')
 var http = require('http')
 var unlisten = require('./unlisten')
+var Message = require('./message')
 
 function Transport () {
     this.cancel = new Signal
@@ -31,7 +32,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
         options: request.options
     }
     var cancel = this.cancel.wait(descent.cancel, 'unlatch')
-    var timeout = null, status = 'requesting', errors = 0, $response = null, caught = false
+    var timeout = null, status = 'requesting', errors = 0, caught = false
     var signal = new Signal, wait = null
     var client = request.http.request(request.options)
     async([function () {
@@ -84,7 +85,7 @@ Transport.prototype.descend = cadence(function (async, descent) {
         }, function (response) {
             signal.cancel(wait)
             status = 'responded'
-            descent.response = $response = response
+            descent.response = response
             client.once('error', function (error) {
                 this.cancel.cancel(cancel)
                 signal.notify(error, 'errored')
@@ -108,8 +109,8 @@ Transport.prototype.descend = cadence(function (async, descent) {
             // TODO Why am I not using Interrupt?
             signal.wait(function (code, newStatus) {
             //    status = newStatus
-                $response.unpipe()
-                $response.resume()
+                response.unpipe()
+                response.resume()
                 if (typeof code == 'string') {
                     var error = new Error('vizsla#cancel')
                     error.code = code
@@ -118,30 +119,29 @@ Transport.prototype.descend = cadence(function (async, descent) {
                     body.emit('error', code)
                 }
             })
-            $response.once('end', function () {
+            response.once('end', function () {
                 this.cancel.cancel(cancel)
-                $response.unpipe()
-                $response.resume()
-                response.trailers = $response.trailers
+                response.unpipe()
+                response.resume()
+                transaction.trailers = response.trailers
             }.bind(this))
-            $response.once('aborted', function () {
+            response.once('aborted', function () {
                 signal.notify('ECONNABORTED', 'aborted')
             })
-            var statusCodeClass = Math.floor($response.statusCode / 100)
-            response = {
+            var statusCodeClass = Math.floor(response.statusCode / 100)
+            var transaction = {
                 sent: sent,
                 okay: statusCodeClass == 2,
-                statusCode: $response.statusCode,
+                statusCode: response.statusCode,
                 statusCodeClass: statusCodeClass,
-                statusMessage: $response.statusMessage,
-                headers: JSON.parse(JSON.stringify($response.headers)),
+                statusMessage: response.statusMessage,
+                headers: JSON.parse(JSON.stringify(response.headers)),
                 rawHeaders: JSON.parse(JSON.stringify(response.rawHeaders)),
                 trailers: null,
                 type: typer.parse(coalesce(response.headers['content-type'], 'application/octet-stream'))
             }
-            var body = new stream.PassThrough
-            $response.pipe(body)
-            return [ body, response ]
+            var body
+            return [ body = new Message(response, transaction), transaction ]
         })
     }, function (error) {
         this.cancel.cancel(cancel)
