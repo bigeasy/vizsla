@@ -63,9 +63,7 @@ Descent.prototype.attempt = cadence(function (async) {
         async([function () {
             this.descend(async())
         }, function (error) {
-            if (typeof error == 'number') {
-                error = { statusCode: error }
-            } else if (! error.statusCode) {
+            if (! error.statusCode) {
                 throw error
             }
             if (this.response) {
@@ -89,7 +87,6 @@ Descent.prototype.attempt = cadence(function (async) {
                     rawHeaders: response.rawHeaders
                 }
             }
-            console.log('>', response)
             var request = this.request()
             logger.debug('error', { error: error })
             return [ null, {
