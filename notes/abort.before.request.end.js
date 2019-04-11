@@ -18,7 +18,7 @@ server.listen(8888, function () {
         request.end()
     }, 1000)
     request.on('error', function (error) {
-        console.log('error')
+        console.log('error', error.code)
         console.log(error.stack)
     })
     request.on('abort', function () {

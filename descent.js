@@ -36,9 +36,13 @@ Descent.prototype.merge = function (vargs) {
     this._merged = merge(this._merged, vargs)
 }
 
-Descent.prototype.request = function () {
+Descent.prototype.properties = function () {
     var defaulted = defaults(this._merged, true)
     defaulted.options = options(defaulted)
+    defaulted.request = options(defaulted)
+    if (defaulted.payload && !Buffer.isBuffer(defaulted.payload)) {
+        defaulted.request.body = defaulted.payload
+    }
     return defaulted
 }
 
@@ -87,9 +91,9 @@ Descent.prototype.attempt = cadence(function (async) {
                     rawHeaders: response.rawHeaders
                 }
             }
-            var request = this.request()
-            if (request.payload) {
-                request.options.body = request.payload
+            var properties = this.properties()
+            if (properties.payload) {
+                properties.options.body = properties.payload
             }
             logger.debug('error', { error: error })
             return [ null, {
@@ -98,7 +102,7 @@ Descent.prototype.attempt = cadence(function (async) {
                 stage: response ? 'response' : 'request',
                 code: coalesce(error.code),
                 okay: false,
-                request: request.options,
+                request: properties.options,
                 response: response
             } ]
         }])

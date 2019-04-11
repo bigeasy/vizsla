@@ -65,5 +65,6 @@ module.exports = function (request, extended) {
             expanded.buffer = Buffer.alloc(0)
         }
     }
+    expanded.error = coalesce(expanded.error, function () {})
     return expanded
 }

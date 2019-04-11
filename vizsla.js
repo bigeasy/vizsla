@@ -26,7 +26,7 @@ UserAgent.prototype.bind = function () {
 
 UserAgent.prototype.destroy = function () {
     this.destroyed = true
-    this._transport.cancel.unlatch()
+    this._transport.cancel.unlatch('ECONNABORTED')
 }
 
 function Fetch (cancel) {
@@ -37,7 +37,7 @@ function Fetch (cancel) {
 }
 
 Fetch.prototype.cancel = function () {
-    this._cancel.unlatch()
+    this._cancel.unlatch('ECONNABORTED')
 }
 
 UserAgent.prototype.fetch = function () {

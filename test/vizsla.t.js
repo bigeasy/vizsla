@@ -72,6 +72,7 @@ function prove (async, okay) {
                 }
                 done()
             })
+            request.resume()
         } else {
             done()
         }
@@ -105,12 +106,14 @@ function prove (async, okay) {
             body: Buffer.from('x')
         })
         ua.fetch({
-            url: 'http://127.0.0.1:8888/endpoint',
+            url: 'http://127.0.0.1:8888/endpoint-z',
             parse: null,
             timeout: 1000
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'null parse ok')
+        // body.resume()
+        // body.on('end', function () { console.log('ended') })
         responses.unshift({
             statusCode: 200,
             body: Buffer.from('x')
@@ -411,17 +414,17 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response.statusCode, 200, 'post')
-        responses.unshift({
-            statusCode: 200,
-            expect: {},
-            body: Buffer.from('x')
-        })
         async(function () {
             delta(async()).ee(body).on('data', []).on('end')
         }, function (chunks) {
             okay(Buffer.concat(chunks).toString(), 'x', 'minimal ok body')
         })
     }, function () {
+        responses.unshift({
+            statusCode: 200,
+            expect: {},
+            body: Buffer.from('x')
+        })
         var fetch = ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             method: 'POST'
@@ -457,7 +460,8 @@ function prove (async, okay) {
     }, [function (body, response) {
         delta(async()).ee(body).on('end')
     }, function (error) {
-        okay(error.message, 'response', 'response error')
+        console.log(error.stack)
+        okay(error.causes[0].message, 'response', 'response error')
     }], function () {
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
@@ -513,7 +517,7 @@ function prove (async, okay) {
             delta(async()).ee(body).on('end')
             fetch.cancel()
         }, function (error) {
-            okay(error.code, 'ECONNABORTED', 'abort response')
+            okay(error.truncate.code, 'ECONNABORTED', 'abort response')
         }])
     } , function () {
         var fetch
@@ -530,7 +534,7 @@ function prove (async, okay) {
             delta(async()).ee(body).on('end')
             fetch.cancel()
         }, function (error) {
-            okay(error.code, 'ECONNABORTED', 'abort response at server')
+            okay(error.truncate.code, 'ECONNABORTED', 'abort response at server')
         }])
     } , function () {
         responses.unshift({
@@ -544,12 +548,13 @@ function prove (async, okay) {
             }, async())
             setTimeout(function () { ua.destroy() }, 50)
         }, function (body, response) {
+            console.log(response)
             okay(response.code, 'ECONNABORTED', 'destroy and cancel')
         })
     } , function () {
         async(function () {
             ua.fetch({
-                url: 'http://127.0.0.1:8888/endpoint',
+                url: 'http://127.0.0.1:8888/endpoint-x',
             }, async())
         }, function (body, response) {
             okay({

@@ -9,10 +9,10 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
     if (descent.ua.storage.cc == null) {
         descent.ua.storage.cc = {}
     }
-    var request = descent.request()
+    var properties = descent.properties()
     async(function () {
-        if (descent.ua.storage.cc[request.identifier] == null) {
-            if (request.url.auth == null) {
+        if (descent.ua.storage.cc[properties.identifier] == null) {
+            if (properties.url.auth == null) {
                 throw {
                     statusCode: 502,
                     code: 'EACCES',
@@ -22,7 +22,7 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
             async(function () {
                 descent.fetch(this._request, {
                     headers: {
-                        authorization: 'Basic ' + Buffer.from(request.url.auth).toString('base64')
+                        authorization: 'Basic ' + Buffer.from(properties.url.auth).toString('base64')
                     },
                     post: {
                         grant_type: 'client_credentials'
@@ -39,15 +39,15 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
                         statusCode: 502, stage: 'negotiation'
                     }
                 }
-                descent.ua.storage.cc[request.identifier] = body.access_token
+                descent.ua.storage.cc[properties.identifier] = body.access_token
             })
         }
     }, function () {
-        descent.merge([{ headers: { 'authorization': 'Bearer ' + descent.ua.storage.cc[request.identifier] } }])
+        descent.merge([{ headers: { 'authorization': 'Bearer ' + descent.ua.storage.cc[properties.identifier] } }])
         descent.descend(async())
     }, function (body, response) {
         if (response.statusCode == 401) {
-            delete descent.ua.storage.cc[request.identifier]
+            delete descent.ua.storage.cc[properties.identifier]
         }
         return [ body, response ]
     })
