@@ -18,6 +18,7 @@ function Transport () {
 // overloaded server and one that has shutdown.
 
 Transport.prototype.descend = cadence(function (async, descent) {
+    var request = descent.request()
     if (this.cancel.open != null) {
         throw {
             statusCode: 502,
@@ -25,7 +26,6 @@ Transport.prototype.descend = cadence(function (async, descent) {
             module: 'vizsla/transport'
         }
     }
-    var request = descent.request()
     var sent = {
         url: request.url.href,
         options: request.options
@@ -76,8 +76,8 @@ Transport.prototype.descend = cadence(function (async, descent) {
             })
             // TODO Make this terminate correctly and pipe up a stream
             // correctly.
-            if ('payload' in request) {
-                client.end(request.payload)
+            if ('buffer' in request) {
+                client.end(request.buffer)
             } else {
                 descent.input.pipe(client)
             }
@@ -163,13 +163,13 @@ Transport.prototype.descend = cadence(function (async, descent) {
             switch (status) {
             case 'timedout':
             case 'aborted':
-                logger.error(status, { errors: ++errors, stack: error.stack, $options: request.options })
+                logger.error(status, { errors: ++errors, stack: error.stack, $request: request.request })
                 break
             case 'requesting':
-                logger.error(status, { errors: ++errors, stack: error.stack, $options: request.options })
+                logger.error(status, { errors: ++errors, stack: error.stack, $request: request.request })
                 break
             case 'responded':
-                logger.error(status, { errors: ++errors, stack: error.stack, $options: request.options })
+                logger.error(status, { errors: ++errors, stack: error.stack, $request: request.request })
                 break
             }
         })

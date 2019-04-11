@@ -88,6 +88,9 @@ Descent.prototype.attempt = cadence(function (async) {
                 }
             }
             var request = this.request()
+            if (request.payload) {
+                request.options.body = request.payload
+            }
             logger.debug('error', { error: error })
             return [ null, {
                 statusCode: error.statusCode,

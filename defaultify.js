@@ -12,15 +12,19 @@ module.exports = function (request, extended) {
     if (request.response == null || request.response == 'parse') {
         request = merge(request, [{ headers: { accept: 'application/json' } }])
     }
-    if (('payload' in request) && !Buffer.isBuffer(request.payload)) {
-        request = merge(request, [{ headers: { 'content-type': 'application/json' } }])
-        request.payload = Buffer.from(JSON.stringify(request.payload))
+    if ('payload' in request) {
+        if (Buffer.isBuffer(request.payload)) {
+            request.buffer = request.payload
+        } else {
+            request = merge(request, [{ headers: { 'content-type': 'application/json' } }])
+            request.buffer = Buffer.from(JSON.stringify(request.payload))
+        }
     }
     // TODO Not right, really. Needs to be converted into an array.
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
     // TODO Do you want to rename `payload` to `buffer`? Meh.
-    if (request.payload != null && request.headers['transfer-encoding'] != 'chunked') {
-        request.headers['content-length'] = request.payload.length
+    if (request.buffer != null && request.headers['transfer-encoding'] != 'chunked') {
+        request.headers['content-length'] = request.buffer.length
     }
     var expanded = {}
     for (var name in request) {
@@ -58,7 +62,7 @@ module.exports = function (request, extended) {
         // `http` directly to accommodate that. Should be more like cURL,
         // defaults and defeats.
         if (!('payload' in expanded) && /^HEAD|DELETE|GET$/.test(expanded.method)) {
-            expanded.payload = Buffer.alloc(0)
+            expanded.buffer = Buffer.alloc(0)
         }
     }
     return expanded

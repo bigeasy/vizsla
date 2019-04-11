@@ -26,7 +26,7 @@ function prove (okay) {
     okay(expand({
         url: 'http://127.0.0.1:8888',
         payload: {}
-    }).payload.toString(), '{}', 'json')
+    }).buffer.toString(), '{}', 'json')
     okay(expand({
         url: 'http://127.0.0.1:8888',
         plugins: [ {} ]
