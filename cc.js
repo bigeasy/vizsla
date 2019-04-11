@@ -13,7 +13,11 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
     async(function () {
         if (descent.ua.storage.cc[request.identifier] == null) {
             if (request.url.auth == null) {
-                throw 502
+                throw {
+                    statusCode: 502,
+                    code: 'EACCES',
+                    module: 'vizsla/cc'
+                }
             }
             async(function () {
                 descent.fetch(this._request, {
@@ -23,16 +27,17 @@ ClientCredentials.prototype.descend = cadence(function (async, descent) {
                     post: {
                         grant_type: 'client_credentials'
                     },
-                    parse: 'json'
+                    parse: 'json',
+                    raise: true
                 }).response.wait(async())
             }, function (body, response) {
-                if (!response.okay) {
-                    throw { statusCode: 502, response: response, stage: 'negotiation' }
-                } else if (
+                if (
                     body.token_type != 'Bearer' ||
                     body.access_token == null
                 ) {
-                    throw { statusCode: 502, response: response, stage: 'negotiation' }
+                    throw {
+                        statusCode: 502, stage: 'negotiation'
+                    }
                 }
                 descent.ua.storage.cc[request.identifier] = body.access_token
             })

@@ -19,15 +19,11 @@ function Transport () {
 
 Transport.prototype.descend = cadence(function (async, descent) {
     if (this.cancel.open != null) {
-        return [ null, {
-            stage: 'negotiation',
-            statusCode: 503,
-            statusMessage: http.STATUS_CODES[503],
+        throw {
+            statusCode: 502,
             code: 'ECONNABORTED',
-            trailers: null,
-            // TODO type, subType, suffix, parameters: {}
-            type: null
-        } ]
+            module: 'vizsla/transport'
+        }
     }
     var request = descent.request()
     var sent = {
@@ -150,16 +146,16 @@ Transport.prototype.descend = cadence(function (async, descent) {
     }, function (error) {
         this.cancel.cancel(cancel)
         signal.cancel(wait)
-        var statusCode = typeof error == 'string' ? 504 : 503
-        var code = typeof error == 'string' ? error : coalesce(error.code, 'EIO')
+        // Either we exited early with a string indicating the code we want to
+        // report or else we got an error from Node.js through the `"error"`
+        // event handler, in which case their is certain to be an `error.code`,
+        // but if not we'll use the error message.
+        var code = typeof error == 'string' ? error : coalesce(error.code, error.message)
         return [ null,  {
             stage: 'negotiation',
-            statusCode: statusCode,
-            statusMessage: http.STATUS_CODES[statusCode],
-            code: code,
-            trailers: null,
-            // TODO type, subType, suffix, parameters: {}
-            type: null
+            statusCode: 502,
+            module: 'vizsla/transport',
+            code: code
         } ]
     }], function (body, response) {
         // TODO Come back and test this when you've created a Prolific Test library.

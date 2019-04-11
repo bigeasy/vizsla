@@ -315,14 +315,19 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response, {
-            stage: 'negotiation',
-            statusCode: 503,
-            statusMessage: 'Service Unavailable',
+            stage: 'request',
+            statusCode: 502,
+            statusMessage: 'Bad Gateway',
             code: 'ECONNREFUSED',
-            headers: {},
-            rawHeaders: [],
-            trailers: null,
-            type: null
+            okay: false,
+            request: {
+                headers: { accept: 'application/json' },
+                host: '127.0.0.1',
+                port: '8889',
+                path: '/endpoint',
+                method: 'GET'
+            },
+            response: null
         }, 'refused properties')
         okay(body, null, 'refused message')
         responses.unshift({
@@ -337,14 +342,19 @@ function prove (async, okay) {
         setTimeout(function () { fetch.cancel() }, 250)
     }, function (body, response) {
         okay(response, {
-            stage: 'negotiation',
-            statusCode: 504,
-            statusMessage: 'Gateway Timeout',
+            stage: 'request',
+            statusCode: 502,
+            statusMessage: 'Bad Gateway',
             code: 'ECONNABORTED',
-            headers: {},
-            rawHeaders: [],
-            trailers: null,
-            type: null,
+            okay: false,
+            request: {
+                headers: { accept: 'application/json' },
+                host: '127.0.0.1',
+                port: '8888',
+                path: '/endpoint',
+                method: 'GET'
+            },
+            response: null
         }, 'cancel properties')
         okay(body, null, 'cancel body')
         responses.unshift({
@@ -358,14 +368,19 @@ function prove (async, okay) {
         }, async())
     }, function (body, response) {
         okay(response, {
-            stage: 'negotiation',
-            statusCode: 504,
-            statusMessage: 'Gateway Timeout',
-            headers: {},
-            rawHeaders: {},
+            stage: 'request',
+            statusCode: 502,
+            statusMessage: 'Bad Gateway',
             code: 'ETIMEDOUT',
-            trailers: null,
-            type: null,
+            okay: false,
+            request: {
+                headers: { accept: 'application/json' },
+                host: '127.0.0.1',
+                port: '8888',
+                path: '/endpoint',
+                method: 'GET'
+            },
+            response: null
         }, 'timeout properties')
         okay(body, null, 'timeout body')
     }, [function () {
@@ -373,7 +388,6 @@ function prove (async, okay) {
             statusCode: 404,
             body: Buffer.from('x')
         })
-        console.log('here')
         ua.fetch({
             url: 'http://127.0.0.1:8888/endpoint',
             parse: 'json',
@@ -453,7 +467,25 @@ function prove (async, okay) {
             post: {}
         }, async())
     }, function (body, response) {
-        okay(response.statusCode, 503, 'error')
+        okay(response, {
+            stage: 'request',
+            statusCode: 502,
+            statusMessage: 'Bad Gateway',
+            code: 'natural',
+            okay: false,
+            request: {
+                headers: {
+                    accept: 'application/json',
+                    'content-type': 'application/json',
+                    'content-length': 2
+                },
+                host: '127.0.0.1',
+                port: '8888',
+                path: '/endpoint',
+                method: 'POST'
+            },
+            response: null
+        }, 'error event')
         responses.unshift({
             statusCode: 200,
             body: Buffer.from('x')
@@ -519,7 +551,13 @@ function prove (async, okay) {
                 url: 'http://127.0.0.1:8888/endpoint',
             }, async())
         }, function (body, response) {
-            okay(response.code, 'ECONNABORTED', 'after destruction')
+            okay({
+                statusCode: response.statusCode,
+                code: response.code
+            }, {
+                statusCode: 502,
+                code: 'ECONNABORTED'
+            }, 'after destruction')
         })
     } , function () {
         okay('done')

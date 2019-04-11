@@ -1,3 +1,5 @@
+var http = require('http')
+
 var cadence = require('cadence')
 var coalesce = require('extant')
 
@@ -79,8 +81,26 @@ Descent.prototype.attempt = cadence(function (async) {
             if (this._merged.raise) {
                 throw error
             }
+            var response = coalesce(error.response, this.response)
+            if (response) {
+                response = {
+                    statusCode: response.statusCode,
+                    headers: response.headers,
+                    rawHeaders: response.rawHeaders
+                }
+            }
+            console.log('>', response)
+            var request = this.request()
             logger.debug('error', { error: error })
-            return [ null, error ]
+            return [ null, {
+                statusCode: error.statusCode,
+                statusMessage: http.STATUS_CODES[error.statusCode],
+                stage: response ? 'response' : 'request',
+                code: coalesce(error.code),
+                okay: false,
+                request: request.options,
+                response: response
+            } ]
         }])
     }, function (body, response) {
         if (this._merged.raise && !response.okay) {

@@ -55,10 +55,24 @@ function prove (async, okay) {
         // TODO How would I know from logs that this is a configuration problem
         // and not a network problem?
         okay({
-            statusCode: response.statusCode,
+            response: response,
             body: body
         }, {
-            statusCode: 502,
+            response: {
+                statusCode: 502,
+                statusMessage: 'Bad Gateway',
+                stage: 'request',
+                code: 'EACCES',
+                okay: false,
+                request: {
+                    host: '127.0.0.1',
+                    port: '8888',
+                    headers: { accept: 'application/json' },
+                    path: '/endpoint',
+                    method: 'GET'
+                },
+                response: null
+            },
             body: null
         }, 'no password')
         ua.fetch({
@@ -66,15 +80,26 @@ function prove (async, okay) {
             negotiate: [ cc({ url: '/auth' }) ]
         }, async())
     }, function (body, response) {
+        console.log(response)
         okay({
-            statusCode: response.statusCode,
-            response: {
-                statusCode: response.response.statusCode
-            },
+            response: response,
             body: body
         }, {
-            statusCode: 502,
-            response: { statusCode: 400 },
+            response: {
+                statusCode: 400,
+                statusMessage: 'Bad Request',
+                stage: 'request',
+                code: null,
+                okay: false,
+                request: {
+                    headers: { accept: 'application/json' },
+                    host: '127.0.0.1',
+                    port: '8888',
+                    path: '/endpoint',
+                    method: 'GET'
+                },
+                response: null
+            },
             body: null
         }, 'not okay')
         ua.fetch({
