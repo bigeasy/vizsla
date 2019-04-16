@@ -114,6 +114,10 @@ Descent.prototype.attempt = cadence(function (async) {
                 code: response.code
             })
         } else if (this._merged.nullify) {
+            if (!response.okay) {
+                this.response.resume()
+                return [ null ]
+            }
             return [ body ]
         }
     })
