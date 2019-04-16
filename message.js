@@ -68,6 +68,7 @@ Message.prototype._destroy = function (error) {
             this.emit('error', new Interrupt('error', context))
         }
     }
+    this.emit('close')
 }
 
 module.exports = Message
