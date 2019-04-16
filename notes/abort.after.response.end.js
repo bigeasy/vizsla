@@ -20,6 +20,9 @@ server.listen(8888, function () {
     })
     request.on('response', function (response) {
         console.log('got response')
+        response.on('close', function () {
+            console.log('response close')
+        })
         response.on('data', function (chunk) {
             console.log(chunk.toString())
         })
