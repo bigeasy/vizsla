@@ -26,7 +26,7 @@ function Message (transport, cancel, descent, request, response, transaction) {
     this._response.once('close', this._destroyer)
     // TODO Not loving this. However, if I put the handler on the `response`
     // then we destroy ourselves before a chunk can be received.
-    // this.once('end', this._destroyer)
+    this.once('finish', this._destroyer)
 
     this._response.pipe(this)
 }
